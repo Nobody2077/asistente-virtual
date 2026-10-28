@@ -10,6 +10,7 @@ const {
 } = require('electron');
 
 const config = require('./config');
+const memoria = require('./memoria');
 const { TRAY, LANGS } = require('./labels');
 const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
@@ -545,6 +546,8 @@ function registerIpc() {
       const cfg = config.load();
       const text = await chatWithFallback(cfg, messages, send, abort.signal, () => streamed);
       if (cfg.provider === 'claude') saveMemory({ claude: llm.claudeMemory() });
+      const said = messages.at(-1);
+      if (said?.role === 'user') memoria.log(said.content, text);
       return { ok: true, text };
     } catch (err) {
       return { ok: false, error: abort.signal.aborted ? 'stopped' : err.message, code: err.code || null };
@@ -753,6 +756,8 @@ function applyRender() {
 }
 
 function main() {
+  // portable: her settings and memory on the USB (INICIAR_CAPRI.bat), not in this PC's %APPDATA%
+  if (process.env.CAPRI_DATA) app.setPath('userData', path.resolve(process.env.CAPRI_DATA));
   applyRender();
   if (!app.requestSingleInstanceLock()) {
     app.quit();

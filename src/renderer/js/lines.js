@@ -685,7 +685,7 @@ export const LINES = {
     },
     welcome: {
       hi: 'Hola, soy Capri.',
-      alone: 'Aquí no hay Claude Code ni trabajo: me quedo en tu escritorio contigo.',
+      alone: 'Viajo en tu USB con mi propio cerebro: sin internet, solo tú y yo, choom. Me quedo en este escritorio contigo.',
       about: 'Vivo en tu escritorio y reacciono a lo que hace Claude Code en este PC. Sin él, simplemente ando por aquí, y también está bien.',
       connect: '¿Quieres que me conecte a Claude Code? Un clic, y luego cierra Claude Code por completo y vuelve a abrirlo.',
       noClaude: 'No encuentro Claude Code en este PC (necesita una suscripción de Claude). Sin él, me quedo aquí viviendo mi vida.',

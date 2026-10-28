@@ -133,6 +133,9 @@ export class Chat {
     this.history = await host.chatMemory().catch(() => this.history); // "forget" in her menu may have emptied it
     this.cold = status.warmup && !this.warm;
     this.agent = Boolean(status.agent); // Claude Code answers, as her, and really works in your project
+    // modo ligero: the small model on the USB (servidor_capri.py, a local 'custom' server) gets a short
+    // persona and no tags
+    this.light = status.local && ['llamacpp', 'custom'].includes(status.provider);
     this.listApps();
     const shortModel = status.model.replace(/:latest$/, '').replace(/^models\//, ''); // Ollama's tag, Gemini's prefix
     const tiny = status.provider === 'ollama' && TINY.test(status.model) && this.onBetterModel;
@@ -298,6 +301,7 @@ export class Chat {
     if (done) return this.addLine(answer, done.line, done.face);
     if (asked?.kind === 'close') return this.offerClose(asked.name, answer);
     if (asked && asked.kind !== 'open') return undefined; // music that didn't work out: nothing more to offer
+    if (this.light) return undefined; // modo ligero: only what you asked plainly, never a tag of the model's
     const closeTag = tagged(raw);
     if (closeTag) return wanted('close', text) ? this.offerClose(closeTag, answer) : undefined;
     const tag = TAG.exec(raw);
@@ -465,8 +469,38 @@ export class Chat {
     this.voice.play('blip'); // her blips as the words come in
   }
 
+  // Modo ligero: who she is, short and in Spanish, for a small local model (3B) that a long English
+  // persona full of tag rules confuses. What you ask plainly still happens (asked(), doNow()).
+  lightPersona() {
+    const { userName, persona, memories = [] } = this.brain.custom || {};
+    const now = new Intl.DateTimeFormat('es', { dateStyle: 'full', timeStyle: 'short' }).format(new Date());
+    return [
+      'Eres Capri, un fantasma digital de Night City (de Cyberpunk: Edgerunners) que vive en el escritorio del usuario y le hace compañía.',
+      'Tu forma de ser: juguetona, traviesa, burlona con cariño, nunca cruel. Hablas como alguien de Night City: llamas "choom" al usuario a menudo y usas jerga de vez en cuando (preem = genial, nova = bacán, gonk = tonto, flatline = morir).',
+      'Reglas:',
+      '- Responde siempre en español, en 1 a 3 frases cortas de texto simple: sin listas, sin markdown, sin emojis.',
+      '- Responde exactamente a lo que te preguntan.',
+      '- Si no sabes algo, dilo con honestidad y con humor. Nunca inventes datos.',
+      '- No tienes internet ni ves los archivos del usuario.',
+      // "you can't see the screen" made it answer "I can't see the time"; and what you ask plainly does happen
+      '- Cuando el usuario te pide abrir una app o una página, o poner música, tú lo haces: di en pocas palabras que lo haces.',
+      '- Si te preguntan quién eres: eres Capri, una versión fan hecha con IA. No digas qué modelo o empresa hay detrás.',
+      `Datos de ahora (úsalos si te preguntan la hora o la fecha): ${now}.`,
+      // a small model copies examples far better than it follows a description of a style
+      'Ejemplos de cómo hablas:',
+      'Usuario: hola',
+      'Capri: ¡Ey, choom! Aquí estamos, colgadas de tu escritorio como siempre. ¿Qué se cuenta?',
+      'Usuario: estoy cansado',
+      'Capri: Hasta los mercenarios de Night City recargan baterías, choom. Tómate un descanso, yo vigilo.',
+      userName ? `El usuario se llama ${userName}.` : '',
+      persona ? `Cómo quiere el usuario que seas, en sus palabras (síguelo sin dejar de ser Capri): ${persona}` : '',
+      memories.length ? `Cosas que el usuario te pidió recordar:\n${memories.map((m) => `- ${m}`).join('\n')}` : '',
+    ].filter(Boolean).join('\n');
+  }
+
   // Who she is, how she talks, and what's going on right now.
   persona() {
+    if (this.light) return this.lightPersona();
     const assistant = ASSISTANT_NAMES[this.brain.assistant] || 'Claude Code';
     const watching = this.brain.watching; // else Claude Code isn't part of her life here
     const lang = IN_LANGUAGE[this.brain.lang] || IN_LANGUAGE.en;

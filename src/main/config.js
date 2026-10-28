@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { app } = require('electron');
+const memoria = require('./memoria');
 
 const DEFAULTS = {
   scale: 0.6,        // sprite scale, 0.6 ≈ 250px tall
@@ -46,11 +47,15 @@ function load(fresh = false) {
   } catch {
     cache = { ...DEFAULTS };
   }
+  // what she remembers lives in memoria.md (memoria.js), which you may have edited by hand
+  const memories = memoria.read();
+  if (memories) cache.memories = memories;
   return cache;
 }
 
 function save(patch) {
   cache = { ...load(), ...patch };
+  if ('memories' in patch) memoria.write(cache.memories || []);
   try {
     fs.mkdirSync(path.dirname(file()), { recursive: true });
     fs.writeFileSync(file(), JSON.stringify(cache, null, 2));
