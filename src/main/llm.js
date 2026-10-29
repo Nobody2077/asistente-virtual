@@ -13,8 +13,9 @@ const ollama = require('./ollama');
 
 const PROVIDERS = {
   ollama: { label: 'Ollama (local)', kind: 'ollama', local: true },
-  // noThink: models that think first (Qwen3.5, Gemma 4) take minutes before a word; she asks them not to
-  lmstudio: { label: 'LM Studio (local)', url: 'http://127.0.0.1:1234/v1', local: true, noThink: true },
+  // noThink: models that think first (Qwen3.5, Gemma 4) take minutes before a word; she asks them not to.
+  // userFirst: Qwen3.5's template refuses a conversation that starts with her line instead of yours
+  lmstudio: { label: 'LM Studio (local)', url: 'http://127.0.0.1:1234/v1', local: true, noThink: true, userFirst: true },
   llamacpp: { label: 'llama.cpp / vLLM (local :8080)', url: 'http://127.0.0.1:8080/v1', local: true },
   pollinations: {
     label: 'Pollinations (no key)', url: 'https://text.pollinations.ai/openai', modelsUrl: 'https://text.pollinations.ai/models',
@@ -88,8 +89,20 @@ function warm(id, model) {
   if (PROVIDERS[id].kind === 'ollama') ollama.warm(model);
 }
 
+// What she said before your first message (her greeting), moved into her prompt, so the talk starts with you.
+function userFirst(messages) {
+  const first = messages.findIndex((m) => m.role === 'user');
+  if (first < 0) return messages;
+  const system = messages.filter((m, i) => i < first && m.role === 'system').map((m) => m.content);
+  const said = messages.filter((m, i) => i < first && m.role === 'assistant').map((m) => m.content);
+  if (!said.length) return messages;
+  const content = [...system, `You already said to them: ${said.join('\n')}`].join('\n\n');
+  return [{ role: 'system', content }, ...messages.slice(first)];
+}
+
 // OpenAI-style streaming (server-sent events): onDelta(piece) as it comes, resolves with all of it.
 async function openaiChat(p, { model, messages }, onDelta, signal) {
+  if (p.userFirst) messages = userFirst(messages);
   const res = await fetch(`${p.url}/chat/completions`, {
     method: 'POST',
     headers: headers(p.key),
