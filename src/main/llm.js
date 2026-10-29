@@ -13,7 +13,8 @@ const ollama = require('./ollama');
 
 const PROVIDERS = {
   ollama: { label: 'Ollama (local)', kind: 'ollama', local: true },
-  lmstudio: { label: 'LM Studio (local)', url: 'http://127.0.0.1:1234/v1', local: true },
+  // noThink: models that think first (Qwen3.5, Gemma 4) take minutes before a word; she asks them not to
+  lmstudio: { label: 'LM Studio (local)', url: 'http://127.0.0.1:1234/v1', local: true, noThink: true },
   llamacpp: { label: 'llama.cpp / vLLM (local :8080)', url: 'http://127.0.0.1:8080/v1', local: true },
   pollinations: {
     label: 'Pollinations (no key)', url: 'https://text.pollinations.ai/openai', modelsUrl: 'https://text.pollinations.ai/models',
@@ -92,7 +93,7 @@ async function openaiChat(p, { model, messages }, onDelta, signal) {
   const res = await fetch(`${p.url}/chat/completions`, {
     method: 'POST',
     headers: headers(p.key),
-    body: JSON.stringify({ model, messages, stream: true }),
+    body: JSON.stringify({ model, messages, stream: true, ...(p.noThink && { reasoning_effort: 'none' }) }),
     signal,
   });
   if (!res.ok) throw await failure(res);
