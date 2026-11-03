@@ -12,6 +12,7 @@ const { randomUUID } = require('node:crypto');
 
 const config = require('./config');
 const memoria = require('./memoria');
+const notas = require('./notas');
 const { TRAY, LANGS } = require('./labels');
 const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
@@ -748,6 +749,39 @@ function registerIpc() {
     }
   });
   ipcMain.on('chat:stop', (_e, id) => chats.get(id)?.abort());
+  // a note you dictated (chat.js, "capri toma nota" … "listo capri"): saved as .md (notas.js), named
+  // by you, else by her model in a few words (not in her conversation log), else by the time
+  ipcMain.handle('notes:save', async (_e, { title, lines }) => {
+    const said = (Array.isArray(lines) ? lines : []).map(String).filter((l) => l.trim());
+    if (!said.length) return { ok: false, error: 'empty' };
+    let name = notas.safeTitle(title);
+    const cfg = config.load();
+    if (!name && cfg.provider !== 'claude') {
+      const abort = new AbortController();
+      const timer = setTimeout(() => abort.abort(), 60000);
+      try {
+        const messages = [
+          // a small model copies an example far better than it follows a description
+          { role: 'system', content: 'Pones títulos cortos a notas: de qué trata la nota, en 2 a 4 palabras normales separadas por espacios. Respondes solo con el título, nada más.\nEjemplo: para la nota «arroz, huevos, pan» respondes: Lista de compras\nEjemplo: para la nota «llamar al dentista el lunes» respondes: Cita con el dentista' },
+          { role: 'user', content: `Escribe un título de 2 a 4 palabras en español, sin comillas ni punto final, para esta nota:\n\n${said.join('\n').slice(0, 2000)}` },
+        ];
+        name = notas.safeTitle(await chatWithFallback(cfg, messages, () => {}, abort.signal, () => false));
+      } catch {
+        name = ''; // the time names it
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    try {
+      return { ok: true, ...notas.save({ title: name, lines: said }) };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  });
+  ipcMain.handle('notes:open', () => {
+    fs.mkdirSync(notas.dir(), { recursive: true });
+    return shell.openPath(notas.dir()).then((err) => !err);
+  });
   // she looks at your screen (look.js): the picture first, then what her AI says about it
   ipcMain.handle('look:snap', async () => {
     try {

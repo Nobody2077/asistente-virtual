@@ -130,6 +130,13 @@ const NAME_ASK = /(?:appelle[- ]moi|call me|my name is|je m['’]appelle|ll[aá]
 // "souviens-toi que…", "remember that…", "recuerda que…", "lembra que…", "запомни, что…" (said first thing)
 const MEMO_ASK = /^\s*(?:capri,?\s+|stp,?\s+|please,?\s+)?(?:souviens[- ]toi(?: que| de)?|n['’]oublie pas(?: que| de)?|remember(?: that)?|recuerda(?: que)?|lembr[ae](?:-se)?(?: que| de)?|запомни,?(?: что)?)\s+(.{3,200})/iu;
 const MEMORIES_MAX = 30;
+// Notes ("capri toma nota" … "listo capri", main.js + notas.js): what you say in between goes to a .md
+// file as you said it, never to her model, which only names the note at the end if you didn't.
+// "hola capri, toma nota", "capri toma nota de compras", "toma nota: ideas del juego", "anota una nota"
+const NOTE_START = /^\s*(?:(?:hola|hey|oye|ey),?\s+)?(?:capri,?\s+)?(?:t[oó]ma(?:r)?|an[oó]ta|ap[uú]nta|haz|crea)(?:me)?\s+(?:una\s+)?nota\b(?:\s*[:,-]\s*|\s+(?:de|del|sobre|para|llamada|titulada)\s+)?(.{0,60}?)\s*[.!]*\s*$/iu;
+const NOTE_END = /^\s*(?:listo|lista),?\s+capri\s*[.!]*\s*$/iu;
+const NOTE_CANCEL = /^\s*(?:capri,?\s+)?(?:cancela|borra|olvida)\s+(?:la\s+|esta\s+)?nota\s*[.!]*\s*$/iu;
+const NOTES_OPEN = /^\s*(?:capri,?\s+)?(?:abre|ens[eé]ñame|mu[eé]strame)\s+(?:mis\s+|las\s+)notas\s*[.!]*\s*$/iu;
 // sites asked for by name ("open youtube") when no app on the PC goes by it: the address is hers, not
 // the model's, so it opens right away like an app you named
 const SITES = {
@@ -169,6 +176,7 @@ export class Chat {
     this.jealousy = null;  // and how she takes your other AIs
     this.onMessage = null; // () => void: you said something to her
     this.waitingWhen = null; // a reminder you asked for without saying when: { text, until }
+    this.note = null;        // a note being dictated: { title, lines: [] } (sendNote)
     host.onChatDelta(({ id, text }) => this.onDelta(id, text));
   }
 
@@ -266,6 +274,9 @@ export class Chat {
     this.open = false;
     if (this.turn) this.host.chatStop(this.turn);
     this.turn = 0;
+    // a note left open goes to its file all the same, named by the time (no one there to wait for her)
+    if (this.note?.lines.length) this.host.saveNote({ title: this.note.title || nowName(), lines: this.note.lines });
+    this.note = null;
     this.host.focusOverlay(false);
     this.capri.nextMove = performance.now() + 30000;
     this.capri.nextGaze = performance.now() + 60000;
@@ -273,6 +284,7 @@ export class Chat {
 
   async send(text) {
     if (this.turn || !this.open) return;
+    if (!this.agent && (this.note || NOTE_START.test(text) || NOTES_OPEN.test(text))) return this.sendNote(text);
     const id = Date.now();
     this.turn = id;
     this.answer = '';
@@ -383,6 +395,54 @@ export class Chat {
     const answer = clean(res.text).replace(/^["“«]\s*|\s*["”»]$/g, '') || '…';
     this.seen = { text: answer, at: Date.now() };
     return say(answer, mood(answer));
+  }
+
+  // Notes: "capri toma nota [de …]" opens one, every message after it is a line of it (she only says
+  // she got it), "listo capri" saves it (notas.js), "cancela la nota" throws it away. None of it goes
+  // into her conversation with the model, so a long note doesn't fill the small model's memory.
+  async sendNote(text) {
+    const id = Date.now();
+    this.turn = id;
+    this.panel.setChatBusy(true);
+    this.panel.setActions([]);
+    this.panel.chatTurn({ quote: text, face: 'aside' });
+    this.capri.pulse();
+    this.onMessage?.();
+    const say = (line, face = 'smug') => {
+      if (this.turn !== id) return;
+      this.turn = 0;
+      this.panel.stream(line, { done: true });
+      this.panel.setFace(face);
+      this.panel.setChatBusy(false);
+    };
+    if (!this.note && NOTES_OPEN.test(text)) {
+      const ok = await this.host.openNotes().catch(() => false);
+      return say(ok ? 'Ahí tienes tus notas, choom.' : 'No pude abrir la carpeta de notas, choom.', ok ? 'smug' : 'wide');
+    }
+    if (!this.note) {
+      const title = NOTE_START.exec(text)?.[1]?.trim() || '';
+      this.note = { title, lines: [] };
+      return say(title ? `Listo, choom. Te escucho: nota «${title}». Cuando acabes, di «listo capri».` : 'Listo, choom. Te escucho. Cuando acabes, di «listo capri».', 'laugh');
+    }
+    if (NOTE_CANCEL.test(text)) {
+      this.note = null;
+      return say('Nota borrada, choom. Aquí no pasó nada.', 'aside');
+    }
+    if (!NOTE_END.test(text)) {
+      this.note.lines.push(text.trim());
+      return say(`Anotado (${this.note.lines.length}).`, 'look');
+    }
+    const note = this.note;
+    this.note = null;
+    if (!note.lines.length) return say('No me dictaste nada, choom. Nota vacía, no la guardo.', 'aside');
+    this.panel.stream(note.title ? 'Guardando, choom…' : 'Guardando, choom… le estoy buscando nombre.');
+    const res = await this.host.saveNote({ title: note.title, lines: note.lines }).catch((err) => ({ ok: false, error: err.message }));
+    if (!res.ok) {
+      this.note = note; // still there: "listo capri" again tries again
+      return say(`No pude guardarla, choom (${res.error}). Sigue abierta: di «listo capri» otra vez.`, 'wide');
+    }
+    this.voice.play('blip');
+    return say(`Listo, choom. Guardada como «${res.name}».`, 'laugh');
   }
 
   // an answer of hers, kept with your message before it
@@ -865,6 +925,12 @@ export class Chat {
 }
 
 // The model's answer as she'd say it: no reasoning block, no markdown marks.
+// a note's name from the time, for one saved without waiting for her model ("nota 1432")
+function nowName() {
+  const d = new Date();
+  return `nota ${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export function clean(text) {
   return String(text)
     .replace(/<think>[\s\S]*?(<\/think>|$)/g, '')
