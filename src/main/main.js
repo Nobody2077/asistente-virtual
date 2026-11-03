@@ -381,6 +381,10 @@ function rebuildTray() {
       label: t.chatModel,
       submenu: [
         { label: t.aiSetup, click: () => sendCommand('setupChat') },
+        {
+          label: 'Elegir sola: LM Studio si está, si no el de la USB', type: 'checkbox', checked: cfg.autoCerebro !== false,
+          click: (item) => updateConfig({ autoCerebro: item.checked }),
+        },
         { type: 'separator' },
         ...Object.entries(llm.PROVIDERS).map(([provider, p]) => ({
           label: p.label, type: 'radio', checked: cfg.provider === provider, click: () => pickProvider(provider),
@@ -389,7 +393,8 @@ function rebuildTray() {
         ...(chatModels?.length
           ? chatModels.map((name) => ({
             label: cloud.free.includes(name) ? `${name} · ${t.cloudFree}` : name,
-            type: 'radio', checked: name === pickModel(cfg), click: () => updateConfig({ chatModel: name }),
+            type: 'radio', checked: name === pickModel(cfg),
+            click: () => updateConfig({ chatModel: name, modeloPor: { ...(cfg.modeloPor || {}), [cfg.provider]: name } }),
           }))
           : [{ label: (chatError || t.noOllama).slice(0, 80), enabled: false }]),
         // Ollama's free cloud models when you're signed in to it, fetched on the click (it takes a second)
@@ -648,6 +653,22 @@ async function sayAboutSnap({ id, persona, prompt, history = [] }) {
   }
 }
 
+// Her brain on the USB, chosen by itself: LM Studio when its server answers on this PC (a bigger
+// model), else the USB's own (servidor_capri.py, 'custom'). Only between those two, and only while
+// "Elegir sola" is on in her menu: any other provider you pick stays. The model each one was on is
+// kept (modeloPor), so coming back to LM Studio is its model again, not whichever it lists first.
+const AUTO_BRAINS = ['lmstudio', 'custom'];
+async function autoBrain() {
+  const cfg = config.load();
+  if (cfg.autoCerebro === false || !AUTO_BRAINS.includes(cfg.provider)) return;
+  const lmStudio = await llm.models('lmstudio', llmConfig(cfg)).then((m) => m?.length > 0, () => false);
+  const want = lmStudio ? 'lmstudio' : 'custom';
+  if (want === cfg.provider || (want === 'custom' && !cfg.customUrl)) return;
+  const modeloPor = { ...(cfg.modeloPor || {}), [cfg.provider]: cfg.chatModel };
+  console.log(`[capri] cerebro: ${cfg.provider} -> ${want}`);
+  updateConfig({ provider: want, chatModel: modeloPor[want] || cfg.chatModel, modeloPor });
+}
+
 async function pickProvider(provider) {
   updateConfig({ provider });
   await refreshModels();
@@ -716,7 +737,9 @@ function registerIpc() {
   ipcMain.handle('windows:get', () => lastWindows);
   // talking to her (chat.js): is Ollama there, with a model to talk with
   ipcMain.handle('chat:status', async () => {
-    const cfg = config.load(true); // keys may have been edited by hand
+    config.load(true); // keys may have been edited by hand
+    await autoBrain(); // LM Studio if it's on here, else the USB's model
+    const cfg = config.load();
     const { provider } = cfg;
     const models = await refreshModels();
     if (!models) return { ok: false, error: chatError || 'offline', code: chatErrorCode, provider };
