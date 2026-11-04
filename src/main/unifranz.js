@@ -20,16 +20,19 @@ async function search(question, signal) {
   return data.resultados;
 }
 
-function contextBlock(hits) {
-  const parts = hits.map((h, i) => {
+const CARGO = /\b(director|directora|jef[ea]|encargad[oa]|responsable|cabeza|autoridad|manda)\b/i;
+
+function contextBlock(hits, question) {
+  const parts = hits.map((h) => {
     const date = h.publicado ? `, publicado ${h.publicado}` : '';
-    return `[${i + 1}] ${h.titulo} (${h.url}${date})\n${h.texto}`;
+    return `Página «${h.titulo.split(' | ')[0]}» (${h.url}${date}):\n${h.texto}`;
   });
   return [
     'Datos oficiales de la web de Unifranz (unifranz.edu.bo), descargados el ' + (hits[0]?.descargado || '') + ':',
     ...parts,
-    'Responde la pregunta usando SOLO estos datos. En Unifranz la persona a cargo de una sede es el vicerrector o la vicerrectora de esa sede.',
-    'Si los datos no lo dicen, di que no lo sabes; nunca inventes nombres. Al final di de qué página lo sacaste.',
+    'Responde la pregunta usando SOLO estos datos.' +
+      (CARGO.test(question) ? ' En Unifranz la persona a cargo de una sede es el vicerrector o la vicerrectora de esa sede.' : ''),
+    'Si los datos no lo dicen, di que no lo sabes; nunca inventes nombres. Al final di el nombre de la página de Unifranz de donde lo sacaste (no un número).',
   ].join('\n\n');
 }
 
@@ -43,7 +46,7 @@ async function withUnifranz(messages, signal) {
   let block;
   try {
     const hits = await search(question, signal);
-    block = hits.length ? contextBlock(hits) : 'No encontré nada sobre eso en los datos de Unifranz. Dilo así; no inventes.';
+    block = hits.length ? contextBlock(hits, question) : 'No encontré nada sobre eso en los datos de Unifranz. Dilo así; no inventes.';
   } catch (err) {
     if (signal.aborted) throw err;
     console.warn('[unifranz]', err.message);
