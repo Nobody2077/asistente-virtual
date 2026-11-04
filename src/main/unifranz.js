@@ -20,18 +20,31 @@ async function search(question, signal) {
   return data.resultados;
 }
 
-const CARGO = /\b(director|directora|jef[ea]|encargad[oa]|responsable|cabeza|autoridad|manda)\b/i;
+const CARGO = /\b(director|directora|dirige|dirigir|jef[ea]|encargad[oa]|a cargo|responsable|cabeza|autoridad|manda|lidera|vicerrector|vicerrectora)\b/i;
 
 function contextBlock(hits, question) {
-  const parts = hits.map((h) => {
+  // el más parecido va al final, pegado a la pregunta: los modelos chicos se fijan más en lo último
+  const parts = [...hits].reverse().map((h) => {
     const date = h.publicado ? `, publicado ${h.publicado}` : '';
     return `Página «${h.titulo.split(' | ')[0]}» (${h.url}${date}):\n${h.texto}`;
   });
+  // buscar.py ya dejó solo la línea oficial de la sede (pregunta por su director/a): respuesta directa,
+  // sin la regla de «no lo sé», que el 3B usaba porque el cargo se llama «vicerrectora»
+  if (CARGO.test(question) && hits.every((h) => h.url.includes('/autoridades/'))) {
+    return [
+      'Dato oficial de la web de Unifranz (unifranz.edu.bo), página «Autoridades académicas», descargado el ' + (hits[0]?.descargado || '') + ':',
+      [...new Set(hits.map((h) => h.texto.split('\n').slice(1).join('\n')))].join('\n'),
+      'Responde directo con ese nombre (copiado tal cual) y su cargo, en una o dos frases, y di que sale de la página «Autoridades académicas» de Unifranz. No digas «no lo sé».',
+    ].join('\n\n');
+  }
   return [
     'Datos oficiales de la web de Unifranz (unifranz.edu.bo), descargados el ' + (hits[0]?.descargado || '') + ':',
     ...parts,
     'Responde la pregunta usando SOLO estos datos.' +
-      (CARGO.test(question) ? ' En Unifranz la persona a cargo de una sede es el vicerrector o la vicerrectora de esa sede.' : ''),
+      (CARGO.test(question)
+        ? ' En Unifranz quien dirige una sede es su vicerrector o vicerrectora: si preguntan por el director o la directora de una sede, responde con el nombre del vicerrector o la vicerrectora de esa sede y di que ese es su cargo.'
+        : ''),
+    'Cuenta lo que sí dicen los datos. Copia los nombres de personas tal cual están escritos; no agregues profesiones ni títulos que no estén en los datos.',
     'Si los datos no lo dicen, di que no lo sabes; nunca inventes nombres. Al final di el nombre de la página de Unifranz de donde lo sacaste (no un número).',
   ].join('\n\n');
 }
