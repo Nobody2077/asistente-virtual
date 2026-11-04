@@ -13,6 +13,7 @@ const { randomUUID } = require('node:crypto');
 const config = require('./config');
 const memoria = require('./memoria');
 const notas = require('./notas');
+const { withUnifranz } = require('./unifranz'); // datos de Unifranz (RAG) cuando dices «unifranz»
 const { TRAY, LANGS } = require('./labels');
 const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
@@ -772,7 +773,8 @@ function registerIpc() {
         overlay?.webContents.send('chat:delta', { id, text });
       };
       const cfg = config.load();
-      const text = await chatWithFallback(cfg, messages, send, abort.signal, () => streamed);
+      const asked = await withUnifranz(messages, abort.signal);
+      const text = await chatWithFallback(cfg, asked, send, abort.signal, () => streamed);
       if (cfg.provider === 'claude') saveMemory({ claude: llm.claudeMemory() });
       const said = messages.at(-1);
       if (said?.role === 'user') memoria.log(said.content, text);
