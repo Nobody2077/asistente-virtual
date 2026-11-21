@@ -37,7 +37,9 @@
   },
   "dependencies": {
     "@fontsource/chakra-petch": "^5.3.0",
-    "@fontsource/jetbrains-mono": "^5.3.0"
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@pixiv/three-vrm": "^3.3.3",
+    "three": "^0.170.0"
   },
   "build": {
     "appId": "capri.desktop",

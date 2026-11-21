@@ -1,0 +1,9 @@
+Modelo 3D de Tami (avatar/tami.vrm)
+===================================
+Origen: "VRM1_Constraint_Twist_Sample" de pixiv Inc. (c) 2022, ejemplo oficial de three-vrm
+        https://github.com/pixiv/three-vrm
+Licencia: VRM Public License 1.0 (https://vrm.dev/licenses/1.0/), leida del propio archivo:
+  - modificar y redistribuir: permitido
+  - uso comercial: permitido
+  - credito: no obligatorio (igual lo damos aqui)
+Es un modelo de muestra; se puede reemplazar por uno propio hecho en VRoid Studio.

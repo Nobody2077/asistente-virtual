@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Tami — prueba del avatar</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../../node_modules/three/build/three.module.js",
+        "three/addons/": "../../node_modules/three/examples/jsm/",
+        "@pixiv/three-vrm": "../../node_modules/@pixiv/three-vrm/lib/three-vrm.module.js"
+      }
+    }
+  </script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #e9eef5; }
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="tami"></canvas>
+  <script type="module">
+    import { crearAvatar } from './avatar.js';
+    const tami = await crearAvatar(document.getElementById('tami'), '../../avatar/tami.vrm');
+    window.tami = tami;      // para que scripts/foto-avatar.js la maneje
+    window.tamiLista = true;
+  </script>
+</body>
+</html>
