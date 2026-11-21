@@ -20,3 +20,12 @@ capturas/
 
 # Tami: mapa de la memoria (derivado de los datos de Unifranz)
 cerebro/mapa_memoria.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# secretos (por si algun dia hay)
+.env
+*.key
