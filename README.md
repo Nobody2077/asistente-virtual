@@ -225,7 +225,7 @@ Con las piezas encendidas (el script las deja encendidas mientras Tami está abi
 node scripts/probar-tami.js "¿hay becas?"                         # una pregunta por consola, con tiempos
 node scripts/examen-feria.js                                       # 34 estudiantes de prueba con trampas (~5 min)
 node scripts/examen-feria.js trampa                                # solo un tema
-node scripts/probar-feria.js                                       # prueba el blindaje del modo feria
+npx electron scripts/probar-feria.js                               # blindaje del modo feria (no necesita servidores)
 npx electron src/tami/main.js --autoprueba "¿qué carreras hay?"    # saca fotos en capturas/
 ```
 
@@ -256,9 +256,9 @@ Tami/
 ├── src/
 │   ├── tami/                   ★ CUERPO: main.js (Electron), app.js, avatar.js, voz.js, oido.js,
 │   │                             explica.html (modo expositora), tami.css
-│   ├── main/tami.js            ★ ALMA: personalidad, reglas, RAG, ruteo por tema
-│   ├── main/                   motor heredado de Capri (llm.js habla con el modelo)
-│   └── renderer/               interfaz original de Capri (Tami no la usa)
+│   └── main/
+│       ├── tami.js             ★ ALMA: personalidad, reglas, RAG, ruteo por tema
+│       └── llm.js, ollama.js   conexión con el modelo (heredado de Capri)
 ├── cerebro/
 │   ├── servidor_tami.py        memoria por HTTP (:8766): /buscar, /carreras, /estado
 │   ├── carreras.json           catálogo cerrado de las 17 carreras
@@ -271,13 +271,14 @@ Tami/
 │   └── probar_voces.py, voces_jovenes.py  comparar voces
 ├── avatar/tami.vrm             modelo 3D + CREDITOS.txt
 ├── scripts/                    pruebas (probar-tami, examen-feria, probar-feria) y fotos
-├── assets/, docs/              imágenes de Capri
-└── tests/, tools/, hooks/      heredados de Capri
+├── CREDITOS_CAPRI.md           de dónde viene Tami y qué queda de Capri
+└── LICENSE                     PolyForm Noncommercial 1.0.0
 ```
 
 ## 12. Créditos y licencias
 
-- Basado en **[Capri](CAPRI_README.md)** de *mochiiwuff*, con licencia **PolyForm Noncommercial 1.0.0**
+- Nació como copia de **[Capri](https://github.com/mochiiwuff/capri-desktop)** de *mochiiwuff*
+  (ver [`CREDITOS_CAPRI.md`](CREDITOS_CAPRI.md)), con licencia **PolyForm Noncommercial 1.0.0**
   ([`LICENSE`](LICENSE)). Por eso este proyecto es **solo para uso no comercial** (académico).
 - Avatar: muestra VRM oficial de pixiv, VRM Public License 1.0 (ver `avatar/CREDITOS.txt`).
 - Modelos de terceros, **no entrenados por nosotros**: Qwen3.5 (Alibaba), Whisper (OpenAI), Kokoro (hexgrad),

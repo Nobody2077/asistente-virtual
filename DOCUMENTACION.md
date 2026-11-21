@@ -104,7 +104,8 @@ G:\Desarrollo\LLMLocalUnifranz\
     │   ├── kokoro\            modelo Kokoro v1.0 (310 MB) — no va a git
     │   ├── piper\             Piper (descartado, ver decisión 7) — no va a git
     │   └── .venv\             Python 3.13 con kokoro-onnx (creado con uv) — no va a git
-    ├── src\main\              MOTOR heredado de Capri (llm.js, system.js, windows.js…)
+    ├── src\main\
+    │   ├── llm.js, ollama.js  conexión con el modelo (lo único que queda de Capri, ver 5.17)
     │   └── tami.js            ★ el ALMA de Tami (nuevo)
     ├── src\tami\              ★ el CUERPO de Tami (nuevo)
     │   ├── main.js            proceso principal de Electron (ventana, IPC, --autoprueba)
@@ -418,6 +419,23 @@ las 7 teclas, la caída de la página que volvió en 0,5 s, minimizar/restaurar 
 Lo que **no** cubre (es de Windows, no de Tami): Ctrl+Alt+Supr y Win+L. En la feria, alguien del equipo
 siempre al lado de la PC.
 
+### 5.17 GitHub, Linux y limpieza de Capri (21/11)
+- **GitHub público:** https://github.com/Nobody2077/asistente-virtual (rama `main`). Para trabajar en equipo con
+  Brayan (ver `CONTRIBUTING.md`). Antes de publicarlo se reescribió el historial para usar el correo anónimo de
+  GitHub en vez del Gmail de Juan (respaldo: `..\Tami_respaldo_antes_correo.bundle`).
+- **Modelo propio:** `TAMI_LLM_URL` + `TAMI_MODELO` en `config_local.bat` / `config_local.sh` (no van a git).
+  Cualquier servidor compatible con OpenAI (Ollama, LM Studio…). Sin ese archivo, todo sigue igual.
+- **Linux:** `INICIAR_TAMI.sh` y `TAMI_FERIA.sh` (memoria con el Python de `..\linux\`; voz con
+  `voz/requirements.txt`). Aún no probado en un Linux real.
+- **Limpieza:** Tami solo usaba `llm.js` y `ollama.js` de Capri. Se quitaron la interfaz pixel-art
+  (`src/renderer`, `assets`), el resto del motor (`main.js`, `windows.js`, `system.js`…), hooks, tools, tests,
+  docs, el instalador (electron-builder: −262 paquetes) y el README de Capri (reemplazado por
+  `CREDITOS_CAPRI.md`). Siguen en el historial de git. `LICENSE` queda intacta.
+- **Pruebas después de limpiar:** examen de feria **0/34 🚩** (1.ª frase: mediana 2,8 s, peor 8,7 s);
+  `probar-feria.js` **TODO BIEN**; `--autoprueba` responde, habla y gesticula.
+- **Hallado en la prueba (no es por la limpieza):** a «¿qué carreras de ingeniería hay?» respondió con
+  Enfermería e Ingeniería Comercial mezcladas en la lista → pendiente.
+
 ---
 
 ## 6. Cómo usar
@@ -446,6 +464,9 @@ siempre al lado de la PC.
 ---
 
 ## 7. Pendientes (en orden)
+
+0. **«¿Qué carreras de ingeniería hay?»** mete Enfermería en la lista (5.17): darle la lista cerrada de
+   ingenierías desde `carreras.json` en vez de dejar que el modelo la arme.
 
 1. Probar `llama-server --no-mmap` para bajar la RAM (necesita que Juan lo encienda: el sistema no deja que
    Claude ejecute ese `.exe`).

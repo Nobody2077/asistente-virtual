@@ -30,7 +30,7 @@ gh pr create --fill                         # 5. Pull Request en GitHub
 
 - [ ] `node scripts/probar-tami.js` responde bien.
 - [ ] Si tocaste respuestas: `node scripts/examen-feria.js` no empeoró.
-- [ ] Si tocaste el modo feria: `node scripts/probar-feria.js` → TODO BIEN.
+- [ ] Si tocaste el modo feria: `npx electron scripts/probar-feria.js` → TODO BIEN.
 - [ ] Anotaste en `DOCUMENTACION.md` qué cambió y por qué (sección 5 o «DÓNDE NOS QUEDAMOS»).
 
 ## Qué NUNCA se sube
