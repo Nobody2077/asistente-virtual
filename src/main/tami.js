@@ -179,9 +179,47 @@ async function buscar(pregunta, signal) {
 const PIDE_DATOS = /\?|¿|unifranz|beca|cost|precio|pag(o|ar)|mensualidad|cuota|descuento|inscri|matr[ií]cul|requisito|admisi|postula|sede|campus|direcci[oó]n|ubica|horario|turno|clases|malla|materia|semestre|t[ií]tulo|gradua|director|autoridad|rector|internacional|intercambio|convenio|pr[aá]cticas|laboratorio|cu[aá]nto|cu[aá]ndo|d[oó]nde|qui[eé]n|c[oó]mo/i;
 const necesitaDatos = (texto) => PIDE_DATOS.test(texto);
 
-// «¿y cuánto dura?» sola no dice de qué carrera: se busca junto con lo que dijo antes.
-function consultaPara(conv, texto) {
+// --- Carreras «en juego» ----------------------------------------------------------------------------
+// La palabra con la que la gente nombra cada carrera: «Medicina», «Sistemas», «Comercial»…
+const PALABRAS_VACIAS = new Set(['ingenieria', 'y', 'de', 'e', 'en', 'la']);
+// apodos que también son palabras comunes: «ayuda económica», «tengo derecho a…»
+const APODOS_ESTRICTOS = { economica: 'ingenieria economica|economica y financiera', derecho: 'derecho(?! a\\b)' };
+function apodo(c) {
+  const p = sinTildes(c.nombre).split(/\s+/).find((x) => !PALABRAS_VACIAS.has(x));
+  return APODOS_ESTRICTOS[p] || p;
+}
+
+// Carreras de las que se está hablando: primero las de la frase actual; si no nombra ninguna
+// («¿y cuánto dura esa carrera?»), las de los últimos mensajes (de Tami o del estudiante). Máx. 2.
+function carrerasEnCharla(conv, texto) {
+  if (!catalogo) return [];
+  const nombradas = (t) => {
+    const s = sinTildes(t);
+    return catalogo.filter((c) => new RegExp(`\\b(${apodo(c)})`).test(s));
+  };
+  let encontradas = nombradas(texto);
+  if (!encontradas.length) {
+    for (const m of conv.historial.slice(-4).reverse()) {
+      encontradas = nombradas(m.content);
+      if (encontradas.length) break;
+    }
+  }
+  return encontradas.slice(0, 2);
+}
+
+// Ficha oficial pegada a la pregunta: el modelo copia el dato en vez de «recordarlo» (antes decía
+// «Medicina dura 6 años y medio» aunque el catálogo y la web dicen 6).
+function bloqueFichas(carreras) {
+  if (!carreras.length) return '';
+  const lineas = carreras.map((c) => `- ${c.nombre}: dura ${c.duracion}.`);
+  return `DATOS EXACTOS DEL CATÁLOGO (si hablas de duración, dila tal cual, sin agregar ni quitar):\n${lineas.join('\n')}\n\n`;
+}
+
+// «¿y cuánto dura?» sola no dice de qué carrera: se busca junto con la carrera en juego
+// (o, si no hay ninguna, junto con lo que el estudiante dijo antes).
+function consultaPara(conv, texto, carreras = []) {
   if (texto.split(/\s+/).length >= 7) return texto;
+  if (carreras.length) return `${texto} ${carreras.map((c) => c.nombre).join(' ')}`;
   const antes = conv.historial.filter((m) => m.role === 'user').at(-1)?.texto;
   return antes ? `${antes} ${texto}` : texto;
 }
@@ -265,18 +303,19 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
   texto = String(texto).trim().slice(0, 600);
 
   let hits = [];
-  let datos = '';
+  const carreras = carrerasEnCharla(conv, texto);
+  let datos = bloqueFichas(carreras);
   if (necesitaDatos(texto)) {
     // se dice YA, mientras busca y piensa; solo ante preguntas («veo videos de cómo funciona…» no lo es)
     if (/[?¿]|^(qu[eé]|cu[aá]nt|cu[aá]l|c[oó]mo|d[oó]nde|cu[aá]ndo|qui[eé]n|hay|tienen|puedo|se puede)\b/i.test(texto)) {
       onFrase(muletilla(), { muletilla: true });
     }
     try {
-      hits = await buscar(consultaPara(conv, texto), signal);
-      datos = `${bloqueDatos(hits)}\n\n`;
+      hits = await buscar(consultaPara(conv, texto, carreras), signal);
+      datos = `${bloqueDatos(hits)}\n\n${datos}`; // la ficha exacta queda al final, pegada a la pregunta
     } catch (err) {
       if (signal.aborted) throw err;
-      datos = 'DATOS DE UNIFRANZ: no pudiste revisarlos ahora. Si te piden un dato concreto, di que lo confirmen en Admisiones.\n\n';
+      datos = `DATOS DE UNIFRANZ: no pudiste revisarlos ahora. Si te piden un dato concreto, di que lo confirmen en Admisiones.\n\n${datos}`;
     }
   }
 
