@@ -94,10 +94,13 @@ const GESTOS = {
     pose: { rightUpperArm: [-0.75, 0.55, 1.25], rightLowerArm: [0, 2.0, 0], rightHand: [0.3, 0.2, -0.9], head: [0.08, 0, 0.1] },
     ida: 0.6, dura: Infinity, vuelta: 0.6,
   },
-  saludar: {  // codo pegado al cuerpo, antebrazo vertical, la mano va de lado a lado
-    pose: { rightUpperArm: [1.57, 0, 1.3], rightLowerArm: [0, -2.8, 0] },
+  saludar: {  // codo un poco separado del cuerpo, antebrazo vertical, palma de frente junto a la cara
+    // (antes: codo pegado [z 1,3] y antebrazo casi cerrado [−2,8] → la mano quedaba en el hombro, tapada por el
+    //  pelo, y la onda abría y cerraba el codo como un bombeo. 22/11, ajustado con fotos)
+    pose: { rightUpperArm: [1.57, 0, 1.05], rightLowerArm: [0, -2.5, 0], head: [0, 0, -0.05] },
     orden: { rightUpperArm: 'ZYX' }, // primero gira el brazo sobre su eje → el codo dobla hacia arriba
-    onda: (t) => ({ rightLowerArm: [0, Math.sin(t * 9) * 0.22, 0] }),
+    // la mano va de lado a lado girando el brazo DESDE EL HOMBRO (como una persona), no doblando el codo
+    onda: (t) => ({ rightUpperArm: [Math.sin(t * 7) * 0.3, 0, 0] }),
     ida: 0.45, dura: 1.8, vuelta: 0.5,
   },
   asentir: {  // «sí, te escucho»
