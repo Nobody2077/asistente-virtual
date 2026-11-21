@@ -1,0 +1,490 @@
+[
+  {
+    "nombre": "Arquitectura",
+    "url": "https://unifranz.edu.bo/carreras/arquitectura/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años y medio",
+    "perfil": "El profesional de Arquitectura de UNIFRANZ es capaz de diseñar y gestionar proyectos sostenibles en contextos urbanos cambiantes. Domina BIM, modelado 3D, diseño paramétrico y simulación energética para decidir con datos. Integra eficiencia, materiales de bajo impacto y accesibilidad. Lidera equipos interdisciplinarios, coordina procesos e instalaciones, y articula innovación tecnológica y compromiso social para crear espacios resilientes, inclusivos y de alto desempeño.",
+    "areas": [
+      "Digitalización, expresión e innovación tecnológica",
+      "Historia, teoría y crítica de la arquitectura",
+      "Diseño bioclimático, sostenible e inclusivo",
+      "Estructuras",
+      "Procesos constructivos e instalaciones",
+      "Urbanismo y ciudades inteligentes",
+      "Arquitectura sostenible y digital"
+    ],
+    "trabajo": [
+      "Estudios de arquitectura y design studios",
+      "Constructoras, inmobiliarias y desarrolladoras",
+      "Consultoras de sostenibilidad, energía y certificaciones",
+      "Planeamiento urbano",
+      "Empresas públicas y privadas",
+      "Proyectos de rehabilitación urbana y patrimonio",
+      "Startups"
+    ]
+  },
+  {
+    "nombre": "Auditoría Financiera y Control de Gestión",
+    "url": "https://unifranz.edu.bo/carreras/auditoria-financiera-y-control-de-gestion/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Auditoría Financiera y Control de Gestión de UNIFRANZ es riguroso y ético, asegura la fiabilidad de la información y la integridad de los procesos. Diseña auditorías integrales basadas en riesgos, fortalece controles internos y previene el fraude. Aplica normas internacionales, analítica de datos e IA para mejorar decisiones. Lidera la transformación digital y el cumplimiento, promoviendo transparencia, sostenibilidad y mejora continua con pensamiento crítico y trabajo colaborativo.",
+    "areas": [
+      "Auditoría preventiva y control interno",
+      "Gestión de riesgos y cumplimiento operativo",
+      "Innovación y transformación digital",
+      "Ética, integridad y transparencia financiera y tributaria",
+      "Análisis estratégico de datos y sostenibilidad organizacional"
+    ],
+    "trabajo": [
+      "Firmas de auditoría",
+      "Empresas públicas y privadas",
+      "Entidades financieras",
+      "Aseguradoras",
+      "Startups",
+      "Centros de investigación y think tanks",
+      "Reguladoras y entidades internacionales"
+    ]
+  },
+  {
+    "nombre": "Bioquímica y Farmacia",
+    "url": "https://unifranz.edu.bo/carreras/bioquimica-y-farmacia/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "5 años",
+    "perfil": "El profesional de Bioquímica y Farmacia de UNIFRANZ integra ciencias básicas, tecnologías de diagnóstico e inteligencia artificial para garantizar calidad y seguridad en salud. Analiza muestras, desarrolla y controla fármacos, gestiona laboratorios automatizados y aplica bioinformática y big data para decisiones clínicas y regulatorias. Con ética y enfoque sostenible, lidera proyectos interprofesionales e innova en industria, investigación y atención comunitaria.",
+    "areas": [
+      "Laboratorio clínico, biotecnología aplicada y diagnóstico",
+      "Industria farmacéutica, farmacia clínica y gestión asistencial",
+      "Ciencia de alimentos, cosmética y gestión de la calidad regulatoria"
+    ],
+    "trabajo": [
+      "Laboratorios de análisis clínico y diagnóstico molecular",
+      "Industrias farmacéuticas, biotecnológicas y de dispositivos médicos",
+      "Hospitales, farmacias hospitalarias y servicios de salud pública",
+      "Centros de investigación, I+D y ensayos clínicos",
+      "Autoridades sanitarias y agencias regulatorias",
+      "Plantas de producción con automatización y control de procesos",
+      "Empresas de alimentos, bebidas y control sanitario",
+      "Consultoras de calidad, farmacovigilancia y cumplimiento normativo"
+    ]
+  },
+  {
+    "nombre": "Comunicación y Periodismo Digital",
+    "url": "https://unifranz.edu.bo/carreras/comunicacion-y-periodismo-digital/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Comunicación y Periodismo Digital de UNIFRANZ es innovador, crítico y comprometido con la transformación del ecosistema mediático y organizacional. Combina teoría y práctica para desarrollar habilidades en planificación estratégica y producción transmedia interactiva de contenidos de alto impacto y rigor informativo. Está preparado para gestionar reputación, crisis, monetización y estrategias digitales, ejerciendo una comunicación responsable, creativa y orientada al cambio social.",
+    "areas": [
+      "Comunicación estratégica, reputación y liderazgo",
+      "Producción multimedia, transmedia e innovación",
+      "Investigación, fact checking y analítica de datos",
+      "Emprendimiento, gestión de proyectos y monetización",
+      "Tecnología digital avanzada y narrativas virales"
+    ],
+    "trabajo": [
+      "Medios de comunicación",
+      "Agencias de marketing, publicidad y relaciones públicas",
+      "Departamentos de comunicación corporativa e institucional",
+      "Productoras audiovisuales y agencias de contenido",
+      "Organizaciones no gubernamentales y proyectos sociales",
+      "Plataformas digitales y startups",
+      "Consultoras en branding, reputación y gestión de crisis",
+      "Creador de contenidos o influencer profesional"
+    ]
+  },
+  {
+    "nombre": "Derecho",
+    "url": "https://unifranz.edu.bo/carreras/derecho/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional en Derecho UNIFRANZ es innovador y global, preparado para gestionar el cambio en entornos sociales, económicos y tecnológicos dinámicos. Combina una sólida base teórica con competencias prácticas, digitales, éticas y críticas, que le permiten actuar con eficacia en contextos globalizados y multiculturales. Integra el análisis jurídico, la mediación de conflictos y la defensa de los derechos humanos con el uso de LegalTech y estrategias de innovación legal, adaptándose a un mercado jurídico diverso y en constante transformación.",
+    "areas": [
+      "Derecho público y gobernanza global",
+      "Derecho privado y justicia digital",
+      "Derecho social y justicia restaurativa",
+      "Jurista global: comunicación, liderazgo y argumentación"
+    ],
+    "trabajo": [
+      "Empresas privadas y multinacionales",
+      "Startups",
+      "Organismos internacionales",
+      "Instituciones financieras y reguladoras",
+      "Despachos de abogados especializados",
+      "Departamentos de arbitraje corporativo",
+      "Comercio exterior y transacciones internacionales",
+      "Proyectos de gobernanza y políticas digitales"
+    ]
+  },
+  {
+    "nombre": "Diseño Digital y Producción Transmedia",
+    "url": "https://unifranz.edu.bo/carreras/diseno-digital-y-produccion-transmedia/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Diseño Digital y Producción Transmedia de UNIFRANZ es versátil diseña experiencias UX/UI, animación y modelado 3D, entornos inmersivos (AR/VR) y narrativas multiplataforma. Integra creatividad con datos y metodologías activas, lidera proyectos interdisciplinarios y gestiona productos digitales de inicio a fin. Con mirada ética y global, convierte retos reales en soluciones interactivas para medios y empresas, impulsando la economía creativa y la innovación.",
+    "areas": [
+      "Diseño gráfico y branding",
+      "Narrativa audiovisual",
+      "UX/UI",
+      "Tecnologías emergentes",
+      "Investigación digital"
+    ],
+    "trabajo": [
+      "Agencias creativas, estudios de diseño y branding",
+      "Empresas de tecnología y videojuegos",
+      "Medios digitales, productoras audiovisuales y streaming",
+      "Startups de productos digitales",
+      "Marketing digital",
+      "Proyectos de experiencias inmersivas",
+      "Telecomunicaciones y compañías de hardware",
+      "ONG y proyectos de transformación digital"
+    ]
+  },
+  {
+    "nombre": "Enfermería",
+    "url": "https://unifranz.edu.bo/carreras/enfermeria/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Enfermería de UNIFRANZ es un experto clínico, ético y digital, preparado para cuidar con seguridad y humanismo en todo el ciclo de vida. Integra evidencia, simulación y metodologías activas; gestiona registros electrónicos y telemedicina; usa analítica e IA para decidir mejor. Lidera equipos y servicios, promueve prevención y salud comunitaria con enfoque intercultural, y participa en investigación y mejora continua, impulsando una atención sostenible, inclusiva y centrada en la persona.",
+    "areas": [
+      "Clínica",
+      "Comunitaria",
+      "Gestión y administración",
+      "Tecnología",
+      "Investigación y docencia"
+    ],
+    "trabajo": [
+      "Hospitales, clínicas y centros de atención integral",
+      "Centros de salud, redes de APS y programas comunitarios",
+      "Unidades de cuidados intensivos, emergencias y quirófano",
+      "Instituciones de salud pública, vigilancia epidemiológica y vacunación",
+      "Empresas de telesalud, salud digital y gestión de datos clínicos",
+      "Universidades, institutos de investigación y centros de simulación",
+      "ONG, proyectos de salud intercultural y organismos internacionales",
+      "Aseguradoras, EPS y entidades de gestión sanitaria y calidad"
+    ]
+  },
+  {
+    "nombre": "Gastronomía y Artes Culinarias",
+    "url": "https://unifranz.edu.bo/carreras/gastronomia-y-artes-culinarias/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Gastronomía de UNIFRANZ es creativo capaz de unir técnica culinaria avanzada con gestión de operaciones, sostenibilidad y marketing. Domina cocinas clásicas y contemporáneas, valora ingredientes locales, diseña experiencias memorables y optimiza costos y procesos. Integra herramientas digitales para analizar tendencias y fidelizar clientes, lidera equipos interdisciplinarios y emprende proyectos con enfoque ético y responsable, competitivo en contextos locales y globales.",
+    "areas": [
+      "Producción y elaboración culinaria",
+      "Gestión Empresarial",
+      "Cultura Gastronómica",
+      "Ciencia Aplicada",
+      "Sala, servicio y sumillería",
+      "Personas y gestión del cliente"
+    ],
+    "trabajo": [
+      "Restaurantes, bares y cafeterías",
+      "Hoteles y resorts",
+      "Empresas de catering",
+      "Emprendimientos gastronómicos propios",
+      "Consultoras y agencias gastronómicas",
+      "Instituciones educativas y academias de cocina",
+      "Proyectos de promoción gastronómica y festivales culinarios",
+      "Medios de comunicación y crítica gastronómica"
+    ]
+  },
+  {
+    "nombre": "Ingeniería Comercial",
+    "url": "https://unifranz.edu.bo/carreras/ingenieria-comercial/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Ingeniería Comercial de UNIFRANZ es estratégico, lidera la creación de valor en mercados dinámicos. Integra gestión comercial, marketing digital y analítica de datos con apoyo de la IA para decidir en tiempo real. Diagnostica oportunidades, diseña propuestas de valor, optimiza canales, experiencias del cliente y gestiona la expansión de mercados. Con liderazgo ético e innovador, coordina equipos, promueve crecimiento sostenible y competitividad.",
+    "areas": [
+      "Estrategia comercial y marketing digital",
+      "Innovación y transformación digital",
+      "Gestión financiera estratégica",
+      "Comercio internacional",
+      "Liderazgo y coordinación de equipos",
+      "Ética, sostenibilidad y responsabilidad social"
+    ],
+    "trabajo": [
+      "Empresas industriales",
+      "Compañías de retail",
+      "Startups",
+      "Agencias de marketing",
+      "Entidades financieras",
+      "Exportadoras e importadoras",
+      "Entidades públicas y privadas",
+      "Organismos internacionales"
+    ]
+  },
+  {
+    "nombre": "Ingeniería de Sistemas e Innovación Digital",
+    "url": "https://unifranz.edu.bo/carreras/ingenieria-de-sistemas-e-innovacion-digital/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años y medio",
+    "perfil": "El Ingeniero de Sistemas e Innovación Digital de UNIFRANZ tiene una sólida formación en inteligencia artificial, análisis de datos, ciberseguridad y cloud computing. Combina competencias técnicas y socioemocionales para liderar procesos de innovación y transformación tecnológica con pensamiento crítico, creatividad y gestión ágil. Actúa con ética, inclusión y responsabilidad digital, aportando al desarrollo sostenible. Su adaptabilidad le permite resolver desafíos con soluciones innovadoras y liderar equipos multidisciplinarios comprometidos con el bienestar social.",
+    "areas": [
+      "Producción de sistemas",
+      "Control de calidad y testeo de software",
+      "Redes y comunicaciones",
+      "Innovación tecnológica",
+      "Inteligencia numérica"
+    ],
+    "trabajo": [
+      "Empresas tecnológicas",
+      "Entidades financieras digitales",
+      "Compañías de telecomunicaciones y servicios digitales",
+      "Instituciones educativas y de investigación",
+      "Organizaciones públicas",
+      "Consultoras en transformación tecnológica",
+      "Corporaciones multinacionales",
+      "Emprendimientos y startups"
+    ]
+  },
+  {
+    "nombre": "Ingeniería Económica y Financiera",
+    "url": "https://unifranz.edu.bo/carreras/ingenieria-economica-y-financiera/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Ingeniería Económica y Financiera de UNIFRANZ es analítico y estratégico convierte datos en decisiones de alto impacto. Integra econometría, IA, big data y blockchain para modelar escenarios, gestionar riesgos e inversiones y diseñar políticas públicas. Lidera proyectos con visión global y ética, incorporando criterios ESG y ODS. Actúa en sectores públicos y privados, fortaleciendo la estabilidad, competitividad y el desarrollo sostenible en contextos dinámicos e internacionales.",
+    "areas": [
+      "Gestión de riesgos financieros",
+      "Innovación e inversión sostenible",
+      "Políticas y transformación digital"
+    ],
+    "trabajo": [
+      "Fintech y mercado de valores",
+      "Entidades financieras",
+      "Gestoras de fondos",
+      "Consultoras y firmas de auditoría",
+      "Empresas públicas y privadas",
+      "Organismos internacionales y multilaterales",
+      "Startups"
+    ]
+  },
+  {
+    "nombre": "Medicina",
+    "url": "https://unifranz.edu.bo/carreras/medicina/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "6 años",
+    "perfil": "El profesional de Medicina de UNIFRANZ es un experto clínico, ético y humanista que integra ciencia y tecnología para cuidar con calidad y seguridad. Domina las disciplinas troncales, comunica con empatía y decide con Medicina Basada en Evidencia. Usa salud digital, telemedicina e IA clínica para prevenir, diagnosticar y tratar, gestionando información con rigor. Lidera equipos interprofesionales, investiga y promueve equidad y sostenibilidad, asegurando continuidad de cuidados en todos los niveles.",
+    "areas": [
+      "Ciencias Biomédicas y Morfofisiología",
+      "Transformación Digital",
+      "Gestión en Salud Pública, Prevención y Seguridad del Paciente",
+      "Investigación Clínica y Medicina Basada en Datos",
+      "Especialidades Médicas Clínicas"
+    ],
+    "trabajo": [
+      "Hospitales, clínicas y centros de atención integral",
+      "Redes de Atención Primaria y programas de salud familiar",
+      "Servicios de emergencia, UCI y quirófano",
+      "Institutos de investigación, universidades y centros de simulación",
+      "Ministerios, seguros de salud y entidades reguladoras",
+      "ONG, organismos internacionales y proyectos de cooperación",
+      "Empresas de salud digital, telemedicina e inteligencia de datos clínicos",
+      "Programas de salud ocupacional y bienestar corporativo"
+    ]
+  },
+  {
+    "nombre": "Negocios y Gestión Empresarial",
+    "url": "https://unifranz.edu.bo/carreras/negocios-y-gestion-empresarial/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Negocios y Gestión Empresarial de UNIFRANZ es capaz de liderar la transformación organizacional en entornos cambiantes. Une pensamiento crítico y liderazgo con competencias digitales, metodologías ágiles y analítica de datos para tomar decisiones basadas en evidencia. Diseña modelos de negocio sostenibles, impulsa la innovación y coordina equipos multidisciplinarios, creando valor económico, social y ambiental en escenarios de alta tecnología y competitividad global.",
+    "areas": [
+      "Gestión empresarial",
+      "Gestión operacional ágil y cadenas de valor",
+      "Transformación digital y automatización empresarial",
+      "Emprendimiento e innovación",
+      "Marketing estratégico y experiencias digitales",
+      "Estrategia y liderazgo transformacional"
+    ],
+    "trabajo": [
+      "Empresas industriales",
+      "Startups",
+      "Instituciones financieras",
+      "Consultoras de estrategia, datos y procesos",
+      "Empresas de tecnología",
+      "Entidades públicas"
+    ]
+  },
+  {
+    "nombre": "Odontología",
+    "url": "https://unifranz.edu.bo/carreras/odontologia/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "5 años",
+    "perfil": "El profesional de Odontología de UNIFRANZ es un experto clínico, ético e innovador que integra diagnóstico digital, planificación 3D y técnicas mínimamente invasivas para prevenir y tratar con evidencia. Interpreta datos clínicos para personalizar terapias, selecciona biomateriales de alto desempeño y garantiza seguridad del paciente. Lidera equipos, comunica con empatía y gestiona la práctica con enfoque empresarial y sostenible, aportando a la salud bucal y al bienestar comunitario.",
+    "areas": [
+      "Fundamentos Biológicos y Diagnóstico Clínico",
+      "Clínica Integral y Rehabilitación Avanzada",
+      "Tecnología Digital e Innovación",
+      "Gestión, Liderazgo y Responsabilidad Social"
+    ],
+    "trabajo": [
+      "Clínicas y consultorios odontológicos integrales",
+      "Centros de especialidades y rehabilitación oral",
+      "Hospitales y servicios de salud pública",
+      "Laboratorios dentales y de biomateriales",
+      "Empresas de tecnología dental, imagen y CAD/CAM",
+      "Programas comunitarios y ONG de salud bucal",
+      "Universidades, centros de investigación y simulación clínica",
+      "Startups y emprendimientos de salud y teleodontología"
+    ]
+  },
+  {
+    "nombre": "Psicología",
+    "url": "https://unifranz.edu.bo/carreras/psicologia/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Psicología de UNIFRANZ tiene un compromiso con el bienestar humano, es capaz de comprender, diagnosticar e intervenir en problemáticas psicológicas y sociales complejas en los niveles individual, familiar y comunitario. Su formación combina conocimiento científico, competencias prácticas, digitales y éticas, orientadas al liderazgo, la innovación y el pensamiento crítico. Se distingue por su sensibilidad, visión transformadora y compromiso con la mejora de la calidad de vida y la sostenibilidad social.",
+    "areas": [
+      "Procesos cognitivos, neurociencia y evaluación psicológica",
+      "Psicología clínica y de salud",
+      "Psicología social, organizacional y del bienestar",
+      "Psicología educativa, desarrollo humano y aprendizaje",
+      "Ciencia psicológica, tecnología e investigación aplicada"
+    ],
+    "trabajo": [
+      "Clínicas, hospitales y centros de salud mental",
+      "Instituciones educativas y universidades",
+      "Organizaciones públicas y privadas",
+      "Consultoras de recursos humanos o bienestar organizacional",
+      "Centros de investigación y desarrollo psicológico",
+      "Proyectos sociales y comunitarios",
+      "Plataformas digitales de salud mental",
+      "Programas de formación y desarrollo personal"
+    ]
+  },
+  {
+    "nombre": "Publicidad y Marketing",
+    "url": "https://unifranz.edu.bo/carreras/publicidad-y-marketing/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Publicidad y Marketing de UNIFRANZ integra creatividad, estrategia y tecnología. Diseña experiencias centradas en el consumidor, lidera campañas multicanal y convierte datos en decisiones con analítica, IA y automatización. Gestiona marcas y productos, define pricing y canales, y optimiza la experiencia de compra. Con visión global, ética y enfoque sostenible, impulsa innovación, colabora en equipos interdisciplinarios y lidera la transformación digital en entornos competitivos.",
+    "areas": [
+      "Fundamentos de gobernanza de marca y estrategia competitiva global",
+      "Analítica de datos, innovación y futuros posibles",
+      "Experiencias inmersivas y tecnologías emergentes",
+      "Growth marketing digital IA y automatización",
+      "Gestión de proyectos y liderazgo colaborativo",
+      "Smart data y ética universal"
+    ],
+    "trabajo": [
+      "Agencias de publicidad, medios y branding",
+      "Empresas de consumo masivo, retail y servicios",
+      "Startups y compañías tech",
+      "E-commerce y marketplaces",
+      "Medios digitales, streaming y productoras",
+      "Entidades bancarias",
+      "Entidades públicas y privadas"
+    ]
+  },
+  {
+    "nombre": "Turismo y Hotelería",
+    "url": "https://unifranz.edu.bo/carreras/turismo-y-hoteleria/",
+    "sedes": [
+      "Cochabamba",
+      "El Alto",
+      "La Paz",
+      "Santa Cruz"
+    ],
+    "duracion": "4 años",
+    "perfil": "El profesional de Turismo y Hotelería de UNIFRANZ es un líder innovador capaz de transformar el sector turístico mediante la gestión sostenible, el diseño de experiencias vivenciales y la promoción del desarrollo local. Integra competencias técnicas, gerenciales y digitales para gestionar destinos, proyectos y emprendimientos de Turismo Naranja con enfoque ético y responsable. Su visión estratégica y dominio tecnológico le permiten anticipar tendencias, impulsar la sostenibilidad y fortalecer la competitividad del turismo en contextos globales y cambiantes.",
+    "areas": [
+      "Inteligencia de destinos y planificación",
+      "Sostenibilidad y turismo regenerativo",
+      "E-Commerce y marketing",
+      "Hospitality y service excellence",
+      "Negocio, procesos y leadership",
+      "Data e insights para turismo"
+    ],
+    "trabajo": [
+      "Hoteles, resorts y cadenas internacionales",
+      "Agencias de viajes y operadoras de turismo",
+      "Empresas de turismo comunitario o sostenible",
+      "Organismos públicos de promoción turística",
+      "Consultoras y proyectos de innovación turística",
+      "Plataformas digitales y startups turísticas",
+      "Aerolíneas, cruceros y empresas de transporte turístico",
+      "Centros de formación hotelera"
+    ]
+  }
+]
