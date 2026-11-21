@@ -17,3 +17,6 @@ voz/*
 motor/
 modelos/
 capturas/
+
+# Tami: mapa de la memoria (derivado de los datos de Unifranz)
+cerebro/mapa_memoria.*

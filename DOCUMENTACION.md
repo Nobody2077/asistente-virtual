@@ -312,6 +312,35 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
   y la ficha toma su lugar (más grande, el QR fácil de escanear). Sin botón ✕ ni arrastre; se sale con Ctrl+Q.
 - La autoprueba en modo stand abre la ventana **fuera de la pantalla** (1920×1080 en x=-4000) para no tapar la PC.
 
+### 5.12 Saludos con personalidad
+8 invitaciones según la hora («¡Buenos días! ¿Cómo estás? Soy Tami, de Unifranz. ¿Te interesa alguna carrera?
+Puedes preguntarme todo acerca de la Unifranz y te responderé con gusto.» — idea de Juan), sin repetir ninguna de
+las últimas 4, y 3 despedidas. Juan descartó una «frase propia» porque con la voz actual podía sonar a regaño.
+
+### 5.13 Modo expositora: «Así funciona Tami»
+Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo funciona, el camino en clases).
+- **Cómo se activa:** si le preguntan «¿cómo funcionas?», «¿cómo aprendiste?», «explícame el proyecto»…
+  (`PIDE_EXPLICACION` en `tami.js`, no pasa por el modelo), o con **F8** (para el jurado; F8 otra vez la detiene).
+  Si un estudiante le habla en medio, se detiene y lo atiende.
+- **Qué pasa:** abre la ventana `explica.html` (la ÚNICA ventana extra que puede abrir: lista cerrada, nada de
+  programas ni navegador en la feria) y narra 9 escenas con un **guion fijo** (`GUION` en `app.js`), con gestos:
+  0 equipo (Juan Cristian Yujra Quispe y Brayan Quispe Mamani) · 1 leer la web · 2 limpiar · 3 pedazos ·
+  4 vectores · 5 buscar · 6 responder (la cadena de la pizarra) · 7 camino en clases · 8 resultados. ~2,5 min.
+- **Todo lo que se ve es real:** el texto de la página de Becas (con su aviso de cookies como basura de verdad;
+  el % de basura se mide en vivo), las **535 rutas y tamaños** de lo que recolectó Crawl4AI (`explica-datos.js`),
+  y la **galaxia de 8093 pedazos** con sus vecinos verdaderos.
+- **El «recolector»** (pedido de Juan): a la derecha, las palabras leídas vuelan hacia él, anota cada documento y
+  su tanque se llena; al limpiar, registra qué basura quitó; luego de él salen las tarjetas hacia el motor.
+- **El mapa** (`cerebro/armar_mapa.py`, solo numpy): K-means coseno (48 temas) → MDS clásico de los centros →
+  PCA local de cada tema. Nombres de los temas por su palabra más propia (idea de TF-IDF). La pregunta se dibuja
+  junto a sus 3 vecinos verdaderos (`/ubicar` en el servidor de memoria). 95 % de la memoria son noticias (7713).
+- No se usó la araña de `Practicas\arana_web_crawlers`: es arte de cyohei9907 **sin licencia** → animación propia.
+- **Honestidad** en la escena 7 y en el guion: Qwen, Whisper, Kokoro y e5 ya venían entrenados; el aporte del
+  equipo fue elegirlos, unirlos y darles el conocimiento de Unifranz.
+- Kokoro lee bien los números del guion (probado: Kokoro habla → Whisper escucha → «8093», «384»…).
+- Fotos sin pantalla: `npx electron scripts/foto-explica.js [escenas]`; prueba completa:
+  `npx electron src/tami/main.js --autoprueba "¿cómo funcionas?"`.
+
 - Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
   probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.
 - 🎓 El codo es una **bisagra** que dobla hacia adelante: para saludar (antebrazo hacia ARRIBA) primero hay que
@@ -324,6 +353,8 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
 
 - **Encender:** doble clic en `INICIAR_TAMI.bat`. La primera vez el modelo tarda en cargar (~1 min).
 - **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa (modo stand). Salir: **Ctrl+Q**.
+- **Presentación «Así funciona Tami»:** **F8** (o preguntarle «¿cómo funcionas?»). F8 otra vez la detiene.
+- **Rearmar el mapa de la memoria** (si cambian los datos): `cerebrormar_mapa.py` con el Python portátil.
 - **Mover a Tami:** arrastrar la franja de arriba. **Cerrar:** la ✕ o **Ctrl+Q**.
 - **Ciclo de feria:** si nadie le habla, invita cada 45 s; si un estudiante se queda callado 90 s, se despide y
   empieza de cero para el siguiente.

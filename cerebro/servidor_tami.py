@@ -60,6 +60,58 @@ def dentro_de(url, pregunta, k):
             for d, m, x in zip(r["documents"][0], r["metadatas"][0], r["distances"][0])]
 
 
+# --- El mapa de la memoria (para la animación que explica cómo funciona Tami) -----------------------
+# cerebro/mapa_memoria.json/.npz los arma cerebro/armar_mapa.py. Si no existen, Tami sigue funcionando igual.
+MAPA = None
+
+
+def cargar_mapa():
+    global MAPA
+    if MAPA is None:
+        import numpy as np
+        z = np.load(AQUI / "mapa_memoria.npz")
+        ids = [str(i) for i in z["ids"]]
+        puntos = json.loads((AQUI / "mapa_memoria.json").read_text(encoding="utf-8"))["puntos"]
+        MAPA = {"z": z, "indice": {i: n for n, i in enumerate(ids)}, "xy": np.array([p[:2] for p in puntos])}
+    return MAPA
+
+
+@app.get("/mapa")
+def mapa():
+    archivo = AQUI / "mapa_memoria.json"
+    if not archivo.exists():
+        return jsonify({"error": "falta armar el mapa: cerebro/armar_mapa.py"}), 404
+    return app.response_class(archivo.read_bytes(), mimetype="application/json")
+
+
+@app.post("/ubicar")
+def ubicar():
+    """Dónde cae una pregunta en el mapa y cuáles son sus pedazos más cercanos DE VERDAD (en los 384 números)."""
+    import numpy as np
+    pregunta = str((request.get_json(force=True) or {}).get("pregunta") or "").strip()[:300]
+    if not pregunta:
+        return jsonify({"error": "falta la pregunta"}), 400
+    try:
+        m = cargar_mapa()
+        z = m["z"]
+        with bloqueo:
+            rag._cargar()
+            v = np.array(rag._modelo.embed("query: " + pregunta, truncate=True), dtype=np.float32)
+            v /= np.linalg.norm(v)
+            r = rag._col.query(query_embeddings=[v.tolist()], n_results=5)
+        g = int(np.argmax(z["centros"] @ v))                      # su tema
+        vecinos = [m["indice"][i] for i in r["ids"][0] if i in m["indice"]]
+        # se dibuja JUNTO a sus 3 vecinos más parecidos (en los 384 números está pegada a ellos; el mapa 2D
+        # es una aproximación y a veces la alejaría). Si no hay vecinos, se usa la proyección del tema.
+        xy = (m["xy"][vecinos[:3]].mean(axis=0) + np.array([0.03, -0.03])) if vecinos else \
+            z["pos"][g] + z["ejes"][g] @ (v - z["medias"][g])
+        return jsonify({"x": float(xy[0]), "y": float(xy[1]), "grupo": g, "vecinos": vecinos,
+                        "vector": [round(float(a), 3) for a in v[:8]],
+                        "titulos": [mt.get("titulo", "").split(" | ")[0][:60] for mt in r["metadatas"][0]]})
+    except FileNotFoundError:
+        return jsonify({"error": "falta armar el mapa: cerebro/armar_mapa.py"}), 404
+
+
 @app.get("/estado")
 def estado():
     return jsonify({"listo": listo, "carreras": len(CARRERAS)})

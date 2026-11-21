@@ -19,7 +19,14 @@ const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
 // lo que responde a «¿quién te hizo?» (se puede cambiar con la variable TAMI_CREADOR)
 const CREADOR = process.env.TAMI_CREADOR
-  || 'te creó un estudiante de Unifranz como proyecto para esta feria, con inteligencia artificial que funciona aquí mismo, sin internet';
+  || 'te crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, como proyecto para ' +
+     'esta feria, con inteligencia artificial que funciona aquí mismo, sin internet. Si quieren saber más, ofrece ' +
+     'mostrar cómo funcionas por dentro';
+
+// «¿Cómo funcionas?», «¿cómo aprendiste?», «explícame el proyecto»… → la presentación guiada (escenas + narración
+// fija, ver app.js). No pasa por el modelo: así la explicación es siempre exacta y no inventa nada.
+const PIDE_EXPLICACION = /c[oó]mo (funcionas|trabajas|piensas|aprendiste|te (hicieron|crearon|entrenaron|programaron)|sabes (todo|tanto|eso))|c[oó]mo est[aá]s hecha|qu[eé] (eres|hay) por dentro|tu memoria|expl[ií]ca(me)? (c[oó]mo funcionas|el proyecto|tu proyecto)|de qu[eé] (trata|se trata) (el|este|tu) proyecto|mu[eé]strame c[oó]mo funcionas|modo exposici[oó]n/i;
+const INTRO_EXPLICACION = '¡Con mucho gusto! Mira la pantalla: te muestro cómo funciono por dentro.';
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
 // La RX 590 lee el prompt a ~150 tokens/s: cada token de datos que mandamos es tiempo que el estudiante
@@ -412,6 +419,13 @@ async function calentar() {
 async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, signal = new AbortController().signal } = {}) {
   await cargarCatalogo();
   texto = String(texto).trim().slice(0, 600);
+
+  if (PIDE_EXPLICACION.test(texto)) {
+    onFrase(INTRO_EXPLICACION);
+    conv.historial.push({ role: 'user', content: `El estudiante dice: ${texto}`, texto });
+    conv.historial.push({ role: 'assistant', content: INTRO_EXPLICACION, texto: INTRO_EXPLICACION });
+    return { texto: INTRO_EXPLICACION, mostrar: null, datos: [], accion: 'explicar' };
+  }
 
   let hits = [];
   const carreras = carrerasEnCharla(conv, texto);

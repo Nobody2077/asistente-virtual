@@ -104,6 +104,7 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
       onTexto: (todo) => enviar('tami:texto', todo),
     });
     if (r.mostrar) enviar('tami:mostrar', await armarFicha(r.mostrar));
+    if (r.accion === 'explicar') enviar('tami:explicar'); // «¿cómo funcionas?» → la presentación guiada
     return { ok: true, texto: r.texto };
   } catch (err) {
     if (control.signal.aborted) return { ok: false, cancelado: true };
@@ -132,6 +133,52 @@ ipcMain.handle('tami:reiniciar', () => {
 });
 
 ipcMain.handle('tami:cerrar', () => app.quit());
+
+// --- La ventana «Así funciona Tami» -------------------------------------------------------------------
+// La ÚNICA ventana extra que Tami puede abrir (lista cerrada, como pidió Juan: nada de abrir programas ni el
+// navegador en la feria). Va a la izquierda de Tami; en el stand ocupa la parte izquierda de la pantalla.
+const explicaDatos = require('./explica-datos');
+let ventanaExplica = null;
+let datosExplica = null;
+
+async function abrirExplica() {
+  if (ventanaExplica && !ventanaExplica.isDestroyed()) return ventanaExplica;
+  const { workArea, bounds } = screen.getPrimaryDisplay();
+  const fuera = process.argv.includes('--autoprueba');
+  let lugar;
+  if (fuera) lugar = { x: -4000 - 1700, y: 0, width: 1600, height: 900 };
+  else if (STAND) lugar = { x: bounds.x, y: bounds.y, width: Math.round(bounds.width * 0.6), height: bounds.height };
+  else {
+    const ancho = Math.min(1280, workArea.width - ANCHO_TAMI - 48);
+    const alto = Math.min(Math.round(ancho * 0.5625), workArea.height - 40);
+    lugar = { x: workArea.x + 16, y: workArea.y + workArea.height - alto - 20, width: ancho, height: alto };
+  }
+  ventanaExplica = new BrowserWindow({
+    ...lugar, frame: false, resizable: false, alwaysOnTop: true, skipTaskbar: true, backgroundColor: '#0b0b0b',
+    title: 'Así funciona Tami',
+    webPreferences: { preload: path.join(__dirname, 'explica-preload.js'), backgroundThrottling: false },
+  });
+  ventanaExplica.on('closed', () => { ventanaExplica = null; enviar('tami:explica-cerrada'); });
+  ventanaExplica.webContents.on('console-message', (e) => console.log('[explica]', e.message ?? e));
+  await ventanaExplica.loadFile(path.join(__dirname, 'explica.html'));
+  try {
+    datosExplica ??= await explicaDatos.datosIniciales();
+    ventanaExplica.webContents.send('explica:datos', datosExplica);
+  } catch (err) {
+    console.error('[explica] sin datos del mapa:', err.message); // la presentación igual funciona (sin galaxia)
+  }
+  return ventanaExplica;
+}
+
+ipcMain.handle('tami:explica', async (_e, { accion, n, pregunta } = {}) => {
+  if (accion === 'cerrar') { ventanaExplica?.close(); return; }
+  const v = await abrirExplica();
+  if (accion === 'escena') {
+    const datos = n === 5 ? { pregunta, ubicacion: await explicaDatos.ubicar(pregunta).catch(() => null) } : {};
+    v.webContents.send('explica:escena', { n, datos });
+  }
+});
+ipcMain.handle('explica:cerrar', () => ventanaExplica?.close());
 
 // La página pregunta cómo está el cerebro cuando ELLA está lista (si solo se le avisara, el aviso
 // podía llegar antes de que terminara de cargar el modelo 3D y se perdía).
@@ -166,6 +213,14 @@ async function autoprueba(pregunta) {
   console.log(`[autoprueba] terminó de hablar a los ${((Date.now() - inicio) / 1000).toFixed(1)} s`);
   await espera(1000);
   await foto('3_final'); // con la ficha, si la mostró
+  // si la pregunta abrió la presentación «Así funciona Tami», fotos de las dos ventanas mientras narra
+  for (let i = 0; i < 30 && (await ventana.webContents.executeJavaScript('window.tamiPrueba.explicando()')); i++) {
+    await espera(8000);
+    if (ventanaExplica && !ventanaExplica.isDestroyed()) {
+      fs.writeFileSync(path.join(dir, `app_explica_${String(i).padStart(2, '0')}.png`), (await ventanaExplica.capturePage()).toPNG());
+    }
+    await foto(`4_explicando_${String(i).padStart(2, '0')}`);
+  }
   app.quit();
 }
 

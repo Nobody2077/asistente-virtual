@@ -132,6 +132,7 @@ window.cerebro.estado().then(alEstado);     // si ya estaba listo antes de que c
 async function preguntar(texto) {
   texto = texto.trim();
   if (!texto || pensando) return;
+  if (explicando) pararExplicacion(); // le hablan en medio de la presentación: atiende al estudiante
   voz.callar(); // si estaba hablando, se calla para escuchar
   enCharla = true;
   pensando = true;
@@ -178,8 +179,70 @@ async function despedirse() {
   ultimaActividad = ultimaInvitacion = Date.now();
 }
 
+// --- «Así funciona Tami»: la presentación guiada -------------------------------------------------------
+// Se abre la ventana con la animación y Tami narra cada escena con un guion FIJO (no lo inventa el modelo: así
+// lo que dice del proyecto siempre es exacto). Se activa si le preguntan «¿cómo funcionas?» o con F8 (para
+// cuando llega el jurado). Si un estudiante le habla en medio, se detiene y lo atiende.
+const GUION = [
+  [0, 'Soy Tami, una asistente virtual de orientación vocacional. Me crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, para ayudarte a elegir tu carrera y resolver tus dudas, con voz y sin internet.'],
+  [1, 'Primero tuve que aprender sobre Unifranz. Un programa recolector recorrió la página web de la universidad, página por página, y fue guardando todo su texto: 95 páginas y 440 noticias.'],
+  [2, 'Pero una página web trae mucha basura: menús, avisos de cookies y código. Así que limpiamos el texto y nos quedamos solo con lo que sirve.'],
+  [3, 'Después partimos todo en pedacitos, como fichas de estudio. En total, 8093 pedazos.'],
+  [4, 'Cada pedazo pasa por un modelo que lo convierte en 384 números: un vector que representa su significado. Los pedazos que hablan de lo mismo quedan cerca, como estrellas de una misma constelación. Esa galaxia es mi memoria.'],
+  [5, 'Cuando me preguntas algo, por ejemplo si hay becas, convierto tu pregunta en vector y busco los pedazos más cercanos. Por eso te respondo con datos reales de Unifranz, y no invento.'],
+  [6, 'Con esos pedazos, mi cerebro, un modelo de lenguaje llamado Qwen, escribe la respuesta aquí mismo, sin internet. Whisper me permite escucharte, Kokoro me da la voz, y este cuerpo mueve la boca y las manos mientras hablo.'],
+  [7, 'Este proyecto es el resultado de lo que aprendimos en clases: redes neuronales con imágenes, limpieza de datos y Google Colab. Los modelos de lenguaje y de voz ya venían entrenados; nuestro trabajo fue elegirlos, unirlos y darles el conocimiento de Unifranz.'],
+  [8, 'Y estos son mis resultados: empiezo a responder en unos dos segundos, pasé un examen con 34 estudiantes de prueba, y funciono sin internet. ¿Quieres probarme? ¡Pregúntame lo que quieras!'],
+];
+let explicando = false;
+const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// dice un texto frase por frase (con sus gestos) y espera a que termine de sonar
+async function decirYEsperar(texto) {
+  const frases = texto.match(/[^.!?¿¡]*[¡¿]?[^.!?]*[.!?]+/g) || [texto];
+  for (const f of frases.map((x) => x.trim()).filter(Boolean)) {
+    const g = gestoPara(f);
+    voz.decir(f, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
+  }
+  await pausa(300);
+  while (explicando && voz.hablando) await pausa(150);
+}
+
+async function explicarme() {
+  if (explicando) return;
+  explicando = true;
+  enCharla = true;
+  cerrarFicha();
+  avatar.gesto('presentar');
+  try {
+    for (const [n, texto] of GUION) {
+      if (!explicando) break;
+      await window.cerebro.explica({ accion: 'escena', n, pregunta: '¿hay becas?' });
+      mostrarBurbuja(texto);
+      ultimaActividad = Date.now();
+      await decirYEsperar(texto);
+      if (!explicando) break;
+      await pausa(n === 4 || n === 5 ? 1800 : 700); // un respiro para mirar la galaxia y la búsqueda
+    }
+  } finally {
+    const termino = explicando;
+    explicando = false;
+    ultimaActividad = Date.now();
+    if (termino) setTimeout(() => !explicando && window.cerebro.explica({ accion: 'cerrar' }), 25_000); // dejarla a la vista un rato
+  }
+}
+
+function pararExplicacion() {
+  explicando = false;
+  voz.callar();
+  window.cerebro.explica({ accion: 'cerrar' });
+}
+
+window.cerebro.alExplicar(() => explicarme());
+window.cerebro.alExplicaCerrada(() => { if (explicando) { explicando = false; voz.callar(); } });
+
 setInterval(() => {
-  if (voz.hablando || pensando || entrada.value || escuchando) return;
+  if (voz.hablando || pensando || entrada.value || escuchando || explicando) return;
   const ahora = Date.now();
   if (enCharla && ahora - ultimaActividad > DESPEDIRSE_TRAS) despedirse();
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
@@ -204,6 +267,7 @@ let apretadoEn = 0;
 
 async function empezarAEscuchar() {
   if (escuchando || pensando) return;
+  if (explicando) pararExplicacion();
   voz.callar(); // si estaba hablando, se calla para escuchar
   try {
     await oido.empezar();
@@ -249,6 +313,8 @@ microfono.addEventListener('pointerup', () => {
 });
 window.addEventListener('keydown', (e) => {
   if (e.key === 'F2' && !e.repeat) { e.preventDefault(); escuchando ? terminarDeEscuchar() : empezarAEscuchar(); }
+  // F8: la presentación «Así funciona Tami» (para cuando se acerca el jurado); otra vez F8 la detiene
+  if (e.key === 'F8' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : explicarme(); }
 });
 // se habilita cuando el servidor de voz dice que el oído (Whisper) cargó
 (async function esperarOido() {
@@ -267,6 +333,8 @@ entrada.focus();
 // para la autoprueba (main.js --autoprueba): preguntar sin teclado y saber qué está pasando
 window.tamiPrueba = {
   preguntar,
+  explicarme,
+  explicando: () => explicando,
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };
