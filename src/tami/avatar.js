@@ -30,7 +30,7 @@ function vestir(vrm, uniforme) {
 // --- La credencial ---------------------------------------------------------------------------------
 // Una tarjeta dibujada en un <canvas> (texto con los colores de Unifranz, NO una copia del logo oficial) colgada
 // de un cordón. Va pegada al hueso del pecho: se mueve con ella cuando respira.
-function dibujarCredencial({ nombre = 'TAMI', cargo = 'Orientadora virtual', marca = 'UNIFRANZ' } = {}) {
+function dibujarCredencial({ nombre = 'TAMI', cargo = 'Ing. de Sistemas', marca = 'UNIFRANZ' } = {}) {
   const c = document.createElement('canvas');
   c.width = 300; c.height = 420;
   const g = c.getContext('2d');

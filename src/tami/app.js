@@ -187,7 +187,7 @@ async function despedirse() {
 // lo que dice del proyecto siempre es exacto). Se activa si le preguntan «¿cómo funcionas?» o con F8 (para
 // cuando llega el jurado). Si un estudiante le habla en medio, se detiene y lo atiende.
 const GUION = [
-  [0, 'Soy Tami, una asistente virtual de orientación vocacional. Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, para ayudarte a elegir tu carrera y resolver tus dudas, con voz y sin internet.'],
+  [0, 'Soy Tami, la orientadora virtual de Ingeniería de Sistemas e Innovación Digital. Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, para contarte todo sobre la carrera y resolver tus dudas, con voz y sin internet.'],
   [1, 'Primero tuve que aprender sobre Unifranz. Un programa recolector recorrió la página web de la universidad, página por página, y fue guardando todo su texto: 95 páginas y 440 noticias.'],
   [2, 'Pero una página web trae mucha basura: menús, avisos de cookies y código. Así que limpiamos el texto y nos quedamos solo con lo que sirve.'],
   [3, 'Después partimos todo en pedacitos, como fichas de estudio. En total, 8093 pedazos.'],
@@ -195,7 +195,7 @@ const GUION = [
   [5, 'Cuando me preguntas algo, por ejemplo si hay becas, convierto tu pregunta en vector y busco los pedazos más cercanos. Por eso te respondo con datos reales de Unifranz, y no invento.'],
   [6, 'Con esos pedazos, mi cerebro, un modelo de lenguaje llamado Qwen, escribe la respuesta aquí mismo, sin internet. Whisper me permite escucharte, Kokoro me da la voz, y este cuerpo mueve la boca y las manos mientras hablo.'],
   [7, 'Este proyecto es el resultado de lo que aprendimos en clases: redes neuronales con imágenes, limpieza de datos y Google Colab. Los modelos de lenguaje y de voz ya venían entrenados; nuestro trabajo fue elegirlos, unirlos y darles el conocimiento de Unifranz.'],
-  [8, 'Y estos son mis resultados: empiezo a responder en unos dos segundos, pasé un examen con 34 estudiantes de prueba, y funciono sin internet. ¿Quieres probarme? ¡Pregúntame lo que quieras!'],
+  [8, 'Y estos son mis resultados: empiezo a responder en unos tres segundos, pasé un examen con 46 estudiantes de prueba, y funciono sin internet. ¿Quieres probarme? ¡Pregúntame lo que quieras!'],
 ];
 let explicando = false;
 const pausa = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -3,9 +3,10 @@
 **Asistente Virtual Conversacional Basado en Modelos de Lenguaje y Síntesis de Voz en Tiempo Real para la
 Orientación Vocacional y Atención al Postulante de UNIFRANZ.**
 
-Tami es una orientadora virtual con **avatar 3D** que conversa con los postulantes **por voz o por teclado**, les
-recomienda carreras según sus gustos y responde con **datos reales de Unifranz** (becas, sedes, contactos,
-carreras). Todo corre **en la propia PC, sin internet**: el modelo de lenguaje, la búsqueda en la memoria (RAG),
+Tami es la orientadora virtual de la carrera de **Ingeniería de Sistemas e Innovación Digital**: una asistente
+con **avatar 3D** que conversa con los postulantes **por voz o por teclado**, les cuenta todo sobre la carrera,
+descubre con ellos si va con sus gustos y responde con **datos reales de Unifranz** (becas, admisión, sedes,
+contactos). Todo corre **en la propia PC, sin internet**: el modelo de lenguaje, la búsqueda en la memoria (RAG),
 la voz y el reconocimiento de voz.
 
 **Equipo:** Juan Cristian Yujra · Brayan Quispe Mamani
@@ -36,10 +37,12 @@ la voz y el reconocimiento de voz.
 
 - 🗣️ **Conversa** con voz femenina (Kokoro) y **mueve la boca** al hablar; muestra subtítulos.
 - 🎤 **Escucha** por micrófono (Whisper) o por teclado (en la feria hay mucho ruido).
-- 🎓 **Orienta**: pregunta qué te gusta y recomienda carreras del catálogo real (17 carreras).
+- 🎓 **Orienta sobre Ingeniería de Sistemas**: qué se aprende, sus dos menciones (IA y Ciencia de Datos;
+  Ciberseguridad y Blockchain), dónde se trabaja y cómo se gradúa. Si te gusta la tecnología, lo relaciona con la
+  carrera; si no, es honesta. Las otras carreras de Unifranz las nombra y te deriva a Admisiones.
 - 📚 **Responde con datos de Unifranz** buscando en 8093 pedazos de la web oficial (RAG). No inventa cuotas,
   horarios ni sueldos: si no sabe, deriva a admisiones.
-- 📇 **Ficha con QR** de cada carrera, para llevarse la información en el celular.
+- 📇 **Ficha con QR** de la carrera (y de páginas como Becas o Admisiones), para llevársela en el celular.
 - 👋 **Toma la iniciativa**: invita a acercarse cada 45 s y se despide si el estudiante se va.
 - 🧑‍🏫 **Modo expositora** (F8 o «¿cómo funcionas?»): explica en 9 escenas cómo está hecha.
 - 🔒 **Modo feria**: pantalla completa que no se cierra con Alt+F4 y se levanta sola si se cae.

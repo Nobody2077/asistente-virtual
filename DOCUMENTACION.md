@@ -11,12 +11,15 @@
 
 *(última actualización: sábado 21 de noviembre de 2026)*
 
+- 🎯 **Desde el 21/11 Tami es la orientadora de INGENIERÍA DE SISTEMAS E INNOVACIÓN DIGITAL** (pedido del
+  ingeniero, sección 5.18). Las otras 16 carreras solo se nombran y se derivan a Admisiones.
 - ✅ Tami conversa, orienta, responde con datos de Unifranz, **habla con voz y mueve la boca**.
 - ✅ Se cambió LM Studio por `llama-server` (decisión 9) y **ya está medido** (sección 5.5): más rápido; RAM
   parecida → probar `--no-mmap` (pendiente 1).
 - ✅ **Examen de feria** (`scripts\examen-feria.js`, 34 estudiantes con trampas) corrido y corregido (sección 5.6):
   ya no inventa cuotas, horarios ni sueldos; responde «¡Waliki!» al aymara; no repite teléfonos.
-  Última corrida: **33 de 34 bien** (falla el caso 13, Veterinaria: 69 palabras y recomienda Sistemas; pendiente).
+  Ahora son **46 casos** (con Sistemas y «otras carreras»); última corrida: **1/46 🚩** (solo una respuesta de
+  65 palabras), mediana 1.ª frase 3,2 s. Veterinaria ya responde bien (5.18).
 - ✅ Hechas para la presentación: **micrófono con Whisper** (5.8; arreglado el 21/11: grababa el micrófono
   virtual de iVCam), **ficha con QR** (5.9), **8 gestos** (5.10), **credencial y modo stand** (5.11),
   **saludos con personalidad** (5.12), **presentación «Así funciona Tami»** con F8 (5.13) e **íconos SVG** (5.14).
@@ -436,6 +439,31 @@ siempre al lado de la PC.
 - **Hallado en la prueba (no es por la limpieza):** a «¿qué carreras de ingeniería hay?» respondió con
   Enfermería e Ingeniería Comercial mezcladas en la lista → pendiente.
 
+### 5.18 Solo Ingeniería de Sistemas (21/11)
+El ingeniero pidió centrarse **solo en Ingeniería de Sistemas e Innovación Digital**. Juan eligió: Sistemas a
+fondo, las demás carreras **se nombran y se derivan a Admisiones**; becas, admisión y contactos se quedan; Tami
+se presenta como orientadora de Sistemas.
+- **Ficha completa en la personalidad** (`fichaSistemas()` en `tami.js`): perfil, duración, sedes, áreas,
+  dónde trabajar (de `carreras.json`) + competencias, **dos menciones** (IA y Ciencia de Datos; Ciberseguridad y
+  Blockchain), modalidades de graduación y «la malla no la tienes: muestra el QR» (copiado de la página oficial).
+- **Sin búsqueda para preguntas de la carrera:** el tema `'FICHA'` en `TEMAS` evita el RAG (la ficha ya está):
+  ~2,5 s en vez de 4-10 s. Becas/requisitos/sedes siguen buscando en la memoria.
+- **Otras carreras:** `bloqueFichas()` las marca «no la expliques, deriva»; en pantalla se muestra Admisiones
+  en vez de la carrera (`mostrarCarrera()`).
+- **Carreras que NO existen** (`NO_EXISTEN`: Veterinaria, Ing. Civil, Nutrición, Industrial…): se le pasa el
+  dato exacto «Unifranz NO tiene X». Solo con la regla «no inventes», el 9B decía «Unifranz tiene Veterinaria».
+  «¿Tienen Informática/Computación/Software?» → la lleva a Sistemas.
+- **Celular o correo del estudiante → respuesta fija** (`DA_SUS_DATOS`): en una corrida el 9B respondió
+  «mi número es 71234567». Ahora ni pasa por el modelo y el número no queda en el historial.
+- Reglas nuevas: nunca decir que Unifranz «solo tiene» Sistemas (dijo eso con Nutrición); no prometer cosas que la
+  ficha no nombra (dijo «aprenderás a diseñar videojuegos»); no decir «DATOS DE UNIFRANZ»; tutear con «tú», sin
+  voseo («titulás»); responder de verdad «¿es difícil? soy malo en mate».
+- **Lo visible:** invitaciones y despedidas de Sistemas, cartel «¿Te gusta la tecnología?», placa y credencial
+  «Ing. de Sistemas», portada y guion del modo expositora (y sus números: 46 casos, ~3 s).
+- **Examen:** 46 casos (9 de Sistemas, 6 de otras carreras, 4 de carreras inexistentes) y alarmas nuevas
+  (instrucciones filtradas, «solo tenemos Sistemas», carrera inventada, qué se mostró en pantalla).
+  Resultado: **1/46 🚩** (una respuesta de 65 palabras, contenido correcto). `probar-feria.js`: TODO BIEN.
+
 ---
 
 ## 6. Cómo usar
@@ -465,8 +493,8 @@ siempre al lado de la PC.
 
 ## 7. Pendientes (en orden)
 
-0. **«¿Qué carreras de ingeniería hay?»** mete Enfermería en la lista (5.17): darle la lista cerrada de
-   ingenierías desde `carreras.json` en vez de dejar que el modelo la arme.
+0. ~~«¿Qué carreras de ingeniería hay?» metía Enfermería~~: ya no aplica, ahora Tami no lista ni explica otras
+   carreras (5.18).
 
 1. Probar `llama-server --no-mmap` para bajar la RAM (necesita que Juan lo encienda: el sistema no deja que
    Claude ejecute ese `.exe`).
