@@ -6,6 +6,7 @@
 
 import { crearAvatar } from './avatar.js';
 import { Voz } from './voz.js';
+import { Oido } from './oido.js';
 
 const INVITAR_CADA = 45_000;      // ms sin nadie → invita
 const DESPEDIRSE_TRAS = 90_000;   // ms sin respuesta en medio de una charla → se despide y reinicia
@@ -39,6 +40,8 @@ function ocultarLuego(ms = 12_000) {
   ocultarBurbuja = setTimeout(() => burbuja.classList.add('oculta'), ms);
 }
 const PENSANDO = '<span class="pensando"><span></span><span></span><span></span></span>';
+// lo que escribe o dice el estudiante nunca se mete como HTML tal cual (alguien podría escribir <img …>)
+const escaparHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // --- conversación --------------------------------------------------------------------------------
 let enCharla = false;       // ¿hay un estudiante conversando ahora?
@@ -72,8 +75,8 @@ async function preguntar(texto) {
   enCharla = true;
   pensando = true;
   ultimaActividad = Date.now();
-  mostrarBurbuja(texto, { estudiante: true });
-  setTimeout(() => pensando && !voz.hablando && mostrarBurbuja(PENSANDO, { html: true }), 700);
+  // lo que dijo (o lo que Whisper entendió) + los puntitos de «pensando», hasta que ella empiece a responder
+  mostrarBurbuja(`${escaparHtml(texto)} ${PENSANDO}`, { estudiante: true, html: true });
   avatar.emocion('relaxed', 0.2);
   avatar.mirar(0.25, 0.35); // mira hacia arriba, como quien piensa
   try {
@@ -107,7 +110,7 @@ async function despedirse() {
 }
 
 setInterval(() => {
-  if (voz.hablando || pensando || entrada.value) return;
+  if (voz.hablando || pensando || entrada.value || escuchando) return;
   const ahora = Date.now();
   if (enCharla && ahora - ultimaActividad > DESPEDIRSE_TRAS) despedirse();
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
@@ -121,6 +124,70 @@ $('barra').addEventListener('submit', (e) => {
   preguntar(texto);
 });
 entrada.addEventListener('input', () => { ultimaActividad = Date.now(); });
+
+// --- micrófono -----------------------------------------------------------------------------------
+// Dos formas de usarlo: MANTENER presionado y soltar al terminar, o TOCAR una vez y tocar otra vez para terminar
+// (más fácil para quien está nervioso). F2 hace lo mismo desde el teclado.
+const microfono = $('microfono');
+const oido = new Oido({ alNivel: (v) => microfono.style.setProperty('--nivel', v.toFixed(2)) });
+let escuchando = false;
+let apretadoEn = 0;
+
+async function empezarAEscuchar() {
+  if (escuchando || pensando) return;
+  voz.callar(); // si estaba hablando, se calla para escuchar
+  try {
+    await oido.empezar();
+  } catch (err) {
+    estado.textContent = 'No encuentro el micrófono: escríbeme 🙂';
+    console.log('[oido] micrófono:', err.message);
+    return;
+  }
+  escuchando = true;
+  ultimaActividad = Date.now();
+  microfono.classList.add('escuchando');
+  mostrarBurbuja('Te escucho… <span class="pensando"><span></span><span></span><span></span></span>', { html: true, estudiante: true });
+  avatar.mirar(0, 0);
+  avatar.emocion('surprised', 0.15); // cejas un poco arriba: atenta
+}
+
+async function terminarDeEscuchar() {
+  if (!escuchando) return;
+  escuchando = false;
+  microfono.classList.remove('escuchando');
+  avatar.emocion('relaxed', 0.3);
+  try {
+    const texto = await oido.terminar();
+    if (texto) preguntar(texto);
+    else mostrarBurbuja('No te escuché bien 🙈 ¿Me lo repites o me lo escribes?');
+  } catch (err) {
+    console.log('[oido] whisper:', err.message);
+    mostrarBurbuja('Uy, mi oído falló. ¿Me lo escribes?');
+  }
+  ocultarLuego();
+}
+oido.alLimite = terminarDeEscuchar; // 15 s como máximo
+
+microfono.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  apretadoEn = Date.now();
+  if (escuchando) terminarDeEscuchar(); else empezarAEscuchar();
+});
+microfono.addEventListener('pointerup', () => {
+  // si lo mantuvo apretado más de medio segundo, soltar = terminar (modo «mantener»)
+  if (escuchando && Date.now() - apretadoEn > 500) terminarDeEscuchar();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F2' && !e.repeat) { e.preventDefault(); escuchando ? terminarDeEscuchar() : empezarAEscuchar(); }
+});
+// se habilita cuando el servidor de voz dice que el oído (Whisper) cargó
+(async function esperarOido() {
+  try {
+    const r = await fetch('http://127.0.0.1:8767/estado');
+    if ((await r.json()).oido) { microfono.disabled = false; return; }
+  } catch { /* la voz aún no enciende */ }
+  setTimeout(esperarOido, 3000);
+})();
 $('cerrar').addEventListener('click', () => window.cerebro.cerrar());
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key.toLowerCase() === 'q') window.cerebro.cerrar();
@@ -130,5 +197,6 @@ entrada.focus();
 // para la autoprueba (main.js --autoprueba): preguntar sin teclado y saber qué está pasando
 window.tamiPrueba = {
   preguntar,
+  escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent }),
 };

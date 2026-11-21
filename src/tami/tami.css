@@ -110,3 +110,11 @@ html, body {
   background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; opacity: .25;
 }
 #cerrar:hover { opacity: 1; }
+
+/* --- micrófono: anillo naranja que late con el volumen de la voz ---------------------------------- */
+#microfono { --nivel: 0; transition: box-shadow .08s linear, transform .1s; touch-action: none; }
+#microfono.escuchando {
+  background: #e02b2b !important;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 calc(4px + var(--nivel) * 14px) rgba(255, 90, 26, .45);
+}

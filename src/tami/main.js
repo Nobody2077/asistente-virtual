@@ -8,11 +8,18 @@
 // Uso:  npx electron src/tami/main.js        (con LM Studio, servidor_tami.py y servidor_voz.py encendidos)
 
 const path = require('node:path');
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, session } = require('electron');
 const tami = require('../main/tami');
 
 // Tami habla sola (invita a quien pasa) sin que nadie haya tocado la pantalla antes
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
+// --oido-falso archivo.wav: el micrófono «escucha» ese archivo (para probar Whisper sin hablarle de verdad)
+const OIDO_FALSO = (() => { const i = process.argv.indexOf('--oido-falso'); return i > 0 ? path.resolve(process.argv[i + 1]) : null; })();
+if (OIDO_FALSO) {
+  app.commandLine.appendSwitch('use-fake-device-for-media-stream');
+  app.commandLine.appendSwitch('use-file-for-fake-audio-capture', OIDO_FALSO);
+}
 
 let ventana = null;
 let conversacion = tami.nuevaConversacion();
@@ -104,7 +111,13 @@ async function autoprueba(pregunta) {
   await espera(9000); // que termine la invitación
   await foto('1_invitando');
   const inicio = Date.now();
-  ventana.webContents.executeJavaScript(`window.tamiPrueba.preguntar(${JSON.stringify(pregunta)})`);
+  if (OIDO_FALSO) {
+    // «habla» por el micrófono falso unos segundos (el WAV) y suelta el botón
+    await ventana.webContents.executeJavaScript('window.tamiPrueba.escuchar(4500)');
+    console.log('[autoprueba] Whisper oyó:', await ventana.webContents.executeJavaScript('window.tamiPrueba.estado().burbuja'));
+  } else {
+    ventana.webContents.executeJavaScript(`window.tamiPrueba.preguntar(${JSON.stringify(pregunta)})`);
+  }
   for (const ms of [1500, 4000, 7000, 11000]) {
     await espera(ms - (Date.now() - inicio));
     await foto(`2_${String(ms).padStart(5, '0')}ms`);
@@ -115,6 +128,9 @@ async function autoprueba(pregunta) {
 }
 
 app.whenReady().then(async () => {
+  // el micrófono: solo se permite «media» (audio) a la página de Tami; nada más (ni cámara de terceros, ni ubicación…)
+  session.defaultSession.setPermissionRequestHandler((_wc, permiso, cb) => cb(permiso === 'media'));
+  session.defaultSession.setPermissionCheckHandler((_wc, permiso) => permiso === 'media');
   crearVentana();
   ventana.webContents.on('console-message', (e) => console.log('[pagina]', e.message ?? e));
   try {

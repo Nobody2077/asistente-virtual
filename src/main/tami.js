@@ -101,8 +101,9 @@ function personalidad() {
     'Trato con las personas:\n' +
       '- Tú eres Tami; el estudiante no. No le digas «Tami», ni «muchacho» o «muchacha»: no adivines si es chico o chica.\n' +
       '- No repitas una pregunta que ya hiciste en esta charla (por ejemplo, qué materias le gustan).\n' +
-      '- Si te saludan en aymara («kamisaki», «kamisaraki») responde «¡Waliki!» con cariño; en quechua («imaynalla») ' +
-      'responde «¡Allillanmi!». Luego sigue en español.\n' +
+      '- SOLO si el estudiante escribe la palabra aymara «kamisaki» o «kamisaraki», responde «¡Waliki!»; SOLO si ' +
+      'escribe la palabra quechua «imaynalla», responde «¡Allillanmi!». A un «hola» normal respóndele en español ' +
+      'normal, sin palabras en aymara ni quechua.\n' +
       '- Si alguien está triste o perdido, primero acoge lo que siente con una o dos frases sinceras y sin apuro; la ' +
       'entrevista puede esperar. Si habla de hacerse daño, dile con calma que hable hoy con un adulto de confianza.\n' +
       '- Si sus papás quieren otra carrera, no te pongas en contra de nadie: valida a ambos y ayúdale a conversarlo.\n' +
@@ -305,6 +306,8 @@ function paraVoz(texto) {
     .replace(/https?:\/\/\S+/g, '')
     .replace(/[*_#`>]/g, '')
     .replace(/\p{Extended_Pictographic}/gu, '')
+    // el modelo a veces dice «¿Cómo estás, muchacho?» aunque la regla lo prohíbe: no adivinamos el género
+    .replace(/,?\s*\b(muchach|chic|amig|herman|hij|mij)[oa]s?\b(?=\s*[!?.,¡¿]|$)/giu, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -360,7 +363,8 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
       `cariño que ese detalle se lo explican en Admisiones de Unifranz, y sigue la conversación.\n\n${datos}`;
   } else if (necesitaDatos(texto)) {
     // se dice YA, mientras busca y piensa; solo ante preguntas («veo videos de cómo funciona…» no lo es)
-    if (/[?¿]|^(qu[eé]|cu[aá]nt|cu[aá]l|c[oó]mo|d[oó]nde|cu[aá]ndo|qui[eé]n|hay|tienen|puedo|se puede)\b/i.test(texto)) {
+    // (por micrófono Whisper a veces no pone «¿?»: «hola, quiero saber si hay becas» también es pregunta)
+    if (/[?¿]|^(qu[eé]|cu[aá]nt|cu[aá]l|c[oó]mo|d[oó]nde|cu[aá]ndo|qui[eé]n|hay|tienen|puedo|se puede)\b|\b(quiero saber|me (puedes|podr[ií]as) decir|dime|si hay|hay|tienen|cu[aá]nt\w*|d[oó]nde|cu[aá]ndo|qui[eé]n)\b/i.test(texto)) {
       onFrase(muletilla(), { muletilla: true });
     }
     try {
