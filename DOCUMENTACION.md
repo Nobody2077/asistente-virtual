@@ -273,6 +273,8 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
 - **Probar sin pantalla:** `npx electron src/tami/main.js --autoprueba "¿hay becas?"` → fotos en `capturas\`.
 - **Probar el cerebro por consola:** `node scripts/probar-tami.js` (o `node scripts/probar-tami.js "pregunta"`).
 - **Examen de feria:** `node scripts/examen-feria.js` (todo, ~5 min) o `node scripts/examen-feria.js trampa` (un tema).
+- **Hablarle:** botón 🎤 (mantener, o tocar y volver a tocar) o **F2**.
+- **Corregir un dato:** agregarlo a `cerebro\datos_confirmados.json` (manda sobre las noticias).
 - **Cambiar la voz:** editar `voz\voz.json` y reiniciar la voz.
 - **Actualizar el catálogo:** `..\windows\python\python.exe cerebro\armar_catalogo.py`.
 
