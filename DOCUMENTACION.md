@@ -27,17 +27,25 @@
   se cae. **Salida secreta: Ctrl+Alt+Shift+Q.** Prueba automática: TODO BIEN.
 - ⏳ Falta que Juan pruebe en su PC: hablarle por el micrófono real, escanear el QR con un celular y abrir
   `TAMI_FERIA.bat` (probar F8, Alt+F4 y la salida secreta con el teclado de verdad).
+- ✅ **En GitHub, público:** <https://github.com/Nobody2077/asistente-virtual> (5.17). Se trabaja con ramas y PR
+  (`CONTRIBUTING.md`); cómo instalar y ejecutar en Windows y Linux está en `README.md`.
+- ⏳ Falta: el **usuario de GitHub de Brayan** (para invitarlo como colaborador) y que él **pruebe los `.sh` en
+  su Linux**.
 - Siguiente, en este orden: **ensayo de 4 h** midiendo
   la RAM (5.15: ya se llenó una vez) → **cerebro de respaldo 3B** → **voz más delicada**.
+- 🧊 **Código congelado desde el martes 24 a las 18:00**: después de eso, solo arreglos urgentes.
 
 ---
 
 ## 1. Qué es Tami
 
 Una orientadora vocacional **humana en 3D** que vive en el escritorio de la PC del stand. Saluda a quien pasa,
-conversa **con voz**, hace una mini entrevista vocacional, recomienda carreras **reales** de Unifranz y responde
-dudas (becas, sedes, requisitos, autoridades) **con datos oficiales de unifranz.edu.bo**, citando de dónde salen.
-Todo corre **en esta PC, sin internet**.
+conversa **con voz** (micrófono o teclado), hace una mini entrevista vocacional y **presenta la carrera de
+Ingeniería de Sistemas e Innovación Digital** (menciones, competencias, dónde se trabaja, cómo titularse). También
+responde dudas generales (becas, sedes, requisitos, autoridades, contactos) **con datos oficiales de
+unifranz.edu.bo**. Si preguntan por otra carrera, confirma que existe y deriva a Admisiones (5.18).
+Muestra una **ficha con QR** para que el estudiante se lleve la información y, con F8, **se explica a sí misma**
+ante el jurado (5.13). Todo corre **en esta PC, sin internet**.
 
 Es distinta de **Capri** (el proyecto anterior de Juan): Capri es una mascota pixel-art cyberpunk; Tami es una
 orientadora humana con los colores de Unifranz. Tami reutiliza el *motor* de Capri, no su cuerpo ni su personalidad.
@@ -50,7 +58,7 @@ orientadora humana con los colores de Unifranz. Tami reutiliza el *motor* de Cap
   ESTUDIANTE                         TAMI (todo en esta PC, sin internet)
  ─────────────                      ──────────────────────────────────────────────────────
  ⌨️ escribe ─────────────────────┐
- 🎤 habla (pendiente: Whisper) ──┤
+ 🎤 habla → Whisper (8767) ──────┤
                                  ▼
               ┌──────────────────────────────────┐   pregunta   ┌──────────────────────────┐
               │ ALMA  src/main/tami.js           │ ───────────► │ MEMORIA DE UNIFRANZ      │
@@ -66,7 +74,7 @@ orientadora humana con los colores de Unifranz. Tami reutiliza el *motor* de Cap
           ┌────────────────────┼──────────────────────────┐
           ▼                    ▼                          ▼
   🔊 VOZ servidor_voz.py   💬 subtítulos            🖥️ [MOSTRAR: carrera]
-     Kokoro (8767) → WAV                               (ficha con QR: pendiente)
+     Kokoro (8767) → WAV                               ficha con QR al lado de Tami
           │
           ▼
   👩 CUERPO src/tami/avatar.js: la boca se abre según el VOLUMEN del audio, parpadea, sonríe, mira
@@ -75,6 +83,16 @@ orientadora humana con los colores de Unifranz. Tami reutiliza el *motor* de Cap
 **El truco del «tiempo real»:** no se espera la respuesta completa. Apenas el modelo termina una frase, se manda a
 la voz; mientras suena, se genera la siguiente. Y si la pregunta necesita buscar datos (5 a 10 s), Tami dice al
 instante una muletilla («Mmm, déjame revisar…») como haría una persona.
+
+**Cuándo busca en la memoria y cuándo no** (`responder()` en `tami.js`):
+| La pregunta es de… | Qué hace | Tiempo |
+|---|---|---|
+| Ingeniería de Sistemas (tema `FICHA`) | usa la ficha que ya tiene en la personalidad, sin buscar | ~2,5 s |
+| becas, requisitos, sedes, autoridades… | busca DENTRO de la página del tema (ruteo por tema) | 3–7 s |
+| otra cosa con datos («¿dónde queda…?») | búsqueda general en los 8093 pedazos | 3–7 s |
+| charla, entrevista, saludo | no busca | 1–2 s |
+| celular o correo del estudiante | **respuesta fija**, ni pasa por el modelo | al instante |
+| «¿cómo funcionas?», «¿quién te hizo?» | guion fijo (modo expositora) | al instante |
 
 ---
 
@@ -87,40 +105,64 @@ G:\Desarrollo\LLMLocalUnifranz\
 ├── datos\md\                  textos originales descargados de unifranz.edu.bo
 ├── modelos\                   e5-small (embeddings) y qwen2.5-3b (futuro respaldo)
 ├── windows\python\            Python 3.12 portátil con Chroma y llama-cpp (lo usa la memoria)
-└── Tami\                      ← ESTE PROYECTO (clon de Capri, rama git «tami»)
-    ├── INICIAR_TAMI.bat       doble clic: enciende las 4 piezas y abre a Tami
-    ├── DOCUMENTACION.md       este archivo
+├── linux\                     (si existe) Python portátil para Linux, en .tar.gz — lo usa INICIAR_TAMI.sh
+└── Tami\                      ← ESTE PROYECTO (clon de Capri; rama git «main»; en GitHub)
+    ├── README.md              para quien llega al repo: qué es, requisitos, instalar y ejecutar (Windows/Linux)
+    ├── CONTRIBUTING.md        cómo trabajamos en equipo (ramas <quien>/<que>, PR, congelado mar 24 18:00)
+    ├── DOCUMENTACION.md       este archivo (la bitácora completa y la fuente de verdad)
+    ├── CREDITOS_CAPRI.md      de dónde viene el motor + aviso obligatorio de la licencia
+    ├── LICENSE                PolyForm Noncommercial 1.0.0 (de Capri, sin tocar)
+    ├── INICIAR_TAMI.bat / .sh doble clic: enciende las 4 piezas y abre a Tami (Windows / Linux)
+    ├── TAMI_FERIA.bat / .sh   lo mismo en modo stand + feria blindado (5.16)
+    ├── config_local.ejemplo.bat / .sh  plantilla para usar OTRO modelo (copiar a config_local.*; no va a git)
+    ├── .gitignore             deja fuera lo pesado y lo privado (modelos, motor, .venv, capturas, config_local)
+    ├── .gitattributes         .bat en CRLF (si no, cmd los rompe); todo lo demás en LF
+    ├── package.json           Electron + three + three-vrm + qrcode; scripts npm (start, stand, feria, examen…)
     ├── avatar\
     │   ├── tami.vrm           modelo 3D (muestra oficial de pixiv, ver Créditos)
     │   └── CREDITOS.txt
     ├── cerebro\
-    │   ├── servidor_tami.py   memoria de Unifranz por HTTP (8766): /buscar, /carreras, /estado
+    │   ├── servidor_tami.py   memoria de Unifranz por HTTP (8766): /buscar, /carreras, /ubicar, /estado
     │   ├── armar_catalogo.py  lee las 17 páginas de carreras → carreras.json
-    │   └── carreras.json      catálogo cerrado (nombre, sedes, duración, perfil, áreas, dónde trabajar)
+    │   ├── carreras.json      catálogo cerrado (nombre, sedes, duración, perfil, áreas, dónde trabajar)
+    │   ├── datos_confirmados.json  datos revisados por personas (directora, contactos); mandan sobre las noticias
+    │   ├── armar_mapa.py      arma el mapa 2D de la memoria para la presentación (5.13)
+    │   └── mapa_memoria.*     el mapa ya calculado — no va a git (se rearma)
     ├── motor\llama-b12198\    llama-server.exe (llama.cpp b12198, Vulkan) — no va a git
     ├── modelos\               Qwen3.5-9B-Q4_K_M.gguf (5,2 GB) — no va a git
     ├── voz\
-    │   ├── servidor_voz.py    voz de Tami (8767): POST /hablar → WAV
+    │   ├── servidor_voz.py    voz (POST /hablar → WAV) y oído (POST /escuchar → texto), puerto 8767
     │   ├── voz.json           qué voz usa (mezcla de voces de Kokoro + tono)
+    │   ├── requirements.txt   versiones exactas de Python para la voz (Linux o un .venv nuevo)
     │   ├── voces_jovenes.py   genera variantes de voz para comparar
     │   ├── probar_voces.py    compara Piper, Kokoro y Microsoft
     │   ├── kokoro\            modelo Kokoro v1.0 (310 MB) — no va a git
+    │   ├── whisper\           Whisper small (464 MB) — no va a git
     │   ├── piper\             Piper (descartado, ver decisión 7) — no va a git
-    │   └── .venv\             Python 3.13 con kokoro-onnx (creado con uv) — no va a git
+    │   └── .venv\             Python 3.13 con kokoro-onnx y faster-whisper (creado con uv) — no va a git
     ├── src\main\
     │   ├── llm.js, ollama.js  conexión con el modelo (lo único que queda de Capri, ver 5.17)
-    │   └── tami.js            ★ el ALMA de Tami (nuevo)
-    ├── src\tami\              ★ el CUERPO de Tami (nuevo)
-    │   ├── main.js            proceso principal de Electron (ventana, IPC, --autoprueba)
+    │   └── tami.js            ★ el ALMA: personalidad, ficha de Sistemas, temas, reglas, RAG, MOSTRAR
+    ├── src\tami\              ★ el CUERPO
+    │   ├── main.js            proceso principal de Electron (ventanas, IPC, ficha+QR, modo feria, --autoprueba)
     │   ├── preload.js         puente seguro página ↔ cerebro
-    │   ├── index.html, tami.css   la ventana (negro, blanco, naranja)
-    │   ├── app.js             une todo + ciclo de feria (invitar / despedirse)
-    │   ├── avatar.js          carga y anima el VRM (three.js + three-vrm)
-    │   └── voz.js             cola de frases + boca por volumen (RMS)
+    │   ├── index.html, tami.css   la ventana (negro, blanco, naranja), cartel del stand, ficha
+    │   ├── app.js             une todo: ciclo de feria (invitar / despedirse), gestos por frase, GUION de F8
+    │   ├── avatar.js          carga y anima el VRM: boca, parpadeo, 8 gestos, credencial
+    │   ├── voz.js             cola de frases + boca por volumen (RMS)
+    │   ├── oido.js            micrófono → WAV 16 kHz (elige el micrófono real, no los virtuales)
+    │   ├── explica.html/.css/.js, explica-preload.js, explica-datos.js   presentación «Así funciona Tami»
+    │   └── prueba-avatar.html página suelta para probar el avatar
     └── scripts\
-        ├── probar-tami.js     estudiante de prueba por consola, con tiempos
-        └── foto-avatar.js     fotos del avatar para revisarlo
+        ├── probar-tami.js     estudiante de prueba por consola, con tiempos   (node)
+        ├── examen-feria.js    46 estudiantes de mentira con trampas + alarmas  (node)
+        ├── probar-feria.js    prueba el blindaje del modo feria               (npx electron)
+        └── foto-avatar.js, foto-gestos.js, foto-explica.js   fotos para revisar (npx electron)
 ```
+
+**Qué NO está en GitHub y por qué:** modelos, motor, `voz\kokoro`, `voz\whisper`, `.venv` (pesan GB: van por
+USB o se descargan, ver `README.md`); `..\datos` y `..\windows` (la memoria de Unifranz: su `robots.txt` dice
+«solo consultar»); `capturas\` (informes con respuestas); `config_local.*` (la configuración de cada uno).
 
 ### Puertos
 | Puerto | Pieza | Programa |
@@ -129,8 +171,9 @@ G:\Desarrollo\LLMLocalUnifranz\
 | 8766 | Memoria de Unifranz | `cerebro\servidor_tami.py` (Python portátil 3.12) |
 | 8767 | Voz | `voz\servidor_voz.py` (Python 3.13 del `.venv`) |
 | 1234 | (alternativa) LM Studio | solo si `TAMI_MOTOR=lmstudio` |
+| 11434 | (alternativa) Ollama | solo con `TAMI_LLM_URL` (por ejemplo, Brayan en Linux) |
 
-### Configuración (variables de entorno, las pone `INICIAR_TAMI.bat`)
+### Configuración (variables de entorno, las pone `INICIAR_TAMI.bat` / `.sh`)
 | Variable | Valor | Para qué |
 |---|---|---|
 | `TAMI_SEDE` | `El Alto` | dónde está el stand: cuando Tami dice «aquí» |
@@ -145,7 +188,7 @@ G:\Desarrollo\LLMLocalUnifranz\
 | # | Decisión | Por qué | Alternativa descartada |
 |---|---|---|---|
 | 1 | **Reutilizar el motor de Capri y escribir un cuerpo nuevo** | El motor (`src/main/`) es genérico y está probado; el cuerpo de Capri (`capri.js` 104 KB, `lines.js` 147 KB) es 100 % Capri. Quitarle a Capri pedazo a pedazo tomaría días | Convertir a Capri en Tami borrando; empezar desde cero |
-| 2 | **Carpeta nueva `Tami\` con `git clone` de Capri** (rama `tami`) | Capri y LLMLocalUnifranz quedan intactos; se conserva la historia y la autoría original (licencia PolyForm Noncommercial: uso sin vender, con aviso) | Rama dentro de Capri (riesgo de romper la USB de Capri) |
+| 2 | **Carpeta nueva `Tami\` con `git clone` de Capri** (rama `tami`, hoy `main`) | Capri y LLMLocalUnifranz quedan intactos; se conserva la historia y la autoría original (licencia PolyForm Noncommercial: uso sin vender, con aviso) | Rama dentro de Capri (riesgo de romper la USB de Capri) |
 | 3 | **Nombre: Tami** (de Tamayo) | Corto, cercano, fácil de recordar en la feria | Franzi |
 | 4 | **Vive en el escritorio, pero en «modo feria»** | Impresiona que flote sobre Windows, pero un estudiante bromista no debe poder decir «apaga la computadora» | Control total de la PC como Capri |
 | 5 | **Catálogo cerrado de 17 carreras** leído de las páginas oficiales | El modelo podría «recordar» una carrera que Unifranz no tiene. Solo puede recomendar las de la lista | Dejar que el modelo recuerde |
@@ -155,7 +198,12 @@ G:\Desarrollo\LLMLocalUnifranz\
 | 9 | **Cerebro con `llama-server` (llama.cpp) en vez de LM Studio** | LM Studio ocupaba **7,5 GB de RAM** (de 16) y la PC se quedó sin memoria. `llama-server` es el mismo motor sin interfaz, portátil, sin el módulo de visión, con caché de RAM limitada a 1 GB | Seguir con LM Studio; modelo de Capri en procesador (demasiado lento para Tami) |
 | 10 | **Modelo: Qwen3.5-9B Q4_K_M** (el mismo de LM Studio, copiado) | Es el más poderoso que cabe **entero** en los 8 GB de la RX 590. Uno más grande no cabría y una parte iría al procesador: más lento | Modelo más grande; Gemma-4-E4B (más liviano pero razona menos) |
 | 11 | **Respaldo con Qwen2.5-3B** (como el «cerebro automático» de Capri) | Si el 9B falla a mitad de la feria, Tami no se queda muda. El 3B ya está descargado. **Se hará después** de pulir las características | — |
-| 12 | **Sin datos personales** | Habrá menores de edad: no pide nombre completo, teléfono, correo ni carnet; no graba audio | — |
+| 12 | **Sin datos personales** | Habrá menores de edad: no pide nombre completo, teléfono, correo ni carnet; no graba audio. Si alguien da su celular o correo, **respuesta fija** y el dato se borra del historial (5.18) | — |
+| 13 | **Repositorio público en GitHub** | Lo pidieron Juan y Brayan para trabajar juntos. Antes se revisó que no hubiera secretos y se cambió el Gmail del historial por el correo anónimo de GitHub | Privado (Brayan igual podría entrar como colaborador) |
+| 14 | **Cada uno puede usar su propio modelo** (`TAMI_LLM_URL`) | Brayan usa Linux y otra tarjeta: no tiene que copiar el `.exe` ni el modelo de Juan; usa Ollama o LM Studio | Obligar a todos a usar llama-server |
+| 15 | **Quitar lo de Capri que no se usa** | De 135 a 50 archivos: el repo se entiende de un vistazo. La licencia y los créditos se quedan | Dejarlo todo «por si acaso» (sigue en el historial de git) |
+| 16 | **Solo Ingeniería de Sistemas** (pedido del ingeniero) | Un stand de Sistemas tiene que saber MUCHO de Sistemas. Las otras carreras se nombran y se derivan, así no inventa | Explicar las 17 carreras a medias |
+| 17 | **Dar el dato exacto, no solo la regla** | Con «no inventes», el 9B igual inventó (Veterinaria, «solo tenemos Sistemas»). Pasarle «Unifranz NO tiene X» sí funciona | Más reglas en la personalidad |
 
 ### Cómo es Capri por dentro (referencia)
 Capri tiene **dos cerebros** y elige solo al arrancar (`autoBrain()` en `Capri_Local\capri-desktop\src\main\main.js:673`):
@@ -332,7 +380,8 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
   Ajuste fino: `tami.credencial({ y, z, inclinar, ancho })` o `CRED='{...}' npx electron scripts/foto-gestos.js`.
 - **Modo stand** (`--stand`, o doble clic en `TAMI_FERIA.bat`): pantalla completa, fondo negro con un resplandor
   naranja detrás de Tami (como un reflector), «UNIFRANZ» gigante casi invisible al fondo, y un **cartel** que se
-  lee desde lejos: «¿Aún no sabes qué estudiar? Conversa con Tami…». Cuando aparece la ficha, el cartel se aparta
+  lee desde lejos: «¿Aún no sabes qué estudiar? Conversa con Tami…» (desde 5.18: «¿Te gusta la tecnología?
+  Conversa con Tami y descubre Ingeniería de Sistemas e Innovación Digital»). Cuando aparece la ficha, el cartel se aparta
   y la ficha toma su lugar (más grande, el QR fácil de escanear). Sin botón ✕ ni arrastre; se sale con Ctrl+Q.
 - La autoprueba en modo stand abre la ventana **fuera de la pantalla** (1920×1080 en x=-4000) para no tapar la PC.
 
@@ -340,6 +389,7 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
 8 invitaciones según la hora («¡Buenos días! ¿Cómo estás? Soy Tami, de Unifranz. ¿Te interesa alguna carrera?
 Puedes preguntarme todo acerca de la Unifranz y te responderé con gusto.» — idea de Juan), sin repetir ninguna de
 las últimas 4, y 3 despedidas. Juan descartó una «frase propia» porque con la voz actual podía sonar a regaño.
+Desde 5.18 las invitaciones y despedidas hablan de tecnología e Ingeniería de Sistemas.
 
 ### 5.13 Modo expositora: «Así funciona Tami»
 Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo funciona, el camino en clases).
@@ -411,7 +461,7 @@ le pone a cada ventana de Tami:
   Inicio, a los 1,5 s Tami recupera el foco.
 - **La pantalla no se apaga** en 4 horas (`powerSaveBlocker`).
 - 🔑 **Salida secreta: Ctrl+Alt+Shift+Q.**
-- ➖ **Minimizar** (22/11, Juan no podía cambiar de ventana): botón discreto arriba a la derecha que hay que
+- ➖ **Minimizar** (21/11, Juan no podía cambiar de ventana): botón discreto arriba a la derecha que hay que
   **mantener 1 s** (se llena de naranja; un toque suelto de un visitante no hace nada), o **Ctrl+Alt+Shift+M**.
   Al minimizar se suelta el blindaje (kiosco y «siempre encima») y Tami **se calla y no invita**. Para volver:
   clic en Tami en la **barra de tareas** → vuelve blindada. (Se usa `setInterval` y no `requestAnimationFrame`
@@ -463,6 +513,24 @@ se presenta como orientadora de Sistemas.
 - **Examen:** 46 casos (9 de Sistemas, 6 de otras carreras, 4 de carreras inexistentes) y alarmas nuevas
   (instrucciones filtradas, «solo tenemos Sistemas», carrera inventada, qué se mostró en pantalla).
   Resultado: **1/46 🚩** (una respuesta de 65 palabras, contenido correcto). `probar-feria.js`: TODO BIEN.
+- **Cómo se encontraron los errores:** las alarmas automáticas no bastan; se **leyeron las 46 respuestas** una
+  por una. Así salieron «tiene Veterinaria», «solo tenemos Sistemas», «videojuegos» y el voseo, que ninguna
+  alarma marcaba. Cada error encontrado se convirtió después en una alarma nueva del examen.
+- Una alarma propia dio **falso positivo**: marcaba «Unifranz **no** tiene Veterinaria» como si dijera que sí.
+  Se arregló con *lookbehind* en la expresión regular (`(?<!no )`): «que antes NO diga "no "».
+- Capri (`G:\Desarrollo\Capri_Local`) **no se tocó**: la limpieza y estos cambios son solo de la copia Tami.
+
+### 5.19 Trabajo en equipo con git (21/11)
+Lo que se hizo para que Juan y Brayan trabajen juntos sin pisarse (detalle en `CONTRIBUTING.md`):
+- **Una rama por tarea:** `juan/solo-sistemas`, `brayan/linux`… Se prueba en la rama y recién se une a `main`.
+- **Pull Request (PR):** en GitHub se pide unir la rama; el otro la revisa antes. `main` siempre debe funcionar.
+- **Antes de empezar:** `git pull` (traer lo del otro). **Al terminar:** `git push` y abrir el PR.
+- **Pruebas antes de unir:** `npm run examen` (cerebro) y `npm run probar:feria` (blindaje).
+- **Privacidad:** el correo de los commits es el anónimo de GitHub (`…@users.noreply.github.com`). Recomendado en
+  GitHub → *Settings → Emails*: «Keep my email address private» y «Block command line pushes that expose my email».
+- 🎓 *Reescribir el historial* (`git filter-branch`) cambia el «código» (hash) de TODOS los commits: por eso se
+  hizo antes de que Brayan clonara el repo, y con `--force-with-lease` (empuja a la fuerza solo si nadie subió
+  algo mientras tanto).
 
 ---
 
@@ -488,6 +556,12 @@ se presenta como orientadora de Sistemas.
 - **Corregir un dato:** agregarlo a `cerebro\datos_confirmados.json` (manda sobre las noticias).
 - **Cambiar la voz:** editar `voz\voz.json` y reiniciar la voz.
 - **Actualizar el catálogo:** `..\windows\python\python.exe cerebro\armar_catalogo.py`.
+- **Usar otro modelo** (Ollama, LM Studio…): copiar `config_local.ejemplo.bat` a `config_local.bat` (o el `.sh`
+  en Linux) y poner `TAMI_LLM_URL` y `TAMI_MODELO`. Así el lanzador no enciende llama-server.
+- **En Linux:** `./INICIAR_TAMI.sh` o `./TAMI_FERIA.sh` (instalación en `README.md`). Los registros quedan en
+  `capturas\*.log` y al cerrar se apagan los servidores.
+- **Atajos npm:** `npm start` (normal), `npm run stand`, `npm run feria`, `npm run examen`, `npm run probar:feria`.
+  Ojo: `npm start/stand/feria` abren **solo la ventana**; los servidores (8080, 8766, 8767) los enciende el lanzador.
 
 ---
 
@@ -505,12 +579,17 @@ se presenta como orientadora de Sistemas.
    - ✅ ~~Gestos~~ (hecho, 5.10): ocho gestos.
    - ✅ ~~Credencial y modo stand~~ (hecho, 5.11). Falta verlo en el monitor real del stand.
    - ✅ ~~Presentación «Así funciona Tami»~~ (5.13) y ~~íconos SVG~~ (5.14).
-   - 🩺 Caso 13 del examen (Veterinaria): acortar y sugerir carreras cercanas del catálogo, no Sistemas.
+   - ✅ ~~Caso 13 del examen (Veterinaria)~~: arreglado con `NO_EXISTEN` (5.18).
    - ✅ ~~Modo feria~~ (5.16): blindado, salida secreta Ctrl+Alt+Shift+Q. Falta probarlo con el teclado real.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
 3. **Cerebro de respaldo** Qwen2.5-3B (decisión 11).
 4. **Voz más delicada** (mezclas con otras voces jóvenes, tono).
 5. Avatar propio de Juan hecho en VRoid (reemplaza `avatar\tami.vrm`).
+
+**Del equipo y GitHub:**
+- Invitar a Brayan como colaborador (falta su usuario de GitHub).
+- Brayan: probar `INICIAR_TAMI.sh` y `TAMI_FERIA.sh` en su Linux real y anotar lo que falle.
+- Juan: activar en GitHub *Settings → Emails* «Keep my email address private» y «Block command line pushes…».
 
 ---
 
