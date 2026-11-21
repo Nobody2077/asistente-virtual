@@ -11,7 +11,11 @@
 const llm = require('./llm');
 
 const MEMORIA_URL = process.env.TAMI_MEMORIA || 'http://127.0.0.1:8766';
-const MODELO = process.env.TAMI_MODELO || 'qwen/qwen3.5-9b';
+// El motor que hace pensar al modelo. Los dos hablan el «idioma» de OpenAI, así que el resto no cambia:
+//   llamacpp → llama-server.exe (motor\), sin LM Studio, puerto 8080. Lo que usa la feria.
+//   lmstudio → LM Studio, puerto 1234 (como al principio; queda de alternativa).
+const MOTOR = process.env.TAMI_MOTOR || 'llamacpp';
+const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-9b' : 'qwen3.5-9b');
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
@@ -239,7 +243,7 @@ function anotarTami(conv, texto) {
 // Al encender: que el modelo lea la personalidad una vez, antes del primer estudiante (~15 s).
 async function calentar() {
   await cargarCatalogo();
-  const res = await fetch(`${llm.PROVIDERS.lmstudio.url}/chat/completions`, {
+  const res = await fetch(`${llm.PROVIDERS[MOTOR].url}/chat/completions`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -247,7 +251,7 @@ async function calentar() {
       messages: [{ role: 'system', content: personalidad() }, { role: 'user', content: SE_ACERCA }],
     }),
   });
-  if (!res.ok) throw new Error(`LM Studio respondió ${res.status}`);
+  if (!res.ok) throw new Error(`el motor (${MOTOR}) respondió ${res.status}`);
 }
 
 /**
@@ -302,7 +306,7 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     }
   };
 
-  await llm.chat('lmstudio', {}, { model: MODELO, messages }, (pieza) => {
+  await llm.chat(MOTOR, {}, { model: MODELO, messages }, (pieza) => {
     crudo += pieza;
     onTexto(paraVoz(crudo));
     entregarFrases(false);

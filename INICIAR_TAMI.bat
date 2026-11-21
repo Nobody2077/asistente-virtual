@@ -2,24 +2,24 @@
 REM ==================================================================
 REM  TAMI - orientadora virtual de UNIFRANZ
 REM  Enciende las 4 piezas en orden y abre a Tami en el escritorio:
-REM   1. Cerebro: LM Studio con qwen3.5-9b (1 ranura = usa su cache)
-REM   2. Memoria de Unifranz: cerebro\servidor_tami.py  (puerto 8766)
-REM   3. Voz: voz\servidor_voz.py con Kokoro           (puerto 8767)
+REM   1. Cerebro: llama-server (llama.cpp, Vulkan) + Qwen3.5-9B  (8080)
+REM   2. Memoria de Unifranz: cerebro\servidor_tami.py           (8766)
+REM   3. Voz: voz\servidor_voz.py con Kokoro                     (8767)
 REM   4. Tami: Electron (src\tami\main.js)
+REM  Ya NO necesita LM Studio (ver DOCUMENTACION.md).
 REM ==================================================================
 title Tami - Unifranz
 set "T=%~dp0"
 set "R=%T%..\"
-set "LMS=%USERPROFILE%\.lmstudio\bin\lms.exe"
 set "TAMI_SEDE=El Alto"
+set "TAMI_MOTOR=llamacpp"
 
-echo [1/4] Cerebro (LM Studio + Qwen3.5-9B)...
-"%LMS%" server start >nul 2>&1
-"%LMS%" ps 2>nul | findstr /c:"qwen/qwen3.5-9b" >nul
-if errorlevel 1 (
-    echo       Cargando el modelo en la tarjeta de video, unos 90 segundos...
-    "%LMS%" load qwen/qwen3.5-9b --context-length 8192 --gpu max --parallel 1 -y >nul
+echo [1/4] Cerebro (llama-server + Qwen3.5-9B en la tarjeta de video)...
+curl -sf http://127.0.0.1:8080/health >nul 2>&1 || (
+    start "Tami - cerebro" /min "%T%motor\llama-b12198\llama-server.exe" -m "%T%modelos\Qwen3.5-9B-Q4_K_M.gguf" -c 8192 -ngl 99 -np 1 -fa auto --reasoning off --cache-ram 1024 --no-webui --host 127.0.0.1 --port 8080 --alias qwen3.5-9b
 )
+REM  -ngl 99 todo en la GPU / -np 1 una ranura (usa su cache) / --reasoning off sin modo pensamiento
+REM  --cache-ram 1024: a lo sumo 1 GB de RAM para recordar prompts (por defecto eran 8 GB)
 
 echo [2/4] Memoria de Unifranz (Chroma)...
 curl -sf http://127.0.0.1:8766/estado >nul 2>&1 || (
@@ -35,20 +35,23 @@ curl -sf http://127.0.0.1:8767/estado >nul 2>&1 || (
     start "Tami - voz" /min "%T%voz\.venv\Scripts\python.exe" -u "%T%voz\servidor_voz.py"
 )
 
-echo       Esperando a que la memoria y la voz esten listas...
+echo       Esperando a que el cerebro, la memoria y la voz esten listos...
 set /a n=0
 :esperar
 REM ping espera ~1 s; timeout falla si la ventana no tiene teclado
 ping -n 2 127.0.0.1 >nul
 set /a n+=1
-curl -sf http://127.0.0.1:8767/estado >nul 2>&1 || (if %n% lss 90 goto esperar)
-curl -s http://127.0.0.1:8766/estado 2>nul | findstr /c:"true" >nul || (if %n% lss 90 goto esperar)
-if %n% geq 90 (
-    echo [ERROR] La memoria o la voz no arrancaron. Mira las ventanas minimizadas "Tami - ...".
-    pause
-    exit /b 1
-)
+if %n% geq 150 goto fallo
+curl -sf http://127.0.0.1:8080/health >nul 2>&1 || goto esperar
+curl -sf http://127.0.0.1:8767/estado >nul 2>&1 || goto esperar
+curl -s http://127.0.0.1:8766/estado 2>nul | findstr /c:"true" >nul || goto esperar
 
 echo [4/4] Abriendo a Tami...
 cd /d "%T%"
 call npx electron src\tami\main.js
+exit /b 0
+
+:fallo
+echo [ERROR] Algo no arranco en 2,5 minutos. Mira las ventanas minimizadas "Tami - ...".
+pause
+exit /b 1

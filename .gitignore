@@ -13,3 +13,7 @@ captures/
 voz/*
 !voz/*.py
 !voz/voz.json
+# Tami: el motor y el modelo pesan GB, no van al repo
+motor/
+modelos/
+capturas/
