@@ -174,3 +174,10 @@ body[data-escena="3"] #web { opacity: 0 !important; }
 /* la basura limpiada no deja hueco: se encoge */
 .basura { max-height: 200px; overflow: hidden; }
 .basura.ida { max-height: 0; margin: 0; padding-top: 0; padding-bottom: 0; transition: max-height .5s, margin .5s, padding .5s; }
+
+/* íconos SVG de línea (en vez de emojis): miden 1em, así crecen con el font-size de su caja */
+.ico { width: 1em; height: 1em; display: block; }
+#cerrar .ico { width: 16px; height: 16px; margin: auto; }
+#pregunta span { color: var(--naranja); display: inline-flex; vertical-align: middle; }
+.eslabon span { color: var(--naranja); display: flex; justify-content: center; }
+.hito span .ico { width: .9em; height: .9em; color: #fff; }

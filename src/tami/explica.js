@@ -312,7 +312,7 @@ function irA(n, datos = {}) {
       setTimeout(() => b.classList.add('ida'), 850); // y se cierra el hueco
       const r = b.getBoundingClientRect();
       for (let j = 0; j < 18; j++) lanzar({ tipo: 'polvo', x: azar(r.left, r.right), y: azar(r.top, r.bottom), vx: azar(-80, 40), vy: azar(-30, 60), dura: 900, color: '#e55', tam: 2 });
-      const li = Object.assign(document.createElement('li'), { className: 'nota', textContent: `🧹 quitado: ${b.textContent.trim().slice(0, 48)}…` });
+      const li = Object.assign(document.createElement('li'), { className: 'nota', textContent: `✕ quitado: ${b.textContent.trim().slice(0, 48)}…` });
       $('registro').append(li);
     }, 1600 + k * 450));
     setTimeout(() => {
