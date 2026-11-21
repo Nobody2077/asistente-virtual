@@ -16,6 +16,8 @@ const tami = require('../main/tami');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 // --oido-falso archivo.wav: el micrófono «escucha» ese archivo (para probar Whisper sin hablarle de verdad)
+// --mic "parte del nombre": obliga a usar ese micrófono (si no, Tami elige el primero que no sea virtual)
+const MIC = (() => { const i = process.argv.indexOf('--mic'); return i > 0 ? String(process.argv[i + 1] || '') : ''; })();
 const OIDO_FALSO = (() => { const i = process.argv.indexOf('--oido-falso'); return i > 0 ? path.resolve(process.argv[i + 1]) : null; })();
 if (OIDO_FALSO) {
   app.commandLine.appendSwitch('use-fake-device-for-media-stream');
@@ -54,7 +56,7 @@ function crearVentana() {
       backgroundThrottling: false, // que siga animando aunque otra ventana tenga el foco
     },
   });
-  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio' } });
+  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
 }
 

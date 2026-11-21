@@ -261,7 +261,10 @@ entrada.addEventListener('input', () => { ultimaActividad = Date.now(); });
 // Dos formas de usarlo: MANTENER presionado y soltar al terminar, o TOCAR una vez y tocar otra vez para terminar
 // (más fácil para quien está nervioso). F2 hace lo mismo desde el teclado.
 const microfono = $('microfono');
-const oido = new Oido({ alNivel: (v) => microfono.style.setProperty('--nivel', v.toFixed(2)) });
+const oido = new Oido({
+  alNivel: (v) => microfono.style.setProperty('--nivel', v.toFixed(2)),
+  pedido: new URLSearchParams(location.search).get('mic') || '', // INICIAR_TAMI.bat --mic "Realtek"
+});
 let escuchando = false;
 let apretadoEn = 0;
 
@@ -272,7 +275,7 @@ async function empezarAEscuchar() {
   try {
     await oido.empezar();
   } catch (err) {
-    estado.textContent = 'No encuentro el micrófono: escríbeme 🙂';
+    estado.textContent = 'No encuentro el micrófono: escríbeme.';
     console.log('[oido] micrófono:', err.message);
     return;
   }
@@ -293,10 +296,11 @@ async function terminarDeEscuchar() {
   try {
     const texto = await oido.terminar();
     if (texto) preguntar(texto);
-    else mostrarBurbuja('No te escuché bien 🙈 ¿Me lo repites o me lo escribes?');
+    else mostrarBurbuja('No te escuché bien. ¿Me lo repites o me lo escribes?');
   } catch (err) {
-    console.log('[oido] whisper:', err.message);
-    mostrarBurbuja('Uy, mi oído falló. ¿Me lo escribes?');
+    console.log('[oido]', err.message);
+    // micrófono mudo: casi siempre es que Windows eligió uno virtual o el micrófono está apagado
+    mostrarBurbuja(err.mudo ? 'Mi micrófono no recibe sonido. ¿Me lo escribes mientras lo revisan?' : 'Uy, mi oído falló. ¿Me lo escribes?');
   }
   ocultarLuego();
 }

@@ -11,10 +11,27 @@
 const ESCUCHAR_URL = 'http://127.0.0.1:8767/escuchar';
 const HZ = 16000;           // lo que espera Whisper
 const MAX_SEGUNDOS = 15;    // si se olvidan de soltar el botón
+const SILENCIO = 0.001;     // si el pico más alto no llega a esto, el micrófono no manda sonido (está mudo o es virtual)
+
+// Micrófonos «de mentira» que crean otros programas: el de la cámara del celular (iVCam), el de Steam, cables
+// virtuales... Windows a veces pone uno de estos como PREDETERMINADO y entonces Tami graba silencio.
+const VIRTUALES = /ivcam|e2esoft|steam|virtual|vb-audio|cable|voicemeeter|stereo mix|mezcla est|droidcam|obs/i;
+
+// Elige el micrófono: 1) el que pidieron con --mic "nombre", 2) el primero que NO sea virtual, 3) el predeterminado
+async function elegirMicrofono(pedido) {
+  const todos = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audioinput');
+  const reales = todos.filter((d) => d.deviceId !== 'default' && d.deviceId !== 'communications');
+  const elegido = (pedido && reales.find((d) => d.label.toLowerCase().includes(pedido.toLowerCase())))
+    || reales.find((d) => !VIRTUALES.test(d.label))
+    || null;
+  return { elegido, todos };
+}
 
 export class Oido {
-  constructor({ alNivel = () => {} } = {}) {
+  constructor({ alNivel = () => {}, pedido = '' } = {}) {
     this.alNivel = alNivel;
+    this.pedido = pedido;   // parte del nombre del micrófono a usar (opcional)
+    this.nombre = '';       // el micrófono que terminó usando (para mostrarlo si falla)
     this.grabando = false;
     this.trozos = [];
     this.flujo = null;
@@ -24,9 +41,16 @@ export class Oido {
     if (this.grabando) return;
     if (!this.flujo) {
       // el navegador limpia el ruido de la feria y nivela el volumen antes de que llegue a Whisper
+      const filtros = { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      // los nombres de los micrófonos solo se ven DESPUÉS de dar permiso: pedimos uno cualquiera y lo soltamos
+      const permiso = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permiso.getTracks().forEach((t) => t.stop());
+      const { elegido, todos } = await elegirMicrofono(this.pedido);
+      console.log('[oido] micrófonos:', todos.map((d) => d.label).join(' | '), '→ uso:', elegido?.label || 'el predeterminado');
       this.flujo = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: elegido ? { ...filtros, deviceId: { exact: elegido.deviceId } } : filtros,
       });
+      this.nombre = this.flujo.getAudioTracks()[0]?.label || '';
       this.ctx = new AudioContext({ sampleRate: HZ });
       this.fuente = this.ctx.createMediaStreamSource(this.flujo);
       this.proc = this.ctx.createScriptProcessor(4096, 1, 1);
@@ -35,7 +59,7 @@ export class Oido {
         const datos = e.inputBuffer.getChannelData(0);
         this.trozos.push(new Float32Array(datos));
         let suma = 0;
-        for (let i = 0; i < datos.length; i++) suma += datos[i] * datos[i];
+        for (let i = 0; i < datos.length; i++) { suma += datos[i] * datos[i]; this.pico = Math.max(this.pico, Math.abs(datos[i])); }
         this.alNivel(Math.min(1, Math.sqrt(suma / datos.length) * 8));
         if (this.muestras() > MAX_SEGUNDOS * HZ) this.alLimite?.();
       };
@@ -44,6 +68,7 @@ export class Oido {
     }
     await this.ctx.resume();
     this.trozos = [];
+    this.pico = 0;
     this.grabando = true;
   }
 
@@ -55,6 +80,7 @@ export class Oido {
     this.grabando = false;
     this.alNivel(0);
     if (this.muestras() < HZ * 0.4) return ''; // menos de 0,4 s: fue un toque sin querer
+    if (this.pico < SILENCIO) throw Object.assign(new Error(`silencio total en «${this.nombre}»`), { mudo: true });
     const res = await fetch(ESCUCHAR_URL, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: aWav(this.trozos) });
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `oído ${res.status}`);
     return (await res.json()).texto || '';

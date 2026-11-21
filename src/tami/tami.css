@@ -98,6 +98,16 @@ html, body {
 #barra button:hover:not(:disabled) { background: var(--naranja-suave); }
 #barra button:disabled { background: #444; cursor: default; }
 
+/* --- íconos SVG de línea (en vez de emojis: se ven iguales en cualquier PC y toman el color del botón) --- */
+.ico { width: 22px; height: 22px; display: block; margin: auto; pointer-events: none; }
+#enviar .ico { width: 20px; height: 20px; transform: translateX(-1px); }
+#cerrar .ico, #ficha-cerrar .ico { width: 14px; height: 14px; }
+.ico-txt { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; margin: 0 .15em 0 0; color: var(--naranja); }
+.ficha-qr-texto { display: flex; flex-direction: column; gap: 8px; }
+.ico-qr { width: 42px; height: 42px; margin: 0; color: var(--naranja); }
+.ico-qr .laser { color: #ff2d2d; animation: barrido 1.8s ease-in-out infinite; } /* la línea láser sube y baja */
+@keyframes barrido { 0%, 100% { transform: translateY(-6px); } 50% { transform: translateY(6px); } }
+
 #estado {
   position: absolute; bottom: 74px; left: 0; right: 0; text-align: center;
   font-size: 12px; color: var(--negro); text-shadow: 0 0 4px #fff; z-index: 2;
@@ -170,6 +180,7 @@ body.stand #avatar { inset: 120px 0 0 0; height: calc(100% - 120px); }
 body.stand #burbuja { font-size: 25px; top: 34px; }
 body.stand #barra { bottom: 26px; }
 body.stand #barra button { width: 58px; height: 58px; font-size: 24px; }
+body.stand #barra .ico { width: 28px; height: 28px; }
 body.stand #entrada { font-size: 20px; }
 body.stand #cerrar, body.stand #arrastre { display: none; } /* en la feria no se cierra con un clic */
 
@@ -183,6 +194,7 @@ body.stand.con-ficha #cartel { opacity: 0; } /* la ficha ocupa su lugar */
 #cartel h1 { margin: 18px 0 22px; font-size: clamp(48px, 5.6vw, 104px); line-height: 1.02; font-weight: 900; }
 #cartel .cartel-sub { margin: 0 0 30px; font-size: clamp(22px, 2vw, 36px); color: #ddd; }
 #cartel .cartel-sub strong { color: var(--naranja); }
+#cartel .cartel-como .sep { margin: 0 .4em; opacity: .5; }
 #cartel .cartel-como {
   display: inline-block; margin: 0; padding: 14px 26px; border-radius: 40px;
   background: rgba(255, 255, 255, .08); border: 2px solid rgba(255, 90, 26, .7);

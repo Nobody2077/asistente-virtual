@@ -252,8 +252,14 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
 - La página graba los números del micrófono y arma el WAV ella misma (`src\tami\oido.js`): así no hace falta PyAV,
   cuya versión nueva rompe faster-whisper (`metadata_errors`) y la vieja no tiene versión para Python 3.13.
 - **Pista de vocabulario** (`initial_prompt`): sin ella escribía «Unifrance» y «Tammy».
-- Botón 🎤: **mantener** y soltar, o **tocar y volver a tocar** (más fácil si están nerviosos); también **F2**.
+- Botón del micrófono: **mantener** y soltar, o **tocar y volver a tocar** (más fácil si están nerviosos); también **F2**.
   Máximo 15 s. El navegador limpia ruido y eco (`noiseSuppression`, `echoCancellation`).
+- **Elige el micrófono sola (2026-11-21).** En la primera prueba real decía «no te escuché»: Windows tenía como
+  PREDETERMINADO el micrófono virtual de **iVCam** (también hay uno de **Steam**), que manda silencio puro (pico 0,0000
+  medido; el real «High Definition Audio Device» sí recibe). Ahora `oido.js` lista los micrófonos y usa el primero
+  que NO sea virtual (iVCam, Steam, VB-Audio, Voicemeeter, DroidCam, OBS…). Para forzar uno:
+  `INICIAR_TAMI.bat --mic "parte del nombre"`. Si igual llega silencio total, la burbuja dice «Mi micrófono no
+  recibe sonido» (en vez del genérico), así en la feria se sabe que es el hardware y no Tami.
 - Prueba sin hablar: `npx electron src/tami/main.js --autoprueba x --oido-falso capturas\pregunta_falsa.wav`
   (micrófono falso de Chromium que «dice» el WAV).
 - Arreglos que salieron al probar: la muletilla ahora reconoce preguntas sin «¿?» (Whisper no siempre los pone);
