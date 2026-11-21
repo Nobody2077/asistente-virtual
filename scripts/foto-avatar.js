@@ -17,10 +17,10 @@ app.whenReady().then(async () => {
   await win.loadFile(path.join(__dirname, '..', 'src', 'tami', 'prueba-avatar.html'));
   for (let i = 0; i < 60 && !(await win.webContents.executeJavaScript('!!window.tamiLista')); i++) await espera(250);
 
+  // colores del logo de Unifranz: negro, blanco y naranja
   const fotos = [
-    ['1_reposo', 'tami.boca(0); tami.emocion(null)'],
-    ['2_hablando_feliz', "tami.boca(0.9); tami.emocion('happy', 0.5)"],
-    ['3_sorprendida', "tami.boca(0.3); tami.emocion('surprised', 0.7)"],
+    ['4_uniforme_negro', "tami.vestir({ Tops: '#1b1b1b', Bottoms: '#2a2a2a' }); tami.boca(0.5); tami.emocion('happy', 0.5)"],
+    ['5_uniforme_naranja', "tami.vestir({ Tops: '#ff5a1a', Bottoms: '#1b1b1b' }); tami.boca(0); tami.emocion('happy', 0.4)"],
   ];
   for (const [nombre, js] of fotos) {
     await win.webContents.executeJavaScript(js);

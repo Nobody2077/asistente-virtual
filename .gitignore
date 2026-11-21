@@ -10,4 +10,5 @@ Thumbs.db
 captures/
 
 # Tami: binarios descargados (Piper y voces), no van al repo
-voz/
+voz/*
+!voz/probar_voces.py

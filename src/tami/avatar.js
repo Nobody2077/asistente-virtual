@@ -11,7 +11,22 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
-export async function crearAvatar(canvas, url, { fondo = null } = {}) {
+// Teñir la ropa: el modelo trae la polera blanca, así que multiplicar su color la pinta del tono que
+// queramos sin tocar la textura. { Tops: '#1a1a1a' } → polera negra. Las claves son parte del nombre
+// del material (Tops_01_CLOTH, Bottoms_01_CLOTH, Shoes_01_CLOTH).
+function vestir(vrm, uniforme) {
+  vrm.scene.traverse((obj) => {
+    for (const m of [obj.material].flat().filter(Boolean)) {
+      const clave = Object.keys(uniforme).find((k) => m.name?.includes(k));
+      if (!clave) continue;
+      const color = new THREE.Color(uniforme[clave]);
+      m.color?.copy(color);                                                   // la parte iluminada
+      m.shadeColorFactor?.copy(color.clone().multiplyScalar(0.55));          // la parte en sombra (MToon)
+    }
+  });
+}
+
+export async function crearAvatar(canvas, url, { fondo = null, uniforme = null } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -34,6 +49,7 @@ export async function crearAvatar(canvas, url, { fondo = null } = {}) {
   VRMUtils.removeUnnecessaryVertices(gltf.scene);
   VRMUtils.combineSkeletons(gltf.scene);
   VRMUtils.rotateVRM0(vrm); // los VRM viejos (0.x) miran al revés
+  if (uniforme) vestir(vrm, uniforme);
   escena.add(vrm.scene);
 
   const hueso = (n) => vrm.humanoid.getNormalizedBoneNode(n);
@@ -104,6 +120,7 @@ export async function crearAvatar(canvas, url, { fondo = null } = {}) {
 
   return {
     vrm,
+    vestir: (u) => vestir(vrm, u),
     boca: (v) => { estado.boca = Math.max(0, Math.min(1, v)); },
     emocion: (nombre, valor = 0.6) => { estado.emocion = nombre; estado.emocionValor = valor; },
     mirar: (x, y) => { estado.mirarX = x; estado.mirarY = y; },
