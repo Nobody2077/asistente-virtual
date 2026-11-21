@@ -184,7 +184,7 @@ async function despedirse() {
 // lo que dice del proyecto siempre es exacto). Se activa si le preguntan «¿cómo funcionas?» o con F8 (para
 // cuando llega el jurado). Si un estudiante le habla en medio, se detiene y lo atiende.
 const GUION = [
-  [0, 'Soy Tami, una asistente virtual de orientación vocacional. Me crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, para ayudarte a elegir tu carrera y resolver tus dudas, con voz y sin internet.'],
+  [0, 'Soy Tami, una asistente virtual de orientación vocacional. Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, para ayudarte a elegir tu carrera y resolver tus dudas, con voz y sin internet.'],
   [1, 'Primero tuve que aprender sobre Unifranz. Un programa recolector recorrió la página web de la universidad, página por página, y fue guardando todo su texto: 95 páginas y 440 noticias.'],
   [2, 'Pero una página web trae mucha basura: menús, avisos de cookies y código. Así que limpiamos el texto y nos quedamos solo con lo que sirve.'],
   [3, 'Después partimos todo en pedacitos, como fichas de estudio. En total, 8093 pedazos.'],

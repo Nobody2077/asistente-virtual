@@ -19,7 +19,7 @@ const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
 // lo que responde a «¿quién te hizo?» (se puede cambiar con la variable TAMI_CREADOR)
 const CREADOR = process.env.TAMI_CREADOR
-  || 'te crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, como proyecto para ' +
+  || 'te crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, como proyecto para ' +
      'esta feria, con inteligencia artificial que funciona aquí mismo, sin internet. Si quieren saber más, ofrece ' +
      'mostrar cómo funcionas por dentro. Di siempre los dos nombres completos, sin acortarlos';
 
@@ -29,7 +29,7 @@ const PIDE_EXPLICACION = /c[oó]mo (funcionas|trabajas|piensas|aprendiste|te (hi
 const INTRO_EXPLICACION = '¡Con mucho gusto! Mira la pantalla: te muestro cómo funciono por dentro.';
 // «¿Quién te hizo?» también va FIJO: el modelo acortaba o cambiaba los apellidos («Brayan Quispe Quispe»)
 const PIDE_CREADOR = /qui[eé]n(es)? te (hizo|hicieron|cre[oó]|crearon|program[oó]|programaron|desarroll)|qui[eé]n(es)? (es|son) tus? (creador|creadores|autor|autores|papás?)/i;
-const RESPUESTA_CREADOR = 'Me crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, ' +
+const RESPUESTA_CREADOR = 'Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, ' +
   'como proyecto para esta feria. Funciono con inteligencia artificial aquí mismo, sin internet. ' +
   '¿Quieres que te muestre cómo funciono por dentro?';
 const DICE_QUE_SI = /^(s[ií]|sip|dale|claro|ok|okey|bueno|ya|va|por favor|me encantar[ií]a|quiero|mu[eé]stramelo)\b/i;

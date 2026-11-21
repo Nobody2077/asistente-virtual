@@ -3,7 +3,7 @@
 > **Proyecto de feria:** *Desarrollo de un Asistente Virtual Conversacional Basado en Modelos de Lenguaje y
 > Síntesis de Voz en Tiempo Real para la Orientación Vocacional y Atención al Postulante de la Universidad
 > Franz Tamayo (UNIFRANZ).*
-> **Equipo:** Juan Cristian Yujra Quispe y Brayan Quispe Mamani · **Feria:** miércoles 25 de noviembre de 2026, sede El Alto, 4 horas.
+> **Equipo:** Juan Cristian Yujra y Brayan Quispe Mamani · **Feria:** miércoles 25 de noviembre de 2026, sede El Alto, 4 horas.
 
 ---
 
@@ -343,7 +343,7 @@ Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo fun
   Si un estudiante le habla en medio, se detiene y lo atiende.
 - **Qué pasa:** abre la ventana `explica.html` (la ÚNICA ventana extra que puede abrir: lista cerrada, nada de
   programas ni navegador en la feria) y narra 9 escenas con un **guion fijo** (`GUION` en `app.js`), con gestos:
-  0 equipo (Juan Cristian Yujra Quispe y Brayan Quispe Mamani) · 1 leer la web · 2 limpiar · 3 pedazos ·
+  0 equipo (Juan Cristian Yujra y Brayan Quispe Mamani) · 1 leer la web · 2 limpiar · 3 pedazos ·
   4 vectores · 5 buscar · 6 responder (la cadena de la pizarra) · 7 camino en clases · 8 resultados. ~2,5 min.
 - **Todo lo que se ve es real:** el texto de la página de Becas (con su aviso de cookies como basura de verdad;
   el % de basura se mide en vivo), las **535 rutas y tamaños** de lo que recolectó Crawl4AI (`explica-datos.js`),
