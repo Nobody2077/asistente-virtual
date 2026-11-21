@@ -27,6 +27,62 @@ function vestir(vrm, uniforme) {
   });
 }
 
+// --- La credencial ---------------------------------------------------------------------------------
+// Una tarjeta dibujada en un <canvas> (texto con los colores de Unifranz, NO una copia del logo oficial) colgada
+// de un cordón. Va pegada al hueso del pecho: se mueve con ella cuando respira.
+function dibujarCredencial({ nombre = 'TAMI', cargo = 'Orientadora virtual', marca = 'UNIFRANZ' } = {}) {
+  const c = document.createElement('canvas');
+  c.width = 300; c.height = 420;
+  const g = c.getContext('2d');
+  const r = 28;
+  g.fillStyle = '#ffffff';
+  g.beginPath(); g.roundRect(0, 0, c.width, c.height, r); g.fill();
+  g.fillStyle = '#ff5a1a';                       // franja naranja de arriba con la marca (sobre polera negra, el naranja resalta)
+  g.beginPath(); g.roundRect(0, 0, c.width, 120, [r, r, 0, 0]); g.fill();
+  g.fillStyle = '#ffffff';
+  g.font = '900 44px "Segoe UI", sans-serif'; g.textAlign = 'center';
+  g.fillText(marca, c.width / 2, 78);
+  g.fillStyle = '#111111'; g.fillRect(0, 120, c.width, 10); // línea negra
+  g.fillStyle = '#111111';                       // «foto»: círculo negro con la inicial
+  g.beginPath(); g.arc(c.width / 2, 215, 56, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffffff'; g.font = '900 64px "Segoe UI", sans-serif';
+  g.fillText(nombre[0], c.width / 2, 238);
+  g.fillStyle = '#111111'; g.font = '900 54px "Segoe UI", sans-serif';
+  g.fillText(nombre, c.width / 2, 335);
+  g.fillStyle = '#555555'; g.font = '600 26px "Segoe UI", sans-serif';
+  g.fillText(cargo, c.width / 2, 378);
+  g.fillStyle = '#d9d9d9'; g.fillRect(118, 14, 64, 10); // ranura del cordón
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+function ponerCredencial(vrm, ajuste = {}) {
+  const pecho = vrm.humanoid.getRawBoneNode('upperChest') || vrm.humanoid.getRawBoneNode('chest');
+  if (!pecho) return null;
+  const a = { y: -0.04, z: 0.12, inclinar: -0.05, ancho: 0.07, ...ajuste }; // metros, relativo al pecho (ajustado con fotos)
+  const grupo = new THREE.Group();
+  const tarjeta = new THREE.Mesh(
+    new THREE.PlaneGeometry(a.ancho, a.ancho * 1.4),
+    new THREE.MeshBasicMaterial({ map: dibujarCredencial(), transparent: true }),
+  );
+  grupo.add(tarjeta);
+  // el cordón: dos tiras naranjas que suben hacia el cuello
+  const cordon = new THREE.MeshBasicMaterial({ color: 0xff5a1a, side: THREE.DoubleSide });
+  for (const lado of [-1, 1]) {
+    const tira = new THREE.Mesh(new THREE.PlaneGeometry(0.008, 0.13), cordon);
+    tira.position.set(lado * 0.028, a.ancho * 0.7 + 0.055, -0.012);
+    tira.rotation.z = lado * -0.38;
+    tira.rotation.x = 0.25;
+    grupo.add(tira);
+  }
+  grupo.position.set(0, a.y, a.z);
+  grupo.rotation.x = a.inclinar; // la tarjeta cuelga apoyada en el pecho, un poco inclinada
+  pecho.add(grupo);
+  return grupo;
+}
+
 // --- Gestos ----------------------------------------------------------------------------------------
 // Cada gesto es una POSE (cuánto girar cada hueso, en radianes [x, y, z]) a la que el cuerpo va suave, se queda
 // un rato y vuelve. `onda` agrega un movimiento que se repite (la mano que saluda, la cabeza que asiente).
@@ -80,7 +136,7 @@ const GESTOS = {
 };
 const suave = (x) => x * x * (3 - 2 * x); // empieza y termina despacio (no robótico)
 
-export async function crearAvatar(canvas, url, { fondo = null, uniforme = null } = {}) {
+export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, credencial = true } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -105,6 +161,7 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
   VRMUtils.rotateVRM0(vrm); // los VRM viejos (0.x) miran al revés
   if (uniforme) vestir(vrm, uniforme);
   escena.add(vrm.scene);
+  let insignia = credencial ? ponerCredencial(vrm) : null;
 
   const hueso = (n) => vrm.humanoid.getNormalizedBoneNode(n);
   const ex = vrm.expressionManager;
@@ -206,6 +263,8 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
   return {
     vrm,
     vestir: (u) => vestir(vrm, u),
+    // para ajustar la credencial mirando fotos: tami.credencial({ y: -0.1, z: 0.11 })
+    credencial: (ajuste) => { insignia?.removeFromParent(); insignia = ponerCredencial(vrm, ajuste); },
     boca: (v) => { estado.boca = Math.max(0, Math.min(1, v)); },
     emocion: (nombre, valor = 0.6) => { estado.emocion = nombre; estado.emocionValor = valor; },
     mirar: (x, y) => { estado.mirarX = x; estado.mirarY = y; },

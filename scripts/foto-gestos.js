@@ -17,7 +17,7 @@ app.whenReady().then(async () => {
   win.webContents.on('console-message', (e) => console.log('[pagina]', e.message ?? e));
   await win.loadFile(path.join(__dirname, '..', 'src', 'tami', 'prueba-avatar.html'));
   for (let i = 0; i < 60 && !(await win.webContents.executeJavaScript('!!window.tamiLista')); i++) await espera(250);
-  await win.webContents.executeJavaScript("tami.vestir({ Tops: '#1b1b1b', Bottoms: '#2a2a2a' })");
+  await win.webContents.executeJavaScript("tami.vestir({ Tops: '#1b1b1b', Bottoms: '#2a2a2a' }); " + (process.env.CRED ? `tami.credencial(${process.env.CRED})` : ''));
 
   const args = process.argv.slice(2).filter((a) => !a.startsWith('--') || a === '--pose');
   const iPose = args.indexOf('--pose');
