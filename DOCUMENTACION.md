@@ -237,6 +237,31 @@ Resultado: mediana de la primera frase **4,7 s → 2,5 s**. Lo de México en int
 **es real** (convenios con universidades de Chile y México; Ibero Puebla). Lección: verificar contra la memoria
 antes de «corregir».
 
+### 5.7 Datos confirmados (la directora de Sistemas)
+Juan preguntó por la directora de Ingeniería de Sistemas y Tami dijo **Fabiola Cadima**: aparece en 11 noticias
+(casi todas de Cochabamba), mientras que **Nataly Miranda** (la actual, según Juan, estudiante de la carrera)
+aparece en 1. La búsqueda trae lo que más se repite. Solución: `cerebro\datos_confirmados.json`, datos revisados
+por personas que **mandan sobre las noticias** (`bloqueConfirmados`). También lleva los contactos de El Alto
+(teléfono 2 2823421, admisiones.elalto@unifranz.edu.bo, WhatsApp general 71502211), que sí estaban en la memoria.
+Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahora aclara que no agregue título ni sede.
+
+### 5.8 El oído (micrófono + Whisper)
+- `faster-whisper` 1.2.1, modelo **small** multilingüe (464 MB en `voz\whisper\`), **en la CPU** (Ryzen 5 3600,
+  6 hilos, int8): la tarjeta ya la ocupa el cerebro. ~2,5 s para 8–12 s de audio.
+- Vive en el mismo servidor de la voz: `POST /escuchar` (WAV 16 kHz mono) → `{"texto"}`.
+- La página graba los números del micrófono y arma el WAV ella misma (`src\tami\oido.js`): así no hace falta PyAV,
+  cuya versión nueva rompe faster-whisper (`metadata_errors`) y la vieja no tiene versión para Python 3.13.
+- **Pista de vocabulario** (`initial_prompt`): sin ella escribía «Unifrance» y «Tammy».
+- Botón 🎤: **mantener** y soltar, o **tocar y volver a tocar** (más fácil si están nerviosos); también **F2**.
+  Máximo 15 s. El navegador limpia ruido y eco (`noiseSuppression`, `echoCancellation`).
+- Prueba sin hablar: `npx electron src/tami/main.js --autoprueba x --oido-falso capturas\pregunta_falsa.wav`
+  (micrófono falso de Chromium que «dice» el WAV).
+- Arreglos que salieron al probar: la muletilla ahora reconoce preguntas sin «¿?» (Whisper no siempre los pone);
+  la burbuja muestra lo que Whisper entendió + puntitos; contestaba «¡Waliki!» a cualquier «hola» (regla
+  ajustada); «muchacho», «hijo», «amiga» como vocativos se quitan por código (`paraVoz`), porque la regla sola no
+  bastaba.
+- Examen de feria después de todo esto: **0/34 alarmas, mediana 2,1 s**.
+
 ---
 
 ## 6. Cómo usar
@@ -258,7 +283,9 @@ antes de «corregir».
 1. Probar `llama-server --no-mmap` para bajar la RAM (necesita que Juan lo encienda: el sistema no deja que
    Claude ejecute ese `.exe`).
 2. **Características para la presentación:**
-   - 🎤 Micrófono: botón «mantener para hablar» con Whisper sin internet (en la feria hay mucho ruido).
+   - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8). Falta probarlo con la voz real de Juan y el ruido de la feria.
+   - ❓ Confirmar de qué sede es directora Nataly Miranda (`cerebro\datos_confirmados.json`).
+   - 🙋 Gestos: mano al mentón al pensar, saludo con la mano al invitar, asentir al escuchar.
    - 📄 Ficha de carrera con **QR** a la página oficial cuando Tami recomienda (sin internet; el estudiante se lo
      lleva en el celular).
    - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
