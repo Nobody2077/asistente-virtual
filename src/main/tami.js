@@ -27,6 +27,12 @@ const CREADOR = process.env.TAMI_CREADOR
 // fija, ver app.js). No pasa por el modelo: así la explicación es siempre exacta y no inventa nada.
 const PIDE_EXPLICACION = /c[oó]mo (funcionas|trabajas|piensas|aprendiste|te (hicieron|crearon|entrenaron|programaron)|sabes (todo|tanto|eso))|c[oó]mo est[aá]s hecha|qu[eé] (eres|hay) por dentro|tu memoria|expl[ií]ca(me)? (c[oó]mo funcionas|el proyecto|tu proyecto)|de qu[eé] (trata|se trata) (el|este|tu) proyecto|mu[eé]strame c[oó]mo funcionas|modo exposici[oó]n/i;
 const INTRO_EXPLICACION = '¡Con mucho gusto! Mira la pantalla: te muestro cómo funciono por dentro.';
+// «¿Quién te hizo?» también va FIJO: el modelo acortaba o cambiaba los apellidos («Brayan Quispe Quispe»)
+const PIDE_CREADOR = /qui[eé]n(es)? te (hizo|hicieron|cre[oó]|crearon|program[oó]|programaron|desarroll)|qui[eé]n(es)? (es|son) tus? (creador|creadores|autor|autores|papás?)/i;
+const RESPUESTA_CREADOR = 'Me crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, ' +
+  'como proyecto para esta feria. Funciono con inteligencia artificial aquí mismo, sin internet. ' +
+  '¿Quieres que te muestre cómo funciono por dentro?';
+const DICE_QUE_SI = /^(s[ií]|sip|dale|claro|ok|okey|bueno|ya|va|por favor|me encantar[ií]a|quiero|mu[eé]stramelo)\b/i;
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
 // La RX 590 lee el prompt a ~150 tokens/s: cada token de datos que mandamos es tiempo que el estudiante
@@ -419,6 +425,20 @@ async function calentar() {
 async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, signal = new AbortController().signal } = {}) {
   await cargarCatalogo();
   texto = String(texto).trim().slice(0, 600);
+
+  const fija = (respuesta, extra = {}) => {
+    onFrase(respuesta);
+    conv.historial.push({ role: 'user', content: `El estudiante dice: ${texto}`, texto });
+    conv.historial.push({ role: 'assistant', content: respuesta, texto: respuesta });
+    return { texto: respuesta, mostrar: null, datos: [], ...extra };
+  };
+  const ofrecio = conv.ofrecioExplicar;
+  conv.ofrecioExplicar = false;
+  if (PIDE_CREADOR.test(texto)) {
+    conv.ofrecioExplicar = true; // si dice «sí», arranca la presentación
+    return fija(RESPUESTA_CREADOR);
+  }
+  if (ofrecio && DICE_QUE_SI.test(texto)) return fija(INTRO_EXPLICACION, { accion: 'explicar' });
 
   if (PIDE_EXPLICACION.test(texto)) {
     onFrase(INTRO_EXPLICACION);
