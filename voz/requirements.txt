@@ -1,0 +1,8 @@
+# Voz (Kokoro) y oido (Whisper) de Tami. Python 3.13.
+# Crear:  uv venv -p 3.13 .venv  &&  uv pip install -p .venv -r requirements.txt
+kokoro-onnx==0.4.9
+onnxruntime==1.32.0
+soundfile==0.14.0
+numpy==2.5.5
+faster-whisper==1.2.1
+ctranslate2==4.9.0

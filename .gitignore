@@ -13,6 +13,7 @@ captures/
 voz/*
 !voz/*.py
 !voz/voz.json
+!voz/requirements.txt
 # Tami: el motor y el modelo pesan GB, no van al repo
 motor/
 modelos/
@@ -32,3 +33,4 @@ __pycache__/
 
 # configuracion personal de cada uno (modelo propio)
 config_local.bat
+config_local.sh
