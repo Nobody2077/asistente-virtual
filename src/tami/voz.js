@@ -60,10 +60,11 @@ export class Voz {
     }
   }
 
-  decir(texto) {
+  // alSonar (opcional): se llama justo cuando ESA frase empieza a sonar (para que el gesto vaya con la palabra)
+  decir(texto, alSonar = null) {
     this.asegurar();
     if (this.ctx.state === 'suspended') this.ctx.resume();
-    this.cola.push({ texto, audio: this.pedir(texto) });
+    this.cola.push({ texto, audio: this.pedir(texto), alSonar });
     if (!this.sonando && this.cola.length === 1) this.siguiente(true);
   }
 
@@ -80,6 +81,7 @@ export class Voz {
     fuente.connect(this.analizador);
     this.sonando = fuente;
     if (primera) this.alEmpezar();
+    item.alSonar?.();
     fuente.onended = () => {
       if (gen !== this.generacion) return;
       this.sonando = null;

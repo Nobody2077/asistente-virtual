@@ -151,7 +151,7 @@ async function autoprueba(pregunta) {
   } else {
     ventana.webContents.executeJavaScript(`window.tamiPrueba.preguntar(${JSON.stringify(pregunta)})`);
   }
-  for (const ms of [1500, 4000, 7000, 11000]) {
+  for (const ms of [1500, 3000, 4500, 6000, 7500, 9000, 11000]) {
     await espera(ms - (Date.now() - inicio));
     await foto(`2_${String(ms).padStart(5, '0')}ms`);
   }

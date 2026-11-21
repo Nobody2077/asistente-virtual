@@ -48,6 +48,30 @@ const GESTOS = {
     pose: {}, onda: (t) => ({ head: [Math.max(0, Math.sin(t * 7)) * 0.14, 0, 0] }),
     ida: 0.1, dura: 1.0, vuelta: 0.3,
   },
+  // brazo IZQUIERDO (derecha de la pantalla): es el espejo del derecho → y, z con el signo cambiado
+  explicar: { // la mano acompaña lo que dice, con la palma hacia arriba (gesto de conversación)
+    pose: { leftUpperArm: [-0.35, -0.1, -1.25], leftLowerArm: [-1.4, -1.3, 0], leftHand: [0, 0, 0.2] },
+    orden: { leftLowerArm: 'ZYX' }, // gira el antebrazo (como una perilla) → palma arriba
+    onda: (t) => ({ leftLowerArm: [0, Math.sin(t * 3.2) * 0.12, 0] }),
+    ida: 0.45, dura: 1.6, vuelta: 0.55,
+  },
+  noSe: {     // hombros arriba y palmas hacia arriba: «eso no lo sé, te lo confirman en Admisiones»
+    pose: {
+      rightUpperArm: [0, 0, 1.2], leftUpperArm: [0, 0, -1.2], rightLowerArm: [-1.5, 1.5, 0], leftLowerArm: [-1.5, -1.5, 0],
+      rightShoulder: [0, 0, -0.15], leftShoulder: [0, 0, 0.15], head: [0, 0, 0.12],
+    },
+    orden: { rightLowerArm: 'ZYX', leftLowerArm: 'ZYX' },
+    ida: 0.4, dura: 1.3, vuelta: 0.5,
+  },
+  yo: {       // mano al pecho: «soy Tami»
+    pose: { leftUpperArm: [-0.75, -0.7, -1.35], leftLowerArm: [0, -1.75, 0], leftHand: [0, 0.9, -0.2], head: [0.05, 0, -0.06] },
+    ida: 0.45, dura: 1.4, vuelta: 0.5,
+  },
+  alegria: {  // manos juntas frente al pecho: «¡qué lindo!», al recomendar una carrera
+    // (con el codo en 1,8 las manos se cruzaban como «tiempo fuera»; 1,9 las junta bajo el mentón)
+    pose: { rightUpperArm: [-0.6, 0.5, 1.3], rightLowerArm: [0, 1.9, 0], leftUpperArm: [-0.6, -0.5, -1.3], leftLowerArm: [0, -1.9, 0] },
+    ida: 0.35, dura: 1.3, vuelta: 0.5,
+  },
   presentar: { // brazo abierto hacia la izquierda de la pantalla, donde aparece la ficha
     pose: { rightUpperArm: [1.2, -0.5, 1.05], rightLowerArm: [0, -0.9, 0], spine: [0, -0.08, 0] },
     orden: { rightUpperArm: 'ZYX' },
@@ -194,6 +218,7 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
       activos.push({ def, t: 0, soltando: false, pesoAlSoltar: 0 });
     },
     soltarGesto: soltarTodos,
+    ocupada: () => activos.some((g) => !g.soltando), // ¿está haciendo un gesto ahora?
     haciendo: () => activos.filter((g) => !g.soltando).map((g) => Object.keys(GESTOS).find((k) => GESTOS[k] === g.def) || 'prueba'),
     gestos: Object.keys(GESTOS),
   };

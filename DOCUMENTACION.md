@@ -288,6 +288,17 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
 | 👋 saludar | invita a quien pasa · se despide | codo pegado, antebrazo vertical, la mano va de lado a lado |
 | 🙂 asentir | empieza a escuchar por micrófono | la cabeza baja y sube |
 | 👉 presentar | aparece la ficha | brazo abierto hacia la izquierda, donde está la ficha |
+| 🤲 explicar | mientras habla, cada 4–8 s al azar | mano izquierda con la palma arriba, acompaña |
+| 🤷‍♀️ noSe | dice «Admisiones», «no está en mis datos» | hombros arriba, palmas arriba, cabeza ladeada |
+| 🫶 yo | dice «soy Tami» | mano al pecho |
+| 🙌 alegria | «te recomiendo», «encaja perfecto», «qué lindo» | manos juntas bajo el mentón |
+
+- Los gestos de la segunda tanda se eligen **por lo que dice cada frase** (`GESTO_POR_FRASE` en `app.js`) y
+  arrancan **justo cuando esa frase empieza a sonar**: `voz.decir(frase, alSonar)` (las frases llegan antes que
+  el audio, porque la voz las tiene en cola).
+- 🎓 Para girar la palma hacia arriba no basta doblar la muñeca: hay que **girar el antebrazo** sobre su eje
+  (como una perilla), otra vez con orden `ZYX`. En «alegría», con el codo en 1,8 las manos se cruzaban como el
+  signo de «tiempo fuera»: se dejó en 1,9.
 
 - Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
   probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.

@@ -49,11 +49,31 @@ let ultimaActividad = Date.now();
 let ultimaInvitacion = 0;
 let pensando = false;
 
+// --- gestos según lo que dice ---------------------------------------------------------------------
+// Como una persona: las manos acompañan las palabras. Se elige por frase (la frase llega justo antes de decirla).
+const GESTO_POR_FRASE = [
+  [/\bsoy tami\b|\bme llamo tami\b/i, 'yo'],
+  [/admisiones|no tengo (ese|el|esos) dato|no est[aá] en (los|mis) datos|no (lo )?s[eé]\b|no tenemos esa/i, 'noSe'],
+  [/te recomiendo|encaja(r[ií]a)? (perfecto|muy bien)|ideal para ti|qu[eé] (lindo|genial|emoci[oó]n)|me encanta/i, 'alegria'],
+];
+function gestoPara(frase) {
+  return GESTO_POR_FRASE.find(([re]) => re.test(frase))?.[1] || null;
+}
+// entre frase y frase, si no está haciendo nada, a veces la mano acompaña («explicar»)
+let proximoExplicar = 0;
+setInterval(() => {
+  if (!voz.hablando || avatar.ocupada() || Date.now() < proximoExplicar) return;
+  avatar.gesto('explicar');
+  proximoExplicar = Date.now() + 4000 + Math.random() * 4000; // cada 4 a 8 s, sin patrón fijo
+}, 700);
+
 let yaRespondio = false; // ¿llegó la primera frase de verdad (no la muletilla)?
 window.cerebro.alDecirFrase(({ frase, muletilla }) => {
   if (muletilla) mostrarBurbuja(`${frase} ${PENSANDO}`, { html: true });
   else if (!yaRespondio) { yaRespondio = true; avatar.soltarGesto(); avatar.mirar(0, 0); } // deja de pensar y responde
-  voz.decir(frase);
+  const g = muletilla ? null : gestoPara(frase);
+  // el gesto empieza cuando ESA frase empieza a sonar (las frases llegan antes: la voz las tiene en cola)
+  voz.decir(frase, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
 });
 window.cerebro.alEscribir((todo) => {
   if (todo) mostrarBurbuja(todo);
