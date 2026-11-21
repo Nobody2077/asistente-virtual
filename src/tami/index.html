@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'sha256-lbdvhE4LsglvelETbfQslpC16WU51J3FGjNkzXSM7h0='; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:8767 file: blob: data:; img-src 'self' data: blob:; media-src blob:">
+  <title>Tami — orientadora de Unifranz</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../../node_modules/three/build/three.module.js",
+        "three/addons/": "../../node_modules/three/examples/jsm/",
+        "@pixiv/three-vrm": "../../node_modules/@pixiv/three-vrm/lib/three-vrm.module.js"
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="tami.css">
+</head>
+<body>
+  <div id="arrastre" title="Arrastra para mover a Tami"></div>
+
+  <section id="burbuja" class="oculta" aria-live="polite">
+    <div id="burbuja-texto"></div>
+  </section>
+
+  <canvas id="avatar"></canvas>
+
+  <div id="placa">
+    <span class="nombre">TAMI</span>
+    <span class="cargo">Orientadora virtual · UNIFRANZ</span>
+  </div>
+
+  <form id="barra" autocomplete="off">
+    <button type="button" id="microfono" title="Mantén presionado para hablar (pronto)" disabled>🎤</button>
+    <input id="entrada" placeholder="Escríbele a Tami…" maxlength="300">
+    <button type="submit" id="enviar" title="Enviar">➤</button>
+  </form>
+
+  <div id="estado">Despertando a Tami…</div>
+  <button id="cerrar" title="Cerrar (Ctrl+Q)">✕</button>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

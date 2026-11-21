@@ -1,0 +1,112 @@
+/* Tami: colores del logo de Unifranz (negro, blanco, naranja) */
+:root {
+  --negro: #111;
+  --negro-2: #1d1d1d;
+  --blanco: #fff;
+  --naranja: #ff5a1a;
+  --naranja-suave: #ff7a45;
+  --gris: #b9b9b9;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent; /* la ventana es transparente: Tami flota sobre el escritorio */
+  font-family: "Segoe UI", system-ui, sans-serif;
+  user-select: none;
+}
+
+#avatar {
+  position: absolute;
+  inset: 90px 0 0 0;
+  width: 100%;
+  height: calc(100% - 90px);
+  display: block;
+}
+
+/* franja invisible arriba para mover la ventana */
+#arrastre { position: absolute; top: 0; left: 0; right: 40px; height: 24px; -webkit-app-region: drag; z-index: 5; }
+
+/* --- burbuja de subtítulos ------------------------------------------------------------------- */
+#burbuja {
+  position: absolute;
+  top: 26px; left: 18px; right: 18px;
+  z-index: 3;
+  background: var(--negro);
+  color: var(--blanco);
+  border-radius: 18px;
+  border-left: 6px solid var(--naranja);
+  padding: 14px 18px;
+  font-size: 19px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  max-height: 210px;
+  overflow: hidden;
+  transition: opacity .25s, transform .25s;
+}
+#burbuja::after { /* la colita apuntando a Tami */
+  content: ""; position: absolute; bottom: -12px; left: 50%;
+  border: 12px solid transparent; border-bottom: 0; border-top-color: var(--negro);
+  transform: translateX(-50%);
+}
+#burbuja.oculta { opacity: 0; transform: translateY(-8px); }
+#burbuja.estudiante { background: var(--blanco); color: var(--negro); border-left-color: var(--gris); }
+#burbuja.estudiante::after { border-top-color: var(--blanco); }
+#burbuja .pensando span {
+  display: inline-block; width: 9px; height: 9px; margin: 0 3px; border-radius: 50%;
+  background: var(--naranja); animation: salto 1s infinite;
+}
+#burbuja .pensando span:nth-child(2) { animation-delay: .15s; }
+#burbuja .pensando span:nth-child(3) { animation-delay: .3s; }
+@keyframes salto { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+
+/* --- placa con su nombre -------------------------------------------------------------------- */
+#placa {
+  position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%);
+  z-index: 2;
+  background: var(--negro); color: var(--blanco);
+  border-radius: 10px; padding: 6px 16px; text-align: center;
+  border-bottom: 3px solid var(--naranja);
+  white-space: nowrap;
+}
+#placa .nombre { font-weight: 800; letter-spacing: 3px; font-size: 18px; }
+#placa .cargo { display: block; font-size: 12px; color: var(--gris); }
+
+/* --- barra para escribir -------------------------------------------------------------------- */
+#barra {
+  position: absolute; left: 14px; right: 14px; bottom: 16px;
+  z-index: 3;
+  display: flex; gap: 8px;
+  background: var(--negro); border-radius: 30px; padding: 7px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+#entrada {
+  flex: 1; min-width: 0;
+  border: 0; outline: 0; border-radius: 24px;
+  background: var(--negro-2); color: var(--blanco);
+  font-size: 17px; padding: 10px 16px;
+  user-select: text;
+}
+#entrada::placeholder { color: #888; }
+#barra button {
+  width: 46px; height: 46px; border: 0; border-radius: 50%;
+  background: var(--naranja); color: var(--blanco); font-size: 20px; cursor: pointer;
+}
+#barra button:hover:not(:disabled) { background: var(--naranja-suave); }
+#barra button:disabled { background: #444; cursor: default; }
+
+#estado {
+  position: absolute; bottom: 74px; left: 0; right: 0; text-align: center;
+  font-size: 12px; color: var(--negro); text-shadow: 0 0 4px #fff; z-index: 2;
+}
+#estado:empty { display: none; }
+
+#cerrar {
+  position: absolute; top: 2px; right: 6px; z-index: 6;
+  width: 28px; height: 28px; border: 0; border-radius: 50%;
+  background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; opacity: .25;
+}
+#cerrar:hover { opacity: 1; }
