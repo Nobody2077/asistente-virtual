@@ -52,12 +52,26 @@ function salirDeVerdad() {
   app.quit();
 }
 
+// Minimizar en feria: se SUELTA el blindaje (kiosco y «siempre encima») para poder usar otras ventanas,
+// y al restaurarla desde la barra de tareas se vuelve a poner (ver el evento 'restore' en crearVentana()).
+function minimizar() {
+  if (!ventana || ventana.isDestroyed()) return;
+  ventanaExplica?.close();
+  if (FERIA) {
+    ventana.setAlwaysOnTop(false);
+    ventana.setKiosk(false); // una ventana en kiosco no se deja minimizar
+  }
+  ventana.minimize();
+  enviar('tami:minimizada', true);
+}
+
 // Se le pone a CADA ventana de Tami (la principal y la de «Así funciona Tami»)
 function blindar(v) {
   if (!FERIA) return;
   v.webContents.on('before-input-event', (e, t) => {
     if (t.type !== 'keyDown') return;
     if (t.control && t.alt && t.shift && (t.key || '').toLowerCase() === 'q') { e.preventDefault(); salirDeVerdad(); return; }
+    if (t.control && t.alt && t.shift && (t.key || '').toLowerCase() === 'm') { e.preventDefault(); minimizar(); return; }
     if (teclaBloqueada(t)) e.preventDefault();
   });
   v.on('close', (e) => { if (!salidaPermitida && v === ventana) e.preventDefault(); }); // Alt+F4 llega aquí
@@ -95,7 +109,7 @@ function crearVentana() {
     resizable: false,
     alwaysOnTop: !STAND || FERIA,
     kiosk: FERIA && !fotoFuera, // kiosco: pantalla completa que tapa también la barra de tareas
-    skipTaskbar: FERIA,
+    skipTaskbar: false, // en la barra de tareas: por ahí se la restaura después de minimizarla
     hasShadow: false,
     title: 'Tami — orientadora de Unifranz',
     webPreferences: {
@@ -110,13 +124,20 @@ function crearVentana() {
     ventana.setAlwaysOnTop(true, 'screen-saver');
     ventana.on('blur', () => setTimeout(() => {
       const otra = BrowserWindow.getFocusedWindow();
-      if (ventana && !ventana.isDestroyed() && !salidaPermitida && (!otra || otra !== ventanaExplica)) {
+      if (ventana && !ventana.isDestroyed() && !ventana.isMinimized() && !salidaPermitida && (!otra || otra !== ventanaExplica)) {
         ventana.show();
         ventana.focus();
       }
     }, 1500));
+    // volvió desde la barra de tareas → blindada otra vez
+    ventana.on('restore', () => {
+      if (!fotoFuera) ventana.setKiosk(true); // (en las pruebas no: taparía la pantalla de Juan)
+      ventana.setAlwaysOnTop(true, 'screen-saver');
+      ventana.focus();
+      enviar('tami:minimizada', false);
+    });
   }
-  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC } });
+  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC, feria: FERIA ? '1' : '' } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -196,6 +217,7 @@ ipcMain.handle('tami:reiniciar', () => {
 
 // Ctrl+Q / la X de la página: en feria no hacen nada (solo la combinación secreta, ver blindar())
 ipcMain.handle('tami:cerrar', () => { if (!FERIA) app.quit(); });
+ipcMain.handle('tami:minimizar', () => minimizar());
 
 // --- La ventana «Así funciona Tami» -------------------------------------------------------------------
 // La ÚNICA ventana extra que Tami puede abrir (lista cerrada, como pidió Juan: nada de abrir programas ni el

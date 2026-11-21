@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('cerebro', {
   invitar: () => ipcRenderer.invoke('tami:invitar'),
   reiniciar: () => ipcRenderer.invoke('tami:reiniciar'),
   cerrar: () => ipcRenderer.invoke('tami:cerrar'),
+  minimizar: () => ipcRenderer.invoke('tami:minimizar'),
+  alMinimizar: escuchar('tami:minimizada'), // true al minimizarse, false al volver
   estado: () => ipcRenderer.invoke('tami:estado'),
   ficha: (abierta) => ipcRenderer.invoke('tami:ficha', Boolean(abierta)), // la ventana crece / se achica
   explica: (pedido) => ipcRenderer.invoke('tami:explica', pedido),         // { accion: abrir|escena|cerrar, n, pregunta }

@@ -406,9 +406,14 @@ le pone a cada ventana de Tami:
   Inicio, a los 1,5 s Tami recupera el foco.
 - **La pantalla no se apaga** en 4 horas (`powerSaveBlocker`).
 - 🔑 **Salida secreta: Ctrl+Alt+Shift+Q.**
+- ➖ **Minimizar** (22/11, Juan no podía cambiar de ventana): botón discreto arriba a la derecha que hay que
+  **mantener 1 s** (se llena de naranja; un toque suelto de un visitante no hace nada), o **Ctrl+Alt+Shift+M**.
+  Al minimizar se suelta el blindaje (kiosco y «siempre encima») y Tami **se calla y no invita**. Para volver:
+  clic en Tami en la **barra de tareas** → vuelve blindada. (Se usa `setInterval` y no `requestAnimationFrame`
+  para la carga del botón: rAF se pausa si Windows cree que la ventana está tapada.)
 
 Prueba automática (no tapa la pantalla): `npx electron scripts/probar-feria.js` → **TODO BIEN** (cerrar, Ctrl+Q,
-las 7 teclas, la caída de la página que volvió en 0,5 s y la salida secreta).
+las 7 teclas, la caída de la página que volvió en 0,5 s, minimizar/restaurar y la salida secreta).
 Lo que **no** cubre (es de Windows, no de Tami): Ctrl+Alt+Supr y Win+L. En la feria, alguien del equipo
 siempre al lado de la PC.
 
@@ -418,6 +423,7 @@ siempre al lado de la PC.
 
 - **Encender:** doble clic en `INICIAR_TAMI.bat`. La primera vez el modelo tarda en cargar (~1 min).
 - **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa blindada (5.16). Salir: **Ctrl+Alt+Shift+Q**.
+  Minimizar: **mantener 1 s** el botón ➖ de arriba a la derecha o **Ctrl+Alt+Shift+M**; volver: barra de tareas.
   Para el stand sin blindaje (ensayos): `INICIAR_TAMI.bat --stand` (sale con Ctrl+Q).
 - **Presentación «Así funciona Tami»:** **F8** (o preguntarle «¿cómo funcionas?»). F8 otra vez la detiene.
 - **Rearmar el mapa de la memoria** (si cambian los datos): `..\windows\python\python.exe cerebro\armar_mapa.py`.

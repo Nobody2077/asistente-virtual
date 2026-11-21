@@ -16,6 +16,9 @@ const $ = (id) => document.getElementById(id);
 // modo stand (pantalla completa en la feria) o escritorio (ventanita): lo dice main.js en la dirección
 const STAND = new URLSearchParams(location.search).get('modo') === 'stand';
 document.body.classList.toggle('stand', STAND);
+// modo feria (blindado): muestra el botón de minimizar
+document.body.classList.toggle('feria', new URLSearchParams(location.search).get('feria') === '1');
+let minimizada = false; // mientras está minimizada no habla ni invita (Juan está usando otra ventana)
 const burbuja = $('burbuja');
 const burbujaTexto = $('burbuja-texto');
 const entrada = $('entrada');
@@ -242,7 +245,7 @@ window.cerebro.alExplicar(() => explicarme());
 window.cerebro.alExplicaCerrada(() => { if (explicando) { explicando = false; voz.callar(); } });
 
 setInterval(() => {
-  if (voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
   const ahora = Date.now();
   if (enCharla && ahora - ultimaActividad > DESPEDIRSE_TRAS) despedirse();
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
@@ -329,6 +332,40 @@ window.addEventListener('keydown', (e) => {
   setTimeout(esperarOido, 3000);
 })();
 $('cerrar').addEventListener('click', () => window.cerebro.cerrar());
+
+// --- minimizar (modo feria) ---------------------------------------------------------------------------
+// Hay que MANTENER el botón 1 segundo (se va llenando de naranja): así un visitante que lo toca de pasada no
+// esconde a Tami, pero Juan puede ir a otra ventana. Para volver: clic en Tami en la barra de tareas.
+const botonMin = $('minimizar');
+let cargaMin = null;
+function soltarMin() {
+  clearInterval(cargaMin); cargaMin = null;
+  botonMin.classList.remove('apretando');
+  botonMin.style.setProperty('--carga', '0%');
+}
+botonMin.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (cargaMin) return;
+  const inicio = performance.now();
+  botonMin.classList.add('apretando');
+  // setInterval y no requestAnimationFrame: rAF se pausa si Windows cree que la ventana está tapada
+  cargaMin = setInterval(() => {
+    const p = Math.min(1, (performance.now() - inicio) / 1000);
+    botonMin.style.setProperty('--carga', `${p * 100}%`);
+    if (p >= 1) { soltarMin(); window.cerebro.minimizar(); }
+  }, 30);
+});
+for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) botonMin.addEventListener(ev, soltarMin);
+window.cerebro.alMinimizar((si) => {
+  minimizada = si;
+  if (si) {
+    voz.callar();
+    if (explicando) pararExplicacion();
+    if (escuchando) terminarDeEscuchar();
+  } else {
+    ultimaActividad = Date.now(); // al volver no invita de golpe
+  }
+});
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key.toLowerCase() === 'q') window.cerebro.cerrar();
 });

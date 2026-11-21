@@ -48,6 +48,28 @@ app.whenReady().then(async () => {
   revisar(`si la página se cae, vuelve sola (${((Date.now() - antes) / 1000).toFixed(1)} s)`, recargo && !v.webContents.isCrashed());
 
   await espera(2000);
+  // minimizar: con un clic suelto NO (hay que mantener 1 s); con el botón mantenido o Ctrl+Alt+Shift+M, sí
+  await v.webContents.executeJavaScript(`(() => { const b = document.getElementById('minimizar');
+    b.dispatchEvent(new PointerEvent('pointerdown')); setTimeout(() => b.dispatchEvent(new PointerEvent('pointerup')), 150); })()`);
+  await espera(1500);
+  revisar('un clic suelto en minimizar no la esconde', !v.isMinimized());
+  revisar('el botón minimizar se ve en modo feria', await v.webContents.executeJavaScript(
+    "getComputedStyle(document.getElementById('minimizar')).display !== 'none'"));
+  await v.webContents.executeJavaScript("document.getElementById('minimizar').dispatchEvent(new PointerEvent('pointerdown'))");
+  await espera(1600);
+  revisar('mantener 1 s el botón la minimiza', v.isMinimized());
+  revisar('minimizada ya no está siempre encima', !v.isAlwaysOnTop());
+  await espera(2500);
+  revisar('minimizada, NO vuelve sola al frente (se pueden usar otras ventanas)', v.isMinimized());
+  v.restore(); // como hacer clic en Tami en la barra de tareas
+  await espera(1000);
+  revisar('al restaurarla vuelve blindada (siempre encima)', !v.isMinimized() && v.isAlwaysOnTop());
+  tecla(v, 'M', ['control', 'alt', 'shift']);
+  await espera(1200);
+  revisar('Ctrl+Alt+Shift+M también la minimiza', v.isMinimized());
+  v.restore();
+  await espera(1000);
+
   console.log('…probando la salida secreta Ctrl+Alt+Shift+Q');
   app.once('will-quit', () => {
     revisar('la salida secreta Ctrl+Alt+Shift+Q sí la cierra', true);
