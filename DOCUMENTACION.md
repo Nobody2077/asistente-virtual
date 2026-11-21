@@ -3,7 +3,7 @@
 > **Proyecto de feria:** *Desarrollo de un Asistente Virtual Conversacional Basado en Modelos de Lenguaje y
 > Síntesis de Voz en Tiempo Real para la Orientación Vocacional y Atención al Postulante de la Universidad
 > Franz Tamayo (UNIFRANZ).*
-> **Autor:** Juan Cristian Yujra Quispe · **Feria:** miércoles 25 de noviembre de 2026, sede El Alto, 4 horas.
+> **Equipo:** Juan Cristian Yujra Quispe y Brayan Quispe Mamani · **Feria:** miércoles 25 de noviembre de 2026, sede El Alto, 4 horas.
 
 ---
 
@@ -16,8 +16,14 @@
   parecida → probar `--no-mmap` (pendiente 1).
 - ✅ **Examen de feria** (`scripts\examen-feria.js`, 34 estudiantes con trampas) corrido y corregido (sección 5.6):
   ya no inventa cuotas, horarios ni sueldos; responde «¡Waliki!» al aymara; no repite teléfonos.
-- Siguiente, en este orden: **pulir características para la presentación** (micrófono, ficha de carrera con QR,
-  modo feria, ensayo de 4 h) → después el **cerebro de respaldo 3B** → después una **voz más delicada**.
+  Última corrida: **33 de 34 bien** (falla el caso 13, Veterinaria: 69 palabras y recomienda Sistemas; pendiente).
+- ✅ Hechas para la presentación: **micrófono con Whisper** (5.8; arreglado el 21/11: grababa el micrófono
+  virtual de iVCam), **ficha con QR** (5.9), **8 gestos** (5.10), **credencial y modo stand** (5.11),
+  **saludos con personalidad** (5.12), **presentación «Así funciona Tami»** con F8 (5.13) e **íconos SVG** (5.14).
+- ⏳ Falta que Juan pruebe en su PC: hablarle por el micrófono real, escanear el QR con un celular y abrir
+  `TAMI_FERIA.bat` con F8.
+- Siguiente, en este orden: **modo feria** (que no se pueda cerrar ni salir a Windows) → **ensayo de 4 h** midiendo
+  la RAM (5.15: ya se llenó una vez) → **cerebro de respaldo 3B** → **voz más delicada**.
 
 ---
 
@@ -305,6 +311,11 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
 - 🎓 Para girar la palma hacia arriba no basta doblar la muñeca: hay que **girar el antebrazo** sobre su eje
   (como una perilla), otra vez con orden `ZYX`. En «alegría», con el codo en 1,8 las manos se cruzaban como el
   signo de «tiempo fuera»: se dejó en 1,9.
+- Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
+  probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.
+- 🎓 El codo es una **bisagra** que dobla hacia adelante: para saludar (antebrazo hacia ARRIBA) primero hay que
+  girar el brazo sobre su propio eje. Eso pide aplicar los giros en orden `ZYX` en vez de `XYZ` (`orden` en el gesto).
+- La cámara encuadra justo (±30 cm del centro): los gestos tienen que quedar cerca del cuerpo.
 
 ### 5.11 La credencial y el modo stand
 - **Credencial** (`ponerCredencial` en `avatar.js`): tarjeta dibujada en un `<canvas>` («UNIFRANZ» en texto con los
@@ -346,12 +357,36 @@ Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo fun
 - Kokoro lee bien los números del guion (probado: Kokoro habla → Whisper escucha → «8093», «384»…).
 - Fotos sin pantalla: `npx electron scripts/foto-explica.js [escenas]`; prueba completa:
   `npx electron src/tami/main.js --autoprueba "¿cómo funcionas?"`.
+- **Cuando alguien pregunta «¿quién te hizo?»**, Tami responde con un texto fijo que dice los nombres completos y termina en
+  «¿Quieres que te muestre cómo funciono por dentro?». Si contestan «sí», arranca la presentación. Es fijo porque el
+  modelo acortaba los apellidos («Brayan Quispe Quispe»), y ante el jurado los nombres tienen que salir exactos.
+- Re-probada completa el 21/11 después de los cambios de íconos: las 9 escenas y la narración funcionan.
 
-- Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
-  probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.
-- 🎓 El codo es una **bisagra** que dobla hacia adelante: para saludar (antebrazo hacia ARRIBA) primero hay que
-  girar el brazo sobre su propio eje. Eso pide aplicar los giros en orden `ZYX` en vez de `XYZ` (`orden` en el gesto).
-- La cámara encuadra justo (±30 cm del centro): los gestos tienen que quedar cerca del cuerpo.
+### 5.14 Íconos SVG en vez de emojis (21/11)
+Pedido de Juan: que el micrófono, la página y el QR «ya no sean emoticones». Los emojis se dibujan con la fuente
+del sistema, así que cambian según la versión de Windows y no toman el color de la marca. Ahora son **íconos SVG de
+línea** escritos dentro del HTML (estilo Lucide), con `stroke="currentColor"`: toman el color del botón y se ven
+nítidos a cualquier tamaño.
+- **App** (`index.html`, `tami.css`): micrófono, enviar (avión de papel), cerrar (✕), y en el cartel del stand
+  micrófono · teclado.
+- **QR de la ficha:** ícono de «escanear código» (esquinas de visor + mini QR) con una **línea láser roja que sube y
+  baja** (`@keyframes barrido`), para que se entienda que hay que escanearlo. El primer intento (un celular)
+  parecía una pila, así que se cambió mirando la foto.
+- **Presentación** (`explica.html`, `explica.css`): la cadena (Whisper → micrófono, RAG → base de datos con lupa,
+  Qwen → chip, Kokoro → onda de voz, Avatar → persona) y el camino en clases (YOLO → visor, FIFA → embudo de
+  limpieza, Colab → nube, Crawl4AI → globo, Tami → destello). Miden `1em`, así que crecen con el texto de su caja.
+- También se quitaron los emojis de los mensajes de la burbuja («No te escuché bien.», etc.).
+- 🎓 Se dejaron `✓` y `☰` porque son **caracteres de texto** y no emojis: `☰` es parte del menú «basura» que la
+  animación limpia.
+
+### 5.15 La RAM se llenó otra vez (21/11)
+Con el cerebro, la memoria, la voz con Whisper, varias pruebas de Electron y Claude Code abiertos a la vez, Windows
+se quedó sin RAM y **Claude Code apagó por su cuenta los servidores de voz (8767) y de memoria (8766)** que tenía
+encendidos en segundo plano. Tami no tenía ningún error: fue la presión de memoria.
+- `INICIAR_TAMI.bat` y `TAMI_FERIA.bat` encienden sus propios servidores, así que no hace falta nada más.
+- 👉 **Para la feria:** dejar **solo Tami** abierta y cerrar Steam, iVCam, navegadores y Claude Code. Además, hacer
+  el **ensayo de 4 h midiendo la RAM** y probar `--no-mmap` (pendiente 1), que debería liberar unos 5 GB del
+  archivo del modelo «mapeado» en RAM.
 
 ---
 
@@ -360,14 +395,18 @@ Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo fun
 - **Encender:** doble clic en `INICIAR_TAMI.bat`. La primera vez el modelo tarda en cargar (~1 min).
 - **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa (modo stand). Salir: **Ctrl+Q**.
 - **Presentación «Así funciona Tami»:** **F8** (o preguntarle «¿cómo funcionas?»). F8 otra vez la detiene.
-- **Rearmar el mapa de la memoria** (si cambian los datos): `cerebrormar_mapa.py` con el Python portátil.
+- **Rearmar el mapa de la memoria** (si cambian los datos): `..\windows\python\python.exe cerebro\armar_mapa.py`.
 - **Mover a Tami:** arrastrar la franja de arriba. **Cerrar:** la ✕ o **Ctrl+Q**.
 - **Ciclo de feria:** si nadie le habla, invita cada 45 s; si un estudiante se queda callado 90 s, se despide y
   empieza de cero para el siguiente.
 - **Probar sin pantalla:** `npx electron src/tami/main.js --autoprueba "¿hay becas?"` → fotos en `capturas\`.
 - **Probar el cerebro por consola:** `node scripts/probar-tami.js` (o `node scripts/probar-tami.js "pregunta"`).
 - **Examen de feria:** `node scripts/examen-feria.js` (todo, ~5 min) o `node scripts/examen-feria.js trampa` (un tema).
-- **Hablarle:** botón 🎤 (mantener, o tocar y volver a tocar) o **F2**.
+- **Hablarle:** botón del micrófono (mantener, o tocar y volver a tocar) o **F2**. Tami usa sola el micrófono
+  real e ignora los virtuales (iVCam, Steam…). Para forzar uno: `INICIAR_TAMI.bat --mic "parte del nombre"`.
+  Si dice «Mi micrófono no recibe sonido», el problema es del aparato: revisar que esté conectado y el volumen
+  en *Configuración → Sonido → Micrófono*.
+- **Antes de abrir en la feria:** cerrar Steam, iVCam, navegadores y Claude Code (5.15).
 - **Corregir un dato:** agregarlo a `cerebro\datos_confirmados.json` (manda sobre las noticias).
 - **Cambiar la voz:** editar `voz\voz.json` y reiniciar la voz.
 - **Actualizar el catálogo:** `..\windows\python\python.exe cerebro\armar_catalogo.py`.
@@ -379,10 +418,13 @@ Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo fun
 1. Probar `llama-server --no-mmap` para bajar la RAM (necesita que Juan lo encienda: el sistema no deja que
    Claude ejecute ese `.exe`).
 2. **Características para la presentación:**
-   - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8). Falta probarlo con la voz real de Juan y el ruido de la feria.
+   - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8; el 21/11 se arregló que grababa el micrófono virtual de iVCam).
+     Falta probarlo con la voz real de Juan y el ruido de la feria (ideal: micrófono de solapa o de diadema).
    - ✅ ~~Ficha con QR~~ (hecho, 5.9). Falta escanear el QR con un celular real.
-   - ✅ ~~Gestos~~ (hecho, 5.10): pensar, saludar, asentir, presentar.
+   - ✅ ~~Gestos~~ (hecho, 5.10): ocho gestos.
    - ✅ ~~Credencial y modo stand~~ (hecho, 5.11). Falta verlo en el monitor real del stand.
+   - ✅ ~~Presentación «Así funciona Tami»~~ (5.13) y ~~íconos SVG~~ (5.14).
+   - 🩺 Caso 13 del examen (Veterinaria): acortar y sugerir carreras cercanas del catálogo, no Sistemas.
    - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
 3. **Cerebro de respaldo** Qwen2.5-3B (decisión 11).
@@ -399,5 +441,9 @@ Idea de Juan: que Tami **se explique a sí misma** (equipo, finalidad, cómo fun
 - **Modelo de lenguaje** — Qwen3.5-9B (Alibaba / Qwen), GGUF de lmstudio-community.
 - **Motor** — llama.cpp (ggml-org), licencia MIT.
 - **Voz** — Kokoro-82M (hexgrad), kokoro-onnx (thewh1teagle), Apache 2.0.
+- **Oído** — Whisper (OpenAI, MIT) por medio de faster-whisper (SYSTRAN, MIT).
+- **Memoria** — Chroma (Apache 2.0) y el modelo de embeddings multilingual-e5-small (intfloat, MIT).
+- **QR** — `qrcode` (soldair, MIT). **3D** — three.js y three-vrm (pixiv), MIT.
+- **Íconos** — trazos al estilo de Lucide (lucide.dev, licencia ISC); varios son sus trazos originales.
 - **Datos** — unifranz.edu.bo (descargados en noviembre de 2026). Su `robots.txt` dice `ai-train=no,
   use=reference`: **solo para consultar citando la fuente; no publicar `datos\` ni `cerebro\carreras.json`**.
