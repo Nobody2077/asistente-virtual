@@ -46,14 +46,44 @@ const PAGINAS = {
 };
 
 // Para invitar a quien pasa: frases fijas (no hace falta el modelo, y así salen al instante).
+// Saludos con personalidad (idea de Juan: «Buenos días, ¿cómo estás? ¿Te interesa alguna carrera? Puedes
+// preguntarme todo acerca de la Unifranz y te responderé»). Cálidos y tranquilos, nunca bruscos: la voz todavía
+// suena adulta y una frase cortante sonaría a regaño. Sin «interesado/a»: no adivinamos si es chico o chica.
+// {saludo} = «Buenos días» / «Buenas tardes» / «Buenas noches», según la hora.
 const INVITACIONES = [
-  '¡Hola! Soy Tami, la orientadora virtual de Unifranz. ¿Ya sabes qué carrera quieres estudiar?',
-  '¡Hey, tú! ¿Tienes un minuto? Te ayudo a descubrir qué carrera va contigo.',
-  '¿Estás saliendo del colegio? Cuéntame qué te gusta y te digo qué carrera de Unifranz te queda.',
-  '¡Hola! Pregúntame lo que quieras de Unifranz: carreras, becas, sedes o cómo inscribirte.',
-  '¿Indeciso con tu carrera? Es normal. Conversemos un ratito y lo descubrimos juntos.',
+  '¡{saludo}! ¿Cómo estás? Soy Tami, de Unifranz. ¿Te interesa alguna carrera? Puedes preguntarme todo acerca de la Unifranz y te responderé con gusto.',
+  '¡{saludo}! Qué gusto verte por aquí. Soy Tami, tu orientadora virtual. Si tienes dudas sobre carreras, becas o cómo inscribirte, pregúntame con confianza.',
+  '¡Hola, {saludo_min}! ¿Ya estás pensando qué estudiar? Si quieres, conversamos un ratito y lo vamos descubriendo juntos.',
+  '¡{saludo}! ¿Estás por salir del colegio? Cuéntame qué te gusta hacer y te cuento qué carreras de Unifranz van contigo.',
+  '¡Hola! ¿Cómo te va? Soy Tami. Puedo ayudarte a elegir carrera o resolver cualquier duda sobre la Unifranz. ¿Empezamos?',
+  '¡{saludo}! Te doy la bienvenida al stand de Unifranz. Puedes hablarme por el micrófono o escribirme, como te sea más cómodo.',
+  '¡{saludo}! Si vienen en familia, también respondo las dudas de papás y mamás sobre carreras, becas y admisión.',
+  '¡Hola, qué bueno que te acercas! Elegir carrera es una decisión importante, y no tienes que hacerlo solo ni sola. Aquí estoy para ayudarte.',
 ];
-const DESPEDIDA = '¡Fue un gusto conversar contigo! Te espero en Unifranz. ¡Mucho éxito!';
+const DESPEDIDAS = [
+  '¡Fue un gusto conversar contigo! Te espero en Unifranz. ¡Mucho éxito!',
+  '¡Gracias por acercarte! Recuerda que en Admisiones te ayudan con todo lo demás. ¡Que te vaya muy bien!',
+  '¡Un gusto! Si te quedó alguna duda, aquí voy a estar toda la feria. ¡Mucho éxito en tu decisión!',
+];
+const DESPEDIDA = DESPEDIDAS[0]; // (la de siempre, por si algo la pide fija)
+
+// «Buenos días» hasta las 12, «Buenas tardes» hasta las 19, después «Buenas noches»
+function saludoDeLaHora(ahora = new Date()) {
+  const h = ahora.getHours();
+  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+}
+
+// elige una distinta a las últimas que dijo: en 4 horas de feria no debe sonar repetitiva
+function sinRepetir(lista, recientes, cuantas) {
+  const libres = lista.map((_, i) => i).filter((i) => !recientes.includes(i));
+  const i = libres[Math.floor(Math.random() * libres.length)];
+  recientes.push(i);
+  if (recientes.length > cuantas) recientes.shift();
+  return lista[i];
+}
+const ultimasInvitaciones = [];
+const ultimasDespedidas = [];
+function despedida() { return sinRepetir(DESPEDIDAS, ultimasDespedidas, 1); }
 
 // Lo que dice al instante cuando tiene que revisar los datos (5 a 10 s en esta PC): como una persona que
 // busca en sus papeles. Así la espera se siente natural y no como si se hubiera colgado.
@@ -116,7 +146,9 @@ function personalidad() {
       '- De 1 a 3 frases cortas, máximo 50 palabras. Nada de listas, viñetas, asteriscos, emojis ni direcciones web.\n' +
       '- Escribe los números como se dicen cuando ayuda («cuatro años y medio»).\n' +
       '- Casi siempre termina con UNA pregunta corta para seguir la conversación.\n' +
-      '- Saluda solo al comienzo; si ya están conversando, no vuelvas a decir «hola» ni «excelente pregunta».',
+      '- Saluda solo al comienzo; si ya están conversando, no vuelvas a decir «hola» ni «excelente pregunta».\n' +
+      '- Tu forma de saludar es cálida y tranquila, por ejemplo: «¡Hola! ¿Cómo estás? ¿Te interesa alguna carrera? ' +
+      'Puedes preguntarme todo acerca de la Unifranz y te respondo con gusto.» Nunca seca ni cortante.',
     'Tu trabajo:\n' +
       '1. Si el estudiante no sabe qué estudiar, haz una mini entrevista vocacional, UNA pregunta a la vez: ' +
       'qué materias del colegio le gustan, qué hace en su tiempo libre, si prefiere trabajar con personas, con ' +
@@ -341,7 +373,12 @@ function nuevaConversacion() {
   return { historial: [], empezo: Date.now() };
 }
 
-const invitacion = () => INVITACIONES[Math.floor(Math.random() * INVITACIONES.length)];
+function invitacion(ahora = new Date()) {
+  const saludo = saludoDeLaHora(ahora);
+  return sinRepetir(INVITACIONES, ultimasInvitaciones, 4)
+    .replace('{saludo}', saludo)
+    .replace('{saludo_min}', saludo.toLowerCase());
+}
 
 // Si Tami habló primero (invitó), eso queda en el historial como lo que ella dijo. La plantilla de
 // Qwen no acepta que la charla empiece con ella, así que va detrás de un «se acerca alguien». Así la
@@ -447,4 +484,4 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
   return { texto: dicho, mostrar, datos: hits };
 }
 
-module.exports = { nuevaConversacion, responder, invitacion, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };
+module.exports = { nuevaConversacion, responder, invitacion, despedida, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };

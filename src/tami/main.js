@@ -128,7 +128,7 @@ ipcMain.handle('tami:invitar', () => {
 ipcMain.handle('tami:reiniciar', () => {
   enCurso?.abort();
   conversacion = tami.nuevaConversacion();
-  return tami.DESPEDIDA;
+  return tami.despedida();
 });
 
 ipcMain.handle('tami:cerrar', () => app.quit());
