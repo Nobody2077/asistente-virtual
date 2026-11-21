@@ -17,6 +17,24 @@
   <link rel="stylesheet" href="tami.css">
 </head>
 <body>
+  <!-- la ficha aparece a la IZQUIERDA de Tami (la ventana crece hacia ese lado); Tami no se mueve -->
+  <aside id="ficha" class="oculta" aria-live="polite">
+    <div class="ficha-cabeza">
+      <span class="ficha-marca">UNIFRANZ</span>
+      <button id="ficha-cerrar" title="Cerrar la ficha">✕</button>
+    </div>
+    <h2 id="ficha-titulo"></h2>
+    <p id="ficha-detalle"></p>
+    <div id="ficha-puntos"></div>
+    <div id="ficha-trabajo"></div>
+    <div class="ficha-qr">
+      <div id="ficha-qr"></div>
+      <p>📱 Escanéalo con tu celular<br>y llévate la información</p>
+    </div>
+    <p id="ficha-contacto"></p>
+  </aside>
+
+  <main id="tami">
   <div id="arrastre" title="Arrastra para mover a Tami"></div>
 
   <section id="burbuja" class="oculta" aria-live="polite">
@@ -38,6 +56,7 @@
 
   <div id="estado">Despertando a Tami…</div>
   <button id="cerrar" title="Cerrar (Ctrl+Q)">✕</button>
+  </main>
 
   <script type="module" src="app.js"></script>
 </body>

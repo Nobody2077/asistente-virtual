@@ -56,10 +56,43 @@ window.cerebro.alDecirFrase(({ frase, muletilla }) => {
 window.cerebro.alEscribir((todo) => {
   if (todo) mostrarBurbuja(todo);
 });
-window.cerebro.alMostrar((pedido) => {
-  // la ficha de la carrera con su QR llega en el próximo paso; por ahora se anota
-  console.log('[mostrar]', pedido);
-});
+// --- la ficha con QR -----------------------------------------------------------------------------
+const FICHA_DURA = 90_000; // se cierra sola después de 1,5 min (o al llegar otro estudiante)
+const ficha = $('ficha');
+let cerrarFichaLuego = null;
+let fichaAbierta = false;
+
+async function mostrarFicha(f) {
+  $('ficha-titulo').textContent = f.titulo;
+  $('ficha-detalle').textContent = f.detalle;
+  const chips = (id, lista) => $(id).replaceChildren(...lista.map((t) => Object.assign(document.createElement('span'), { textContent: t })));
+  chips('ficha-puntos', f.puntos);
+  chips('ficha-trabajo', f.trabajo);
+  $('ficha-qr').innerHTML = f.qr; // SVG que arma main.js con la librería qrcode (no viene del estudiante)
+  $('ficha-contacto').textContent = f.contacto;
+  if (!fichaAbierta) {
+    fichaAbierta = true;
+    await window.cerebro.ficha(true); // primero crece la ventana…
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  ficha.classList.remove('oculta'); // …y luego entra la tarjeta
+  avatar.mirar(-0.35, -0.1); // la mira de reojo, como quien la presenta
+  setTimeout(() => avatar.mirar(0, 0), 1800);
+  clearTimeout(cerrarFichaLuego);
+  cerrarFichaLuego = setTimeout(cerrarFicha, FICHA_DURA);
+}
+
+async function cerrarFicha() {
+  clearTimeout(cerrarFichaLuego);
+  if (!fichaAbierta) return;
+  fichaAbierta = false;
+  ficha.classList.add('oculta');
+  await new Promise((r) => setTimeout(r, 380)); // que termine de desvanecerse
+  if (!fichaAbierta) window.cerebro.ficha(false);
+}
+
+window.cerebro.alMostrar((f) => mostrarFicha(f));
+$('ficha-cerrar').addEventListener('click', cerrarFicha);
 let yaInvito = false;
 function alEstado({ listo, error }) {
   estado.textContent = listo ? '' : error;
@@ -101,6 +134,7 @@ async function invitar() {
 
 async function despedirse() {
   enCharla = false;
+  cerrarFicha(); // el siguiente estudiante empieza sin la ficha del anterior
   const frase = await window.cerebro.reiniciar();
   mostrarBurbuja(frase);
   voz.decir(frase);

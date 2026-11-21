@@ -13,8 +13,9 @@ contextBridge.exposeInMainWorld('cerebro', {
   reiniciar: () => ipcRenderer.invoke('tami:reiniciar'),
   cerrar: () => ipcRenderer.invoke('tami:cerrar'),
   estado: () => ipcRenderer.invoke('tami:estado'),
+  ficha: (abierta) => ipcRenderer.invoke('tami:ficha', Boolean(abierta)), // la ventana crece / se achica
   alDecirFrase: escuchar('tami:frase'),   // { frase, muletilla }
   alEscribir: escuchar('tami:texto'),     // el texto acumulado (subtítulos)
-  alMostrar: escuchar('tami:mostrar'),    // { tipo: 'carrera' | 'pagina', ... }
+  alMostrar: escuchar('tami:mostrar'),    // { tipo, titulo, detalle, puntos, trabajo, qr (svg), contacto }
   alEstado: escuchar('tami:estado'),      // { listo, error }
 });

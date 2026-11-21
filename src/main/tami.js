@@ -298,10 +298,31 @@ function resolverMostrar(nombre) {
 
 const ETIQUETA = /\[\s*MOSTRAR\s*:\s*([^\]]+)\]/gi;
 
+// Respaldo: si el estudiante PIDIÓ ver algo y el modelo no puso bien la etiqueta (escribió «[Mostró los
+// requisitos en la pantalla]»), el código decide qué mostrar a partir de lo que pidió el estudiante.
+const PIDE_VER = /mu[eé]str|ens[eé][nñ]|quiero ver|puedo ver|ver la (p[aá]gina|ficha|carrera|informaci)|mostrar/i;
+function mostrarPorPedido(texto, carreras) {
+  if (!PIDE_VER.test(texto)) return null;
+  const s = sinTildes(texto);
+  const nombradas = catalogo.filter((c) => new RegExp(`\\b(${apodo(c)})`).test(s));
+  if (nombradas.length) return { tipo: 'carrera', carrera: nombradas[0] };
+  const tema = TEMAS.find(([re]) => re.test(texto));
+  if (tema) {
+    const nombre = Object.keys(PAGINAS).find((p) => PAGINAS[p] === tema[1]);
+    return { tipo: 'pagina', nombre, url: tema[1] };
+  }
+  const pagina = Object.keys(PAGINAS).filter((p) => p !== 'Unifranz').find((p) => s.includes(sinTildes(p)));
+  if (pagina) return { tipo: 'pagina', nombre: pagina, url: PAGINAS[pagina] };
+  if (/unifranz|universidad|u\b/.test(s)) return { tipo: 'pagina', nombre: 'Unifranz', url: PAGINAS.Unifranz };
+  if (carreras.length) return { tipo: 'carrera', carrera: carreras[0] }; // «muéstramela»
+  return null;
+}
+
 // Lo que se dice en voz alta: sin etiquetas, sin markdown ni emojis que la voz leería raro.
 function paraVoz(texto) {
   return texto
     .replace(ETIQUETA, '')
+    .replace(/\[[^\]]*\]/g, '')                   // cualquier otro [corchete]: «[Mostró los requisitos…]»
     .replace(/\[[^\]]*$/, '')                     // una etiqueta a medio llegar
     .replace(/https?:\/\/\S+/g, '')
     .replace(/[*_#`>]/g, '')
@@ -309,6 +330,8 @@ function paraVoz(texto) {
     // el modelo a veces dice «¿Cómo estás, muchacho?» aunque la regla lo prohíbe: no adivinamos el género
     .replace(/,?\s*\b(muchach|chic|amig|herman|hij|mij)[oa]s?\b(?=\s*[!?.,¡¿]|$)/giu, '')
     .replace(/\s+/g, ' ')
+    .replace(/\s*:\s*([.!?])/g, '$1')            // «te la muestro: .» (quedó así al quitar la etiqueta)
+    .replace(/\s+([.,!?])/g, '$1')
     .trim();
 }
 
@@ -411,9 +434,11 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
 
   // lo que pidió mostrar, salvo que ya esté en pantalla desde antes (no marear con la misma página)
   conv.mostrados ??= new Set();
-  const pedido = [...crudo.matchAll(ETIQUETA)].map((m) => resolverMostrar(m[1])).find(Boolean) || null;
+  const pidio = PIDE_VER.test(texto); // si lo pidió él, se muestra aunque ya haya salido antes
+  const pedido = [...crudo.matchAll(ETIQUETA)].map((m) => resolverMostrar(m[1])).find(Boolean)
+    || mostrarPorPedido(texto, carreras) || null;
   const clave = pedido && (pedido.carrera?.nombre || pedido.nombre);
-  const mostrar = pedido && !conv.mostrados.has(clave) ? pedido : null;
+  const mostrar = pedido && (pidio || !conv.mostrados.has(clave)) ? pedido : null;
   if (mostrar) conv.mostrados.add(clave);
 
   const dicho = paraVoz(crudo);

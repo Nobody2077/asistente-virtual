@@ -4,8 +4,8 @@
     {
       "cuando": "director|directora|jefe de carrera|encargad",
       "y_tambien": "sistemas",
-      "dato": "La directora de la carrera de Ingeniería de Sistemas e Innovación Digital es Nataly Miranda (di solo «Nataly Miranda», sin «Dra.» ni «Lic.», y sin decir de qué sede: no está confirmado). (En noticias de Cochabamba aparece Fabiola Cadima: cada sede puede tener su propia dirección.)",
-      "fuente": "Juan (estudiante de la carrera), 2026-11-21; blog Unifranz 2026-09-16"
+      "dato": "En la sede El Alto (donde está el stand), la directora de la carrera de Ingeniería de Sistemas e Innovación Digital es Nataly Miranda (di solo «Nataly Miranda», sin «Dra.» ni «Lic.»). En otras sedes la dirección puede ser otra persona (en noticias de Cochabamba aparece Fabiola Cadima).",
+      "fuente": "Juan (estudiante de la carrera, confirmó sede El Alto), 2026-11-21; blog Unifranz 2026-09-16"
     },
     {
       "cuando": "telefono|numero|celular|llamar|contact|whats|wasap|correo|mail|email|escribir",

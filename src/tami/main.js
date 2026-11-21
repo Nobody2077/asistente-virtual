@@ -9,6 +9,7 @@
 
 const path = require('node:path');
 const { app, BrowserWindow, ipcMain, screen, session } = require('electron');
+const QRCode = require('qrcode');
 const tami = require('../main/tami');
 
 // Tami habla sola (invita a quien pasa) sin que nadie haya tocado la pantalla antes
@@ -27,7 +28,7 @@ let enCurso = null; // AbortController de la respuesta que se está generando
 
 function crearVentana() {
   const { workArea } = screen.getPrimaryDisplay();
-  const ancho = 560;
+  const ancho = ANCHO_TAMI;
   const alto = Math.min(860, workArea.height);
   ventana = new BrowserWindow({
     width: ancho,
@@ -52,6 +53,38 @@ function crearVentana() {
 
 const enviar = (canal, datos) => ventana && !ventana.isDestroyed() && ventana.webContents.send(canal, datos);
 
+// --- La ficha con QR ---------------------------------------------------------------------------------
+// Cuando Tami dice «mira, aquí te la muestro», la ventana crece hacia la izquierda y aparece una tarjeta
+// con lo importante + un QR a la página oficial. El QR se calcula AQUÍ (librería qrcode): sin internet, y sin
+// pedirle datos al estudiante: él escanea y se lleva el enlace en su celular.
+const ANCHO_TAMI = 560;
+const ANCHO_FICHA = 380;
+const CONTACTO = 'Admisiones El Alto · 2 2823421 · admisiones.elalto@unifranz.edu.bo';
+
+async function armarFicha(m) {
+  const qr = await QRCode.toString(m.tipo === 'carrera' ? m.carrera.url : m.url, {
+    type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#111111', light: '#ffffff' },
+  });
+  if (m.tipo === 'carrera') {
+    const c = m.carrera;
+    return {
+      tipo: 'carrera', titulo: c.nombre, detalle: `Duración: ${c.duracion}`,
+      puntos: (c.areas || []).slice(0, 4), trabajo: (Array.isArray(c.trabajo) ? c.trabajo : []).slice(0, 3),
+      qr, contacto: CONTACTO,
+    };
+  }
+  return { tipo: 'pagina', titulo: m.nombre, detalle: 'Página oficial de Unifranz', puntos: [], trabajo: [], qr, contacto: CONTACTO };
+}
+
+// la página avisa si la ficha se abre o se cierra → la ventana crece/se achica sin mover a Tami (borde derecho fijo)
+ipcMain.handle('tami:ficha', (_e, abierta) => {
+  if (!ventana || ventana.isDestroyed()) return;
+  const b = ventana.getBounds();
+  const ancho = abierta ? ANCHO_TAMI + ANCHO_FICHA : ANCHO_TAMI;
+  if (b.width === ancho) return;
+  ventana.setBounds({ x: b.x + b.width - ancho, y: b.y, width: ancho, height: b.height });
+});
+
 // El estudiante dijo algo (por voz o teclado)
 ipcMain.handle('tami:preguntar', async (_e, texto) => {
   enCurso?.abort();
@@ -63,7 +96,7 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
       onFrase: (frase, info) => enviar('tami:frase', { frase, muletilla: Boolean(info?.muletilla) }),
       onTexto: (todo) => enviar('tami:texto', todo),
     });
-    if (r.mostrar) enviar('tami:mostrar', r.mostrar);
+    if (r.mostrar) enviar('tami:mostrar', await armarFicha(r.mostrar));
     return { ok: true, texto: r.texto };
   } catch (err) {
     if (control.signal.aborted) return { ok: false, cancelado: true };
@@ -124,6 +157,8 @@ async function autoprueba(pregunta) {
   }
   for (let i = 0; i < 40 && (await ventana.webContents.executeJavaScript('window.tamiPrueba.estado().hablando')); i++) await espera(500);
   console.log(`[autoprueba] terminó de hablar a los ${((Date.now() - inicio) / 1000).toFixed(1)} s`);
+  await espera(1000);
+  await foto('3_final'); // con la ficha, si la mostró
   app.quit();
 }
 
