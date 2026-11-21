@@ -4,6 +4,7 @@
 //   tami.boca(0..1)            cuánto abre la boca (lo maneja el volumen de su voz)
 //   tami.emocion('happy', 0.5) sonrisa, sorpresa... (presets de VRM: happy, sad, surprised, relaxed, angry)
 //   tami.mirar(x, y)           hacia dónde mira (-1..1)
+//   tami.gesto('saludar')      pensar · saludar · asentir · presentar (ver GESTOS) · tami.soltarGesto()
 //
 // Solo dibuja y anima. Qué dice y cuándo, lo decide otro archivo.
 
@@ -25,6 +26,35 @@ function vestir(vrm, uniforme) {
     }
   });
 }
+
+// --- Gestos ----------------------------------------------------------------------------------------
+// Cada gesto es una POSE (cuánto girar cada hueso, en radianes [x, y, z]) a la que el cuerpo va suave, se queda
+// un rato y vuelve. `onda` agrega un movimiento que se repite (la mano que saluda, la cabeza que asiente).
+//   ida / vuelta: segundos para llegar y para volver · dura: cuánto se queda (Infinity = hasta soltarGesto())
+// Tami mira a la cámara: su brazo DERECHO está a la izquierda de la pantalla (donde aparece la ficha).
+const GESTOS = {
+  // (valores ajustados mirando fotos: npx electron scripts/foto-gestos.js)
+  pensar: {   // mano en la mejilla y el mentón, cabeza ladeada
+    pose: { rightUpperArm: [-0.75, 0.55, 1.25], rightLowerArm: [0, 2.0, 0], rightHand: [0.3, 0.2, -0.9], head: [0.08, 0, 0.1] },
+    ida: 0.6, dura: Infinity, vuelta: 0.6,
+  },
+  saludar: {  // codo pegado al cuerpo, antebrazo vertical, la mano va de lado a lado
+    pose: { rightUpperArm: [1.57, 0, 1.3], rightLowerArm: [0, -2.8, 0] },
+    orden: { rightUpperArm: 'ZYX' }, // primero gira el brazo sobre su eje → el codo dobla hacia arriba
+    onda: (t) => ({ rightLowerArm: [0, Math.sin(t * 9) * 0.22, 0] }),
+    ida: 0.45, dura: 1.8, vuelta: 0.5,
+  },
+  asentir: {  // «sí, te escucho»
+    pose: {}, onda: (t) => ({ head: [Math.max(0, Math.sin(t * 7)) * 0.14, 0, 0] }),
+    ida: 0.1, dura: 1.0, vuelta: 0.3,
+  },
+  presentar: { // brazo abierto hacia la izquierda de la pantalla, donde aparece la ficha
+    pose: { rightUpperArm: [1.2, -0.5, 1.05], rightLowerArm: [0, -0.9, 0], spine: [0, -0.08, 0] },
+    orden: { rightUpperArm: 'ZYX' },
+    ida: 0.5, dura: 2.2, vuelta: 0.6,
+  },
+};
+const suave = (x) => x * x * (3 - 2 * x); // empieza y termina despacio (no robótico)
 
 export async function crearAvatar(canvas, url, { fondo = null, uniforme = null } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
@@ -62,6 +92,8 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
   if (vrm.lookAt) vrm.lookAt.target = objetivo;
 
   const estado = { boca: 0, bocaSuave: 0, emocion: null, emocionValor: 0, mirarX: 0, mirarY: 0 };
+  let activos = []; // gestos en curso: { def, t, soltando, tSoltar, pesoAlSoltar, terminado }
+  const soltarTodos = () => activos.forEach((g) => { if (!g.soltando) { g.soltando = true; g.tSoltar = g.t; } });
   let proximoParpadeo = 1.5;
   let parpadeo = 0;
   const reloj = new THREE.Clock();
@@ -90,6 +122,35 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
     // al hablar, la cabeza acompaña un poquito
     hueso('head').rotation.z = Math.sin(t * 2.3) * 0.03 * estado.bocaSuave;
     hueso('head').rotation.x = estado.bocaSuave * 0.04 * Math.sin(t * 5.1);
+
+    // gestos: mezcla entre la pose de reposo (lo de arriba) y la pose de cada gesto, según su «peso» (0..1).
+    // Puede haber dos a la vez un momento: el anterior desvaneciéndose y el nuevo entrando (así el brazo no salta).
+    for (const gesto of activos) {
+      gesto.t += dt;
+      const g = gesto.def;
+      if (!gesto.soltando && gesto.t > g.ida + g.dura) { gesto.soltando = true; gesto.tSoltar = gesto.t; }
+      // al ir: 0 → 1 · al volver: desde donde estaba → 0 (si lo sueltan a medio camino, no salta)
+      const desdeSoltar = gesto.soltando ? (gesto.t - gesto.tSoltar) / g.vuelta : 0;
+      const w = gesto.soltando
+        ? gesto.pesoAlSoltar * (1 - suave(Math.min(1, desdeSoltar)))
+        : (gesto.pesoAlSoltar = suave(Math.min(1, gesto.t / g.ida)));
+      const extra = g.onda ? g.onda(gesto.t) : {};
+      for (const nombre of new Set([...Object.keys(g.pose), ...Object.keys(extra)])) {
+        const h = hueso(nombre);
+        if (!h) continue;
+        // orden de los giros: 'ZYX' gira primero sobre el eje del propio brazo (como girar la palma), lo que
+        // permite que el codo doble hacia ARRIBA (saludar). El reposo solo usa z, así que el orden no lo cambia.
+        h.rotation.order = g.orden?.[nombre] || 'XYZ';
+        const p = g.pose[nombre];
+        const e = extra[nombre] || [0, 0, 0];
+        ['x', 'y', 'z'].forEach((eje, i) => {
+          const meta = (p ? p[i] : h.rotation[eje]) + e[i];
+          h.rotation[eje] += (meta - h.rotation[eje]) * w;
+        });
+      }
+      if (gesto.soltando && desdeSoltar >= 1) gesto.terminado = true;
+    }
+    activos = activos.filter((g) => !g.terminado);
 
     // el punto está pegado a la cámara: en (0,0,0) mira a quien está frente a la pantalla
     objetivo.position.set(estado.mirarX * 0.6, estado.mirarY * 0.4, 0);
@@ -124,5 +185,16 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null }
     boca: (v) => { estado.boca = Math.max(0, Math.min(1, v)); },
     emocion: (nombre, valor = 0.6) => { estado.emocion = nombre; estado.emocionValor = valor; },
     mirar: (x, y) => { estado.mirarX = x; estado.mirarY = y; },
+    // gesto('saludar') · gesto('pensar') (se queda hasta soltarGesto()) · gesto(nombre, {pose}) para probar poses
+    gesto: (nombre, prueba = null) => {
+      const def = prueba ? { ida: 0.3, dura: Infinity, vuelta: 0.3, ...prueba } : GESTOS[nombre];
+      if (!def) return;
+      if (activos.some((g) => g.def === def && !g.soltando)) return; // ya lo está haciendo
+      soltarTodos(); // el anterior se desvanece mientras entra este
+      activos.push({ def, t: 0, soltando: false, pesoAlSoltar: 0 });
+    },
+    soltarGesto: soltarTodos,
+    haciendo: () => activos.filter((g) => !g.soltando).map((g) => Object.keys(GESTOS).find((k) => GESTOS[k] === g.def) || 'prueba'),
+    gestos: Object.keys(GESTOS),
   };
 }

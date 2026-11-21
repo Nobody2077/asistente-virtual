@@ -49,8 +49,10 @@ let ultimaActividad = Date.now();
 let ultimaInvitacion = 0;
 let pensando = false;
 
+let yaRespondio = false; // ¿llegó la primera frase de verdad (no la muletilla)?
 window.cerebro.alDecirFrase(({ frase, muletilla }) => {
   if (muletilla) mostrarBurbuja(`${frase} ${PENSANDO}`, { html: true });
+  else if (!yaRespondio) { yaRespondio = true; avatar.soltarGesto(); avatar.mirar(0, 0); } // deja de pensar y responde
   voz.decir(frase);
 });
 window.cerebro.alEscribir((todo) => {
@@ -77,6 +79,7 @@ async function mostrarFicha(f) {
   }
   ficha.classList.remove('oculta'); // …y luego entra la tarjeta
   avatar.mirar(-0.35, -0.1); // la mira de reojo, como quien la presenta
+  avatar.gesto('presentar'); // y le abre la mano: «mira, aquí está»
   setTimeout(() => avatar.mirar(0, 0), 1800);
   clearTimeout(cerrarFichaLuego);
   cerrarFichaLuego = setTimeout(cerrarFicha, FICHA_DURA);
@@ -112,9 +115,14 @@ async function preguntar(texto) {
   mostrarBurbuja(`${escaparHtml(texto)} ${PENSANDO}`, { estudiante: true, html: true });
   avatar.emocion('relaxed', 0.2);
   avatar.mirar(0.25, 0.35); // mira hacia arriba, como quien piensa
+  yaRespondio = false;
+  // si tarda (más de 0,7 s), se lleva la mano al mentón; si responde rápido, no (sería un movimiento nervioso)
+  const manoAlMenton = setTimeout(() => { if (pensando && !yaRespondio) avatar.gesto('pensar'); }, 700);
   try {
     await window.cerebro.preguntar(texto);
   } finally {
+    clearTimeout(manoAlMenton);
+    if (!yaRespondio) avatar.soltarGesto();
     pensando = false;
     avatar.mirar(0, 0);
     ultimaActividad = Date.now();
@@ -129,6 +137,7 @@ async function invitar() {
   mostrarBurbuja(frase);
   voz.decir(frase);
   avatar.emocion('happy', 0.5);
+  avatar.gesto('saludar'); // ¡hola, tú!
   ocultarLuego(10_000);
 }
 
@@ -139,6 +148,7 @@ async function despedirse() {
   mostrarBurbuja(frase);
   voz.decir(frase);
   avatar.emocion('happy', 0.6);
+  avatar.gesto('saludar'); // chau
   ocultarLuego(8_000);
   ultimaActividad = ultimaInvitacion = Date.now();
 }
@@ -183,6 +193,7 @@ async function empezarAEscuchar() {
   mostrarBurbuja('Te escucho… <span class="pensando"><span></span><span></span><span></span></span>', { html: true, estudiante: true });
   avatar.mirar(0, 0);
   avatar.emocion('surprised', 0.15); // cejas un poco arriba: atenta
+  avatar.gesto('asentir');           // «sí, te escucho»
 }
 
 async function terminarDeEscuchar() {
@@ -232,5 +243,5 @@ entrada.focus();
 window.tamiPrueba = {
   preguntar,
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
-  estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent }),
+  estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };

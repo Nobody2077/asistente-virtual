@@ -277,6 +277,24 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
   se muestra aunque ya haya salido antes.
 - Nataly Miranda confirmada como directora de Sistemas **de la sede El Alto** (Juan).
 
+### 5.10 Los gestos
+Idea de Juan: que haga gestos mientras habla, «como una persona». En `avatar.js` → `GESTOS`: cada gesto es una
+**pose** (giro de cada hueso) a la que el cuerpo va suave (curva *smoothstep*), se queda y vuelve; `onda` agrega un
+movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras entra el otro (el brazo no salta).
+
+| Gesto | Cuándo | Cómo |
+|---|---|---|
+| ✋ pensar | la respuesta tarda más de 0,7 s | mano a la mejilla/mentón, cabeza ladeada; baja al empezar a responder |
+| 👋 saludar | invita a quien pasa · se despide | codo pegado, antebrazo vertical, la mano va de lado a lado |
+| 🙂 asentir | empieza a escuchar por micrófono | la cabeza baja y sube |
+| 👉 presentar | aparece la ficha | brazo abierto hacia la izquierda, donde está la ficha |
+
+- Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
+  probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.
+- 🎓 El codo es una **bisagra** que dobla hacia adelante: para saludar (antebrazo hacia ARRIBA) primero hay que
+  girar el brazo sobre su propio eje. Eso pide aplicar los giros en orden `ZYX` en vez de `XYZ` (`orden` en el gesto).
+- La cámara encuadra justo (±30 cm del centro): los gestos tienen que quedar cerca del cuerpo.
+
 ---
 
 ## 6. Cómo usar
@@ -302,7 +320,7 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
 2. **Características para la presentación:**
    - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8). Falta probarlo con la voz real de Juan y el ruido de la feria.
    - ✅ ~~Ficha con QR~~ (hecho, 5.9). Falta escanear el QR con un celular real.
-   - 🙋 Gestos: mano al mentón al pensar, saludo con la mano al invitar, asentir al escuchar.
+   - ✅ ~~Gestos~~ (hecho, 5.10): pensar, saludar, asentir, presentar.
    - 🎨 Avatar con detalles Unifranz (logo en la polera, credencial) y «modo stand» con fondo de marca.
    - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
