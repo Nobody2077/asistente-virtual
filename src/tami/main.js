@@ -8,7 +8,7 @@
 // Uso:  npx electron src/tami/main.js        (con LM Studio, servidor_tami.py y servidor_voz.py encendidos)
 
 const path = require('node:path');
-const { app, BrowserWindow, ipcMain, screen, session } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, powerSaveBlocker, screen, session } = require('electron');
 const QRCode = require('qrcode');
 const tami = require('../main/tami');
 
@@ -31,13 +31,59 @@ let enCurso = null; // AbortController de la respuesta que se está generando
 // Dos formas de vivir:
 //   escritorio (por defecto): ventanita transparente abajo a la derecha, sobre el escritorio
 //   --stand: pantalla completa con fondo de marca, para el monitor del stand de la feria
-const STAND = process.argv.includes('--stand');
+//   --feria: el stand BLINDADO (implica --stand). Nadie la cierra ni sale a Windows por accidente.
+//            Salida secreta para Juan y Brayan: Ctrl+Alt+Shift+Q.
+const FERIA = process.argv.includes('--feria');
+const STAND = FERIA || process.argv.includes('--stand');
+let salidaPermitida = !FERIA; // en feria solo la combinación secreta deja cerrar
+
+// Teclas que en la feria NO deben hacer nada: cerrar (Alt+F4, Ctrl+W, Ctrl+Q), recargar (Ctrl+R, F5),
+// herramientas de programador (Ctrl+Shift+I, F12), zoom (Ctrl +/-/0) y pantalla completa (F11).
+function teclaBloqueada(t) {
+  const k = (t.key || '').toLowerCase();
+  if (t.alt && k === 'f4') return true;
+  if (t.control && ['w', 'q', 'r', '+', '-', '=', '0'].includes(k)) return true;
+  if (t.control && t.shift && ['i', 'j', 'c'].includes(k)) return true;
+  return ['f5', 'f11', 'f12'].includes(k);
+}
+
+function salirDeVerdad() {
+  salidaPermitida = true;
+  app.quit();
+}
+
+// Se le pone a CADA ventana de Tami (la principal y la de «Así funciona Tami»)
+function blindar(v) {
+  if (!FERIA) return;
+  v.webContents.on('before-input-event', (e, t) => {
+    if (t.type !== 'keyDown') return;
+    if (t.control && t.alt && t.shift && (t.key || '').toLowerCase() === 'q') { e.preventDefault(); salirDeVerdad(); return; }
+    if (teclaBloqueada(t)) e.preventDefault();
+  });
+  v.on('close', (e) => { if (!salidaPermitida && v === ventana) e.preventDefault(); }); // Alt+F4 llega aquí
+  // nada de navegar a otra página ni abrir ventanas nuevas (p. ej. si alguien toca un enlace)
+  v.webContents.on('will-navigate', (e) => e.preventDefault());
+  v.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // si la página se cae o se cuelga, Tami se levanta sola en vez de quedarse en negro
+  v.webContents.on('render-process-gone', (_e, d) => {
+    console.error('[feria] la página se cayó:', d.reason, '→ recargando');
+    if (!v.isDestroyed()) v.reload();
+  });
+  let reloj = null;
+  v.on('unresponsive', () => {
+    if (reloj) return;
+    console.error('[feria] la página no responde → recargando en 10 s si sigue así');
+    reloj = setTimeout(() => { reloj = null; if (!v.isDestroyed()) v.webContents.forcefullyCrashRenderer(); }, 10000);
+  });
+  v.on('responsive', () => { clearTimeout(reloj); reloj = null; }); // se recuperó sola: no se la tumba
+}
 
 function crearVentana() {
   const { workArea, bounds } = screen.getPrimaryDisplay();
   const ancho = ANCHO_TAMI;
   const alto = Math.min(860, workArea.height);
-  const fotoFuera = STAND && process.argv.includes('--autoprueba'); // la prueba no tapa la pantalla de Juan
+  // las pruebas (--autoprueba, --fuera) no tapan la pantalla de Juan
+  const fotoFuera = STAND && (process.argv.includes('--autoprueba') || process.argv.includes('--fuera'));
   const lugar = STAND
     ? (fotoFuera ? { x: -4000, y: 0, width: 1920, height: 1080 } : { ...bounds, fullscreen: true })
     : { width: ancho, height: alto, x: workArea.x + workArea.width - ancho - 16, y: workArea.y + workArea.height - alto };
@@ -47,8 +93,9 @@ function crearVentana() {
     transparent: !STAND,
     frame: false,
     resizable: false,
-    alwaysOnTop: !STAND,
-    skipTaskbar: false,
+    alwaysOnTop: !STAND || FERIA,
+    kiosk: FERIA && !fotoFuera, // kiosco: pantalla completa que tapa también la barra de tareas
+    skipTaskbar: FERIA,
     hasShadow: false,
     title: 'Tami — orientadora de Unifranz',
     webPreferences: {
@@ -56,6 +103,19 @@ function crearVentana() {
       backgroundThrottling: false, // que siga animando aunque otra ventana tenga el foco
     },
   });
+  blindar(ventana);
+  if (FERIA) {
+    // «screen-saver» es el nivel más alto: queda encima incluso de la ventana de Así funciona
+    // Si alguien abre el menú Inicio (la tecla Windows no se puede bloquear), Tami vuelve al frente sola.
+    ventana.setAlwaysOnTop(true, 'screen-saver');
+    ventana.on('blur', () => setTimeout(() => {
+      const otra = BrowserWindow.getFocusedWindow();
+      if (ventana && !ventana.isDestroyed() && !salidaPermitida && (!otra || otra !== ventanaExplica)) {
+        ventana.show();
+        ventana.focus();
+      }
+    }, 1500));
+  }
   ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
 }
@@ -134,7 +194,8 @@ ipcMain.handle('tami:reiniciar', () => {
   return tami.despedida();
 });
 
-ipcMain.handle('tami:cerrar', () => app.quit());
+// Ctrl+Q / la X de la página: en feria no hacen nada (solo la combinación secreta, ver blindar())
+ipcMain.handle('tami:cerrar', () => { if (!FERIA) app.quit(); });
 
 // --- La ventana «Así funciona Tami» -------------------------------------------------------------------
 // La ÚNICA ventana extra que Tami puede abrir (lista cerrada, como pidió Juan: nada de abrir programas ni el
@@ -160,6 +221,9 @@ async function abrirExplica() {
     title: 'Así funciona Tami',
     webPreferences: { preload: path.join(__dirname, 'explica-preload.js'), backgroundThrottling: false },
   });
+  blindar(ventanaExplica);
+  // en feria Tami está en el nivel «screen-saver»: la presentación va un escalón más arriba para verse
+  if (FERIA) ventanaExplica.setAlwaysOnTop(true, 'screen-saver', 1);
   ventanaExplica.on('closed', () => { ventanaExplica = null; enviar('tami:explica-cerrada'); });
   ventanaExplica.webContents.on('console-message', (e) => console.log('[explica]', e.message ?? e));
   await ventanaExplica.loadFile(path.join(__dirname, 'explica.html'));
@@ -230,6 +294,13 @@ app.whenReady().then(async () => {
   // el micrófono: solo se permite «media» (audio) a la página de Tami; nada más (ni cámara de terceros, ni ubicación…)
   session.defaultSession.setPermissionRequestHandler((_wc, permiso, cb) => cb(permiso === 'media'));
   session.defaultSession.setPermissionCheckHandler((_wc, permiso) => permiso === 'media');
+  if (FERIA) {
+    // Electron trae un menú invisible con atajos (Ctrl+R recargar, Ctrl+Shift+I…): en feria se quita entero
+    Menu.setApplicationMenu(null);
+    // que el monitor no se apague ni entre el protector de pantalla en 4 horas
+    powerSaveBlocker.start('prevent-display-sleep');
+    console.log('[feria] modo feria: sin salida salvo Ctrl+Alt+Shift+Q');
+  }
   crearVentana();
   ventana.webContents.on('console-message', (e) => console.log('[pagina]', e.message ?? e));
   try {

@@ -20,9 +20,11 @@
 - ✅ Hechas para la presentación: **micrófono con Whisper** (5.8; arreglado el 21/11: grababa el micrófono
   virtual de iVCam), **ficha con QR** (5.9), **8 gestos** (5.10), **credencial y modo stand** (5.11),
   **saludos con personalidad** (5.12), **presentación «Así funciona Tami»** con F8 (5.13) e **íconos SVG** (5.14).
+- ✅ **Modo feria blindado** (5.16): `TAMI_FERIA.bat` no se cierra con Alt+F4, Ctrl+Q ni la ✕; se levanta sola si
+  se cae. **Salida secreta: Ctrl+Alt+Shift+Q.** Prueba automática: TODO BIEN.
 - ⏳ Falta que Juan pruebe en su PC: hablarle por el micrófono real, escanear el QR con un celular y abrir
-  `TAMI_FERIA.bat` con F8.
-- Siguiente, en este orden: **modo feria** (que no se pueda cerrar ni salir a Windows) → **ensayo de 4 h** midiendo
+  `TAMI_FERIA.bat` (probar F8, Alt+F4 y la salida secreta con el teclado de verdad).
+- Siguiente, en este orden: **ensayo de 4 h** midiendo
   la RAM (5.15: ya se llenó una vez) → **cerebro de respaldo 3B** → **voz más delicada**.
 
 ---
@@ -388,12 +390,35 @@ encendidos en segundo plano. Tami no tenía ningún error: fue la presión de me
   el **ensayo de 4 h midiendo la RAM** y probar `--no-mmap` (pendiente 1), que debería liberar unos 5 GB del
   archivo del modelo «mapeado» en RAM.
 
+### 5.16 Modo feria: blindado (21/11)
+`TAMI_FERIA.bat` ahora abre con `--stand --feria`. La opción `--feria` (en `src/tami/main.js`, función `blindar()`)
+le pone a cada ventana de Tami:
+- **Kiosco** (`kiosk: true`): pantalla completa que tapa también la barra de tareas, siempre encima (nivel
+  `screen-saver`, el más alto; la ventana «Así funciona» va un escalón más arriba para verse).
+- **No se cierra:** el evento `close` se cancela (eso cubre Alt+F4 y «cerrar ventana» desde la barra de tareas);
+  la ✕ y Ctrl+Q de la página no hacen nada.
+- **Teclas peligrosas apagadas** (`before-input-event`): Ctrl+W, Ctrl+R/F5 (recargar), Ctrl+Shift+I/F12 (herramientas
+  de programador), F11, zoom. Además se quita el **menú invisible** de Electron (`Menu.setApplicationMenu(null)`),
+  que traía esos atajos.
+- **Sin navegar:** no se puede ir a otra página ni abrir ventanas nuevas.
+- **Se levanta sola:** si la página se cae, se recarga al instante; si se cuelga más de 10 s, se la reinicia.
+- **Vuelve al frente:** la tecla Windows **no se puede bloquear** desde un programa normal; si alguien abre el menú
+  Inicio, a los 1,5 s Tami recupera el foco.
+- **La pantalla no se apaga** en 4 horas (`powerSaveBlocker`).
+- 🔑 **Salida secreta: Ctrl+Alt+Shift+Q.**
+
+Prueba automática (no tapa la pantalla): `npx electron scripts/probar-feria.js` → **TODO BIEN** (cerrar, Ctrl+Q,
+las 7 teclas, la caída de la página que volvió en 0,5 s y la salida secreta).
+Lo que **no** cubre (es de Windows, no de Tami): Ctrl+Alt+Supr y Win+L. En la feria, alguien del equipo
+siempre al lado de la PC.
+
 ---
 
 ## 6. Cómo usar
 
 - **Encender:** doble clic en `INICIAR_TAMI.bat`. La primera vez el modelo tarda en cargar (~1 min).
-- **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa (modo stand). Salir: **Ctrl+Q**.
+- **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa blindada (5.16). Salir: **Ctrl+Alt+Shift+Q**.
+  Para el stand sin blindaje (ensayos): `INICIAR_TAMI.bat --stand` (sale con Ctrl+Q).
 - **Presentación «Así funciona Tami»:** **F8** (o preguntarle «¿cómo funcionas?»). F8 otra vez la detiene.
 - **Rearmar el mapa de la memoria** (si cambian los datos): `..\windows\python\python.exe cerebro\armar_mapa.py`.
 - **Mover a Tami:** arrastrar la franja de arriba. **Cerrar:** la ✕ o **Ctrl+Q**.
@@ -425,7 +450,7 @@ encendidos en segundo plano. Tami no tenía ningún error: fue la presión de me
    - ✅ ~~Credencial y modo stand~~ (hecho, 5.11). Falta verlo en el monitor real del stand.
    - ✅ ~~Presentación «Así funciona Tami»~~ (5.13) y ~~íconos SVG~~ (5.14).
    - 🩺 Caso 13 del examen (Veterinaria): acortar y sugerir carreras cercanas del catálogo, no Sistemas.
-   - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
+   - ✅ ~~Modo feria~~ (5.16): blindado, salida secreta Ctrl+Alt+Shift+Q. Falta probarlo con el teclado real.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
 3. **Cerebro de respaldo** Qwen2.5-3B (decisión 11).
 4. **Voz más delicada** (mezclas con otras voces jóvenes, tono).
