@@ -149,3 +149,51 @@ html, body {
 #ficha-qr svg { width: 100%; height: 100%; display: block; }
 .ficha-qr p { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
 #ficha-contacto { margin: 10px 0 0; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 8px; }
+
+/* --- modo STAND (pantalla completa en la feria: npx electron src/tami/main.js --stand) -------------- */
+#cartel { display: none; }
+body.stand {
+  /* negro de marca con un resplandor naranja detrás de Tami, como un reflector */
+  background:
+    radial-gradient(ellipse 38% 55% at 72% 62%, rgba(255, 90, 26, .30), transparent 70%),
+    linear-gradient(160deg, #181818 0%, #070707 70%);
+}
+body.stand::before { /* la marca gigante de fondo, casi invisible */
+  content: 'UNIFRANZ';
+  position: fixed; left: -1vw; bottom: -4vw;
+  font: 900 17vw/1 "Segoe UI", sans-serif; letter-spacing: -0.5vw;
+  color: rgba(255, 255, 255, .035);
+  pointer-events: none;
+}
+body.stand #tami { width: min(44vw, 820px); right: 5vw; }
+body.stand #avatar { inset: 120px 0 0 0; height: calc(100% - 120px); }
+body.stand #burbuja { font-size: 25px; top: 34px; }
+body.stand #barra { bottom: 26px; }
+body.stand #barra button { width: 58px; height: 58px; font-size: 24px; }
+body.stand #entrada { font-size: 20px; }
+body.stand #cerrar, body.stand #arrastre { display: none; } /* en la feria no se cierra con un clic */
+
+body.stand #cartel {
+  display: block;
+  position: absolute; left: 6vw; top: 12vh; width: 42vw;
+  color: #fff; transition: opacity .4s;
+}
+body.stand.con-ficha #cartel { opacity: 0; } /* la ficha ocupa su lugar */
+#cartel .cartel-marca { margin: 0; font-weight: 900; letter-spacing: .6em; color: var(--naranja); font-size: 22px; }
+#cartel h1 { margin: 18px 0 22px; font-size: clamp(48px, 5.6vw, 104px); line-height: 1.02; font-weight: 900; }
+#cartel .cartel-sub { margin: 0 0 30px; font-size: clamp(22px, 2vw, 36px); color: #ddd; }
+#cartel .cartel-sub strong { color: var(--naranja); }
+#cartel .cartel-como {
+  display: inline-block; margin: 0; padding: 14px 26px; border-radius: 40px;
+  background: rgba(255, 255, 255, .08); border: 2px solid rgba(255, 90, 26, .7);
+  font-size: clamp(18px, 1.4vw, 26px);
+  animation: latido 2.4s ease-in-out infinite;
+}
+@keyframes latido { 50% { box-shadow: 0 0 0 10px rgba(255, 90, 26, .12); } }
+
+body.stand #ficha {
+  left: 7vw; bottom: auto; top: 50%; width: 440px; max-height: none;
+  transform: translateY(-50%) scale(1.2); transform-origin: left center;
+}
+body.stand #ficha.oculta { transform: translateY(-50%) translateX(-30px) scale(1.2); }
+body.stand #placa { display: none; } /* la credencial del pecho ya dice «TAMI» y la barra la tapaba */

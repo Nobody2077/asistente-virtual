@@ -26,19 +26,26 @@ let ventana = null;
 let conversacion = tami.nuevaConversacion();
 let enCurso = null; // AbortController de la respuesta que se está generando
 
+// Dos formas de vivir:
+//   escritorio (por defecto): ventanita transparente abajo a la derecha, sobre el escritorio
+//   --stand: pantalla completa con fondo de marca, para el monitor del stand de la feria
+const STAND = process.argv.includes('--stand');
+
 function crearVentana() {
-  const { workArea } = screen.getPrimaryDisplay();
+  const { workArea, bounds } = screen.getPrimaryDisplay();
   const ancho = ANCHO_TAMI;
   const alto = Math.min(860, workArea.height);
+  const fotoFuera = STAND && process.argv.includes('--autoprueba'); // la prueba no tapa la pantalla de Juan
+  const lugar = STAND
+    ? (fotoFuera ? { x: -4000, y: 0, width: 1920, height: 1080 } : { ...bounds, fullscreen: true })
+    : { width: ancho, height: alto, x: workArea.x + workArea.width - ancho - 16, y: workArea.y + workArea.height - alto };
   ventana = new BrowserWindow({
-    width: ancho,
-    height: alto,
-    x: workArea.x + workArea.width - ancho - 16,
-    y: workArea.y + workArea.height - alto,
-    transparent: true,
+    ...lugar,
+    backgroundColor: STAND ? '#0b0b0b' : '#00000000',
+    transparent: !STAND,
     frame: false,
     resizable: false,
-    alwaysOnTop: true,
+    alwaysOnTop: !STAND,
     skipTaskbar: false,
     hasShadow: false,
     title: 'Tami — orientadora de Unifranz',
@@ -47,7 +54,7 @@ function crearVentana() {
       backgroundThrottling: false, // que siga animando aunque otra ventana tenga el foco
     },
   });
-  ventana.loadFile(path.join(__dirname, 'index.html'));
+  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio' } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -78,7 +85,7 @@ async function armarFicha(m) {
 
 // la página avisa si la ficha se abre o se cierra → la ventana crece/se achica sin mover a Tami (borde derecho fijo)
 ipcMain.handle('tami:ficha', (_e, abierta) => {
-  if (!ventana || ventana.isDestroyed()) return;
+  if (!ventana || ventana.isDestroyed() || STAND) return; // en el stand la ficha ya tiene su lugar fijo
   const b = ventana.getBounds();
   const ancho = abierta ? ANCHO_TAMI + ANCHO_FICHA : ANCHO_TAMI;
   if (b.width === ancho) return;

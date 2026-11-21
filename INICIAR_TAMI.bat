@@ -48,7 +48,8 @@ curl -s http://127.0.0.1:8766/estado 2>nul | findstr /c:"true" >nul || goto espe
 
 echo [4/4] Abriendo a Tami...
 cd /d "%T%"
-call npx electron src\tami\main.js
+REM  %* pasa las opciones: INICIAR_TAMI.bat --stand  = pantalla completa para la feria
+call npx electron src\tami\main.js %*
 exit /b 0
 
 :fallo

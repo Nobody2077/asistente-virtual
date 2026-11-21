@@ -13,6 +13,9 @@ const DESPEDIRSE_TRAS = 90_000;   // ms sin respuesta en medio de una charla →
 const UNIFORME = { Tops: '#1b1b1b', Bottoms: '#2a2a2a' }; // polera negra (colores de Unifranz)
 
 const $ = (id) => document.getElementById(id);
+// modo stand (pantalla completa en la feria) o escritorio (ventanita): lo dice main.js en la dirección
+const STAND = new URLSearchParams(location.search).get('modo') === 'stand';
+document.body.classList.toggle('stand', STAND);
 const burbuja = $('burbuja');
 const burbujaTexto = $('burbuja-texto');
 const entrada = $('entrada');
@@ -98,6 +101,7 @@ async function mostrarFicha(f) {
     await new Promise((r) => requestAnimationFrame(r));
   }
   ficha.classList.remove('oculta'); // …y luego entra la tarjeta
+  document.body.classList.add('con-ficha');
   avatar.mirar(-0.35, -0.1); // la mira de reojo, como quien la presenta
   avatar.gesto('presentar'); // y le abre la mano: «mira, aquí está»
   setTimeout(() => avatar.mirar(0, 0), 1800);
@@ -110,6 +114,7 @@ async function cerrarFicha() {
   if (!fichaAbierta) return;
   fichaAbierta = false;
   ficha.classList.add('oculta');
+  document.body.classList.remove('con-ficha');
   await new Promise((r) => setTimeout(r, 380)); // que termine de desvanecerse
   if (!fichaAbierta) window.cerebro.ficha(false);
 }

@@ -300,6 +300,18 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
   (como una perilla), otra vez con orden `ZYX`. En «alegría», con el codo en 1,8 las manos se cruzaban como el
   signo de «tiempo fuera»: se dejó en 1,9.
 
+### 5.11 La credencial y el modo stand
+- **Credencial** (`ponerCredencial` en `avatar.js`): tarjeta dibujada en un `<canvas>` («UNIFRANZ» en texto con los
+  colores de marca, la inicial, «TAMI · Orientadora virtual») con un cordón, pegada al **hueso del pecho** (se
+  mueve cuando respira). No copia el logo oficial: no tenemos el archivo y no se imita a ojo.
+  Primer intento: muy abajo, y la franja y el cordón negros desaparecían sobre la polera negra → **naranja**.
+  Ajuste fino: `tami.credencial({ y, z, inclinar, ancho })` o `CRED='{...}' npx electron scripts/foto-gestos.js`.
+- **Modo stand** (`--stand`, o doble clic en `TAMI_FERIA.bat`): pantalla completa, fondo negro con un resplandor
+  naranja detrás de Tami (como un reflector), «UNIFRANZ» gigante casi invisible al fondo, y un **cartel** que se
+  lee desde lejos: «¿Aún no sabes qué estudiar? Conversa con Tami…». Cuando aparece la ficha, el cartel se aparta
+  y la ficha toma su lugar (más grande, el QR fácil de escanear). Sin botón ✕ ni arrastre; se sale con Ctrl+Q.
+- La autoprueba en modo stand abre la ventana **fuera de la pantalla** (1920×1080 en x=-4000) para no tapar la PC.
+
 - Las poses se ajustaron **mirando fotos** (`npx electron scripts/foto-gestos.js`, o `--pose '{...}'` para
   probar una pose cruda). Primeros intentos: la mano tapaba el ojo; el saludo sacaba la mano fuera del cuadro.
 - 🎓 El codo es una **bisagra** que dobla hacia adelante: para saludar (antebrazo hacia ARRIBA) primero hay que
@@ -311,6 +323,7 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
 ## 6. Cómo usar
 
 - **Encender:** doble clic en `INICIAR_TAMI.bat`. La primera vez el modelo tarda en cargar (~1 min).
+- **En la feria:** doble clic en `TAMI_FERIA.bat` → pantalla completa (modo stand). Salir: **Ctrl+Q**.
 - **Mover a Tami:** arrastrar la franja de arriba. **Cerrar:** la ✕ o **Ctrl+Q**.
 - **Ciclo de feria:** si nadie le habla, invita cada 45 s; si un estudiante se queda callado 90 s, se despide y
   empieza de cero para el siguiente.
@@ -332,7 +345,7 @@ movimiento repetido. Si llega un gesto nuevo, el anterior se desvanece mientras 
    - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8). Falta probarlo con la voz real de Juan y el ruido de la feria.
    - ✅ ~~Ficha con QR~~ (hecho, 5.9). Falta escanear el QR con un celular real.
    - ✅ ~~Gestos~~ (hecho, 5.10): pensar, saludar, asentir, presentar.
-   - 🎨 Avatar con detalles Unifranz (logo en la polera, credencial) y «modo stand» con fondo de marca.
+   - ✅ ~~Credencial y modo stand~~ (hecho, 5.11). Falta verlo en el monitor real del stand.
    - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
 3. **Cerebro de respaldo** Qwen2.5-3B (decisión 11).
