@@ -11,4 +11,5 @@ captures/
 
 # Tami: binarios descargados (Piper y voces), no van al repo
 voz/*
-!voz/probar_voces.py
+!voz/*.py
+!voz/voz.json
