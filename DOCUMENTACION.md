@@ -262,6 +262,21 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
   bastaba.
 - Examen de feria después de todo esto: **0/34 alarmas, mediana 2,1 s**.
 
+### 5.9 La ficha con QR
+- Cuando Tami pone `[MOSTRAR: …]`, `main.js` arma la ficha: nombre, duración, 4 áreas, 3 lugares de trabajo
+  (de `carreras.json`), el **QR** a la página oficial (librería `qrcode` 1.5.4, **sin internet**, SVG) y el
+  contacto de Admisiones El Alto. Para páginas (Becas, Requisitos, Unifranz…): título + QR.
+- La ventana **crece 380 px hacia la izquierda** (borde derecho fijo) y la tarjeta entra al lado de Tami, que la
+  mira de reojo. Se cierra con su ✕, sola a los 90 s, o al despedirse del estudiante. Tami vive en `#tami`, una
+  caja fija de 560 px pegada a la derecha, para que el avatar no se mueva cuando la ventana cambia de ancho.
+- Sin datos personales: el estudiante **escanea**; Tami no pide ni guarda su número (son menores de edad).
+- Falla encontrada: ante «muéstrame la página de becas» el modelo escribió «[Mostró los requisitos… en la
+  pantalla]» en vez de la etiqueta → se veía en el subtítulo y no salía nada. Arreglos: se borra cualquier
+  `[corchete]` antes de la voz; y **respaldo por código** (`mostrarPorPedido`): si el estudiante dijo
+  «muéstrame / quiero ver / enséñame…», el código elige la carrera nombrada o la página del tema. Si lo pide él,
+  se muestra aunque ya haya salido antes.
+- Nataly Miranda confirmada como directora de Sistemas **de la sede El Alto** (Juan).
+
 ---
 
 ## 6. Cómo usar
@@ -286,10 +301,9 @@ Primero dijo «la **Dra.** Nataly Miranda **de la sede El Alto**»: el dato ahor
    Claude ejecute ese `.exe`).
 2. **Características para la presentación:**
    - ✅ ~~Micrófono con Whisper~~ (hecho, 5.8). Falta probarlo con la voz real de Juan y el ruido de la feria.
-   - ❓ Confirmar de qué sede es directora Nataly Miranda (`cerebro\datos_confirmados.json`).
+   - ✅ ~~Ficha con QR~~ (hecho, 5.9). Falta escanear el QR con un celular real.
    - 🙋 Gestos: mano al mentón al pensar, saludo con la mano al invitar, asentir al escuchar.
-   - 📄 Ficha de carrera con **QR** a la página oficial cuando Tami recomienda (sin internet; el estudiante se lo
-     lleva en el celular).
+   - 🎨 Avatar con detalles Unifranz (logo en la polera, credencial) y «modo stand» con fondo de marca.
    - 🔒 Modo feria: sin apagar, cerrar ni cambiar ajustes; atajo secreto para salir.
    - 🕓 Ensayo de 4 horas midiendo la RAM cada minuto.
 3. **Cerebro de respaldo** Qwen2.5-3B (decisión 11).
