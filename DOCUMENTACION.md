@@ -131,6 +131,7 @@ G:\Desarrollo\LLMLocalUnifranz\
 |---|---|---|
 | `TAMI_SEDE` | `El Alto` | dónde está el stand: cuando Tami dice «aquí» |
 | `TAMI_MOTOR` | `llamacpp` | `llamacpp` (llama-server) o `lmstudio` |
+| `TAMI_LLM_URL` | (vacío) | servidor propio compatible con OpenAI (Ollama `http://127.0.0.1:11434/v1`, LM Studio…). Si está puesto, manda sobre `TAMI_MOTOR` y el bat no enciende llama-server. Va en `config_local.bat` (no va a git; plantilla: `config_local.ejemplo.bat`) |
 | `TAMI_MODELO` | (automático) | nombre del modelo que se le pide al motor |
 
 ---

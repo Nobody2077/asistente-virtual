@@ -29,3 +29,6 @@ __pycache__/
 # secretos (por si algun dia hay)
 .env
 *.key
+
+# configuracion personal de cada uno (modelo propio)
+config_local.bat

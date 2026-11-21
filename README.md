@@ -91,9 +91,26 @@ LLMLocalUnifranz\          ← copiada por USB
 2. Dentro: `git clone https://github.com/Nobody2077/asistente-virtual.git Tami`
 3. Copiar `modelos\`, `motor\` y `voz\kokoro`, `voz\whisper`, `voz\.venv` dentro de `Tami\`.
 4. `cd Tami` → `npm install`
-5. Doble clic en `INICIAR_TAMI.bat`.
+5. Doble clic en `INICIAR_TAMI.bat`. (Si usas tu propio modelo, no necesitas `modelos\` ni `motor\`: ver abajo.)
 
 Requisitos: Windows 10/11, Node.js 20+, GPU con Vulkan y ~8 GB de VRAM (probado en RX 590), 16 GB de RAM.
+
+## Usar tu propio modelo local (sin el Qwen de 5 GB)
+
+Tami puede pensar con **cualquier servidor compatible con OpenAI**: Ollama, LM Studio u otro llama-server.
+
+1. Copiar `config_local.ejemplo.bat` como **`config_local.bat`** (no se sube a git; cada uno tiene el suyo).
+2. Descomentar una opción. Ejemplo con Ollama:
+   ```bat
+   set "TAMI_LLM_URL=http://127.0.0.1:11434/v1"
+   set "TAMI_MODELO=qwen2.5:7b"
+   ```
+3. Encender tu servidor (`ollama serve` / «Start Server» en LM Studio) y abrir `INICIAR_TAMI.bat`
+   o `TAMI_FERIA.bat`. Con `TAMI_LLM_URL` puesto, **no** se enciende el llama-server de `motor\`.
+
+Sin `config_local.bat`, todo sigue igual que en la PC de la feria (llama-server + Qwen3.5-9B).
+Los scripts de prueba también lo usan: `set TAMI_LLM_URL=...` antes de `node scripts/examen-feria.js`.
+Ojo: con un modelo distinto las respuestas cambian; el examen de feria se calibró con Qwen3.5-9B.
 
 ## Pruebas rápidas
 

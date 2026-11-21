@@ -13,6 +13,10 @@ set "T=%~dp0"
 set "R=%T%..\"
 set "TAMI_SEDE=El Alto"
 set "TAMI_MOTOR=llamacpp"
+set "TAMI_LLM_URL="
+REM  Configuracion personal (cada uno la suya, NO va a git): copiar config_local.ejemplo.bat
+if exist "%T%config_local.bat" call "%T%config_local.bat"
+if defined TAMI_LLM_URL goto cerebro_propio
 
 echo [1/4] Cerebro (llama-server + Qwen3.5-9B en la tarjeta de video)...
 curl -sf http://127.0.0.1:8080/health >nul 2>&1 || (
@@ -20,6 +24,13 @@ curl -sf http://127.0.0.1:8080/health >nul 2>&1 || (
 )
 REM  -ngl 99 todo en la GPU / -np 1 una ranura (usa su cache) / --reasoning off sin modo pensamiento
 REM  --cache-ram 1024: a lo sumo 1 GB de RAM para recordar prompts (por defecto eran 8 GB)
+goto memoria
+
+:cerebro_propio
+echo [1/4] Cerebro propio: %TAMI_LLM_URL%  modelo: %TAMI_MODELO%
+echo       (tiene que estar encendido: Ollama, LM Studio, etc.)
+
+:memoria
 
 echo [2/4] Memoria de Unifranz (Chroma)...
 curl -sf http://127.0.0.1:8766/estado >nul 2>&1 || (
@@ -42,7 +53,12 @@ REM ping espera ~1 s; timeout falla si la ventana no tiene teclado
 ping -n 2 127.0.0.1 >nul
 set /a n+=1
 if %n% geq 150 goto fallo
+if defined TAMI_LLM_URL goto esperar_propio
 curl -sf http://127.0.0.1:8080/health >nul 2>&1 || goto esperar
+goto esperar_resto
+:esperar_propio
+curl -sf "%TAMI_LLM_URL%/models" >nul 2>&1 || goto esperar
+:esperar_resto
 curl -sf http://127.0.0.1:8767/estado >nul 2>&1 || goto esperar
 curl -s http://127.0.0.1:8766/estado 2>nul | findstr /c:"true" >nul || goto esperar
 

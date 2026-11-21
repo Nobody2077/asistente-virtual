@@ -14,7 +14,12 @@ const MEMORIA_URL = process.env.TAMI_MEMORIA || 'http://127.0.0.1:8766';
 // El motor que hace pensar al modelo. Los dos hablan el «idioma» de OpenAI, así que el resto no cambia:
 //   llamacpp → llama-server.exe (motor\), sin LM Studio, puerto 8080. Lo que usa la feria.
 //   lmstudio → LM Studio, puerto 1234 (como al principio; queda de alternativa).
-const MOTOR = process.env.TAMI_MOTOR || 'llamacpp';
+//   TAMI_LLM_URL → CUALQUIER servidor compatible con OpenAI (Ollama, LM Studio, otro llama-server…).
+//     Ej.: http://127.0.0.1:11434/v1 (Ollama). Así cada uno usa su propio modelo (ver config_local.ejemplo.bat).
+const LLM_URL = (process.env.TAMI_LLM_URL || '').trim();
+const MOTOR = LLM_URL ? 'custom' : (process.env.TAMI_MOTOR || 'llamacpp');
+const CFG_MOTOR = LLM_URL ? { customUrl: LLM_URL } : {};
+const URL_MOTOR = (LLM_URL || llm.PROVIDERS[MOTOR].url).replace(/\/+$/, '');
 const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-9b' : 'qwen3.5-9b');
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
 // lo que responde a «¿quién te hizo?» (se puede cambiar con la variable TAMI_CREADOR)
@@ -405,7 +410,7 @@ function anotarTami(conv, texto) {
 // Al encender: que el modelo lea la personalidad una vez, antes del primer estudiante (~15 s).
 async function calentar() {
   await cargarCatalogo();
-  const res = await fetch(`${llm.PROVIDERS[MOTOR].url}/chat/completions`, {
+  const res = await fetch(`${URL_MOTOR}/chat/completions`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -496,7 +501,7 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     }
   };
 
-  await llm.chat(MOTOR, {}, { model: MODELO, messages }, (pieza) => {
+  await llm.chat(MOTOR, CFG_MOTOR, { model: MODELO, messages }, (pieza) => {
     crudo += pieza;
     onTexto(paraVoz(crudo));
     entregarFrases(false);
