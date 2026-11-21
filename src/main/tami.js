@@ -21,7 +21,7 @@ const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand:
 const CREADOR = process.env.TAMI_CREADOR
   || 'te crearon Juan Cristian Yujra Quispe y Brayan Quispe Mamani, estudiantes de Unifranz, como proyecto para ' +
      'esta feria, con inteligencia artificial que funciona aquí mismo, sin internet. Si quieren saber más, ofrece ' +
-     'mostrar cómo funcionas por dentro';
+     'mostrar cómo funcionas por dentro. Di siempre los dos nombres completos, sin acortarlos';
 
 // «¿Cómo funcionas?», «¿cómo aprendiste?», «explícame el proyecto»… → la presentación guiada (escenas + narración
 // fija, ver app.js). No pasa por el modelo: así la explicación es siempre exacta y no inventa nada.
