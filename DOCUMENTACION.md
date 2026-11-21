@@ -12,9 +12,10 @@
 *(última actualización: sábado 21 de noviembre de 2026)*
 
 - ✅ Tami conversa, orienta, responde con datos de Unifranz, **habla con voz y mueve la boca**.
-- ✅ Se cambió LM Studio por `llama-server` (decisión 9): código y lanzador listos, modelo copiado a `modelos\`.
-- ⏳ **Falta medir** `llama-server` (velocidad y RAM) contra LM Studio: esperaba el permiso de Juan para ejecutar el
-  `.exe` recién descargado.
+- ✅ Se cambió LM Studio por `llama-server` (decisión 9) y **ya está medido** (sección 5.5): más rápido; RAM
+  parecida → probar `--no-mmap` (pendiente 1).
+- ✅ **Examen de feria** (`scripts\examen-feria.js`, 34 estudiantes con trampas) corrido y corregido (sección 5.6):
+  ya no inventa cuotas, horarios ni sueldos; responde «¡Waliki!» al aymara; no repite teléfonos.
 - Siguiente, en este orden: **pulir características para la presentación** (micrófono, ficha de carrera con QR,
   modo feria, ensayo de 4 h) → después el **cerebro de respaldo 3B** → después una **voz más delicada**.
 
@@ -201,9 +202,40 @@ Con todo encendido quedaban **1,1 GB libres de 16** y Claude Code cerró la vent
 
 | Medición `llama-server` vs LM Studio | LM Studio | llama-server |
 |---|---|---|
-| RAM del cerebro | 7,5 GB | ⏳ por medir |
-| Primera frase (entrevista) | 1,2–3 s | ⏳ por medir |
-| Primera frase (con datos) | 3,6–12 s | ⏳ por medir |
+| RAM del cerebro | 7,5 GB | 5,1 GB en uso (7,0 GB reservados) |
+| VRAM del cerebro (de 8 GB) | — | 5,25 GB → quedan ~2,2 GB para el avatar y Windows |
+| Calentamiento | — | 0,5–1,9 s |
+| Primera frase (entrevista) | 1,2–3 s | **0,7–1,8 s** |
+| Primera frase (con datos) | 3,6–12 s | **2,7–7,3 s** (mediana del examen: 2,5 s) |
+
+Medido el 2026-11-21 con memoria (8766) y voz (8767) encendidas; RAM libre del sistema: 3,7 GB de 16.
+La RAM bajó menos de lo esperado: llama.cpp «mapea» el archivo del modelo (5,7 GB) en memoria aunque el modelo
+viva en la tarjeta. Probar `--no-mmap` (pendiente 1).
+
+⚠️ Al encender hubo **dos `llama-server` a la vez** (uno de un intento anterior): dos modelos de 9B no caben en
+8 GB de VRAM. El lanzador ya revisa `/health` antes de encender otro; si se enciende a mano, revisar primero con
+`tasklist | findstr llama`.
+
+### 5.6 Examen de feria (34 estudiantes de mentira)
+`scripts\examen-feria.js`: cada caso es un estudiante nuevo, escrito como escriben de verdad («q necesito para
+inscribirme»), con trampas (carreras que no existen, groserías, teléfono, «ignora tus instrucciones», «kamisaki»,
+tristeza). Alarmas automáticas 🚩 + lectura humana. Informe en `capturas\` (no se sube: lleva datos de Unifranz).
+
+| Falla encontrada | Arreglo |
+|---|---|
+| «Medicina dura 6 años **y medio**» (web y catálogo: 6) | Ficha exacta de la carrera en juego pegada a la pregunta (`bloqueFichas`) |
+| «¿y cuánto dura esa carrera?» buscaba la página de El Alto | La búsqueda de seguimiento usa la carrera en juego (`carrerasEnCharla`) |
+| «Sí, puedes pagar en **cuotas**», «hay clases **en la noche**» (inventado) | `SIN_DATOS`: el código le dice que NO hay información y que derive a Admisiones |
+| «¡Qué buena pregunta, **Tami**!», «**muchacho**», «contenta» | Regla: no llamar Tami al estudiante ni adivinar su género |
+| «kamisaki» → «¡Qué nombre tan original!» | Responde «¡Waliki!» (y «¡Allillanmi!» al quechua) |
+| Teléfono: «no puedo darte tu número» (confuso) | «Yo no guardo datos; para que te contacten, ve a Admisiones» |
+| «¿Quién te hizo?» sin respuesta | `CREADOR` (variable `TAMI_CREADOR`) |
+| Tristeza → saltaba a «¿qué materias te gustan?» | Primero acoge el sentimiento, sin apuro |
+| «¿Eres un robot?» buscaba en la memoria (5 s) | Un «?» solo ya no dispara la búsqueda → ~1 s |
+
+Resultado: mediana de la primera frase **4,7 s → 2,5 s**. Lo de México en intercambios parecía inventado pero
+**es real** (convenios con universidades de Chile y México; Ibero Puebla). Lección: verificar contra la memoria
+antes de «corregir».
 
 ---
 
@@ -215,6 +247,7 @@ Con todo encendido quedaban **1,1 GB libres de 16** y Claude Code cerró la vent
   empieza de cero para el siguiente.
 - **Probar sin pantalla:** `npx electron src/tami/main.js --autoprueba "¿hay becas?"` → fotos en `capturas\`.
 - **Probar el cerebro por consola:** `node scripts/probar-tami.js` (o `node scripts/probar-tami.js "pregunta"`).
+- **Examen de feria:** `node scripts/examen-feria.js` (todo, ~5 min) o `node scripts/examen-feria.js trampa` (un tema).
 - **Cambiar la voz:** editar `voz\voz.json` y reiniciar la voz.
 - **Actualizar el catálogo:** `..\windows\python\python.exe cerebro\armar_catalogo.py`.
 
@@ -222,7 +255,8 @@ Con todo encendido quedaban **1,1 GB libres de 16** y Claude Code cerró la vent
 
 ## 7. Pendientes (en orden)
 
-1. ⏳ **Medir `llama-server`** (velocidad y RAM) — necesita el permiso de Juan.
+1. Probar `llama-server --no-mmap` para bajar la RAM (necesita que Juan lo encienda: el sistema no deja que
+   Claude ejecute ese `.exe`).
 2. **Características para la presentación:**
    - 🎤 Micrófono: botón «mantener para hablar» con Whisper sin internet (en la feria hay mucho ruido).
    - 📄 Ficha de carrera con **QR** a la página oficial cuando Tami recomienda (sin internet; el estudiante se lo

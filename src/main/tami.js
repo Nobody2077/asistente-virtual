@@ -17,6 +17,9 @@ const MEMORIA_URL = process.env.TAMI_MEMORIA || 'http://127.0.0.1:8766';
 const MOTOR = process.env.TAMI_MOTOR || 'llamacpp';
 const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-9b' : 'qwen3.5-9b');
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
+// lo que responde a «¿quién te hizo?» (se puede cambiar con la variable TAMI_CREADOR)
+const CREADOR = process.env.TAMI_CREADOR
+  || 'te creó un estudiante de Unifranz como proyecto para esta feria, con inteligencia artificial que funciona aquí mismo, sin internet';
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
 // La RX 590 lee el prompt a ~150 tokens/s: cada token de datos que mandamos es tiempo que el estudiante
@@ -91,7 +94,17 @@ function personalidad() {
       `cuando dices «aquí» hablas de la sede ${SEDE_FERIA}.`,
     'Cómo eres: cálida, entusiasta, paciente y cercana, como una orientadora joven boliviana. Tuteas a los estudiantes ' +
       '(a los papás, de usted). Te alegras de verdad cuando alguien descubre lo que le gusta. Eres una inteligencia ' +
-      'artificial y lo dices con naturalidad si te preguntan; nunca finjas ser una persona.',
+      'artificial y lo dices con naturalidad si te preguntan; nunca finjas ser una persona. Si preguntan quién te hizo: ' +
+      `${CREADOR}.`,
+    'Trato con las personas:\n' +
+      '- Tú eres Tami; el estudiante no. No le digas «Tami», ni «muchacho» o «muchacha»: no adivines si es chico o chica.\n' +
+      '- No repitas una pregunta que ya hiciste en esta charla (por ejemplo, qué materias le gustan).\n' +
+      '- Si te saludan en aymara («kamisaki», «kamisaraki») responde «¡Waliki!» con cariño; en quechua («imaynalla») ' +
+      'responde «¡Allillanmi!». Luego sigue en español.\n' +
+      '- Si alguien está triste o perdido, primero acoge lo que siente con una o dos frases sinceras y sin apuro; la ' +
+      'entrevista puede esperar. Si habla de hacerse daño, dile con calma que hable hoy con un adulto de confianza.\n' +
+      '- Si sus papás quieren otra carrera, no te pongas en contra de nadie: valida a ambos y ayúdale a conversarlo.\n' +
+      '- Si piden un chiste, cuenta uno corto y sano, y vuelve a la orientación.',
     'Cómo hablas (MUY importante, es voz):\n' +
       '- De 1 a 3 frases cortas, máximo 50 palabras. Nada de listas, viñetas, asteriscos, emojis ni direcciones web.\n' +
       '- Escribe los números como se dicen cuando ayuda («cuatro años y medio»).\n' +
@@ -112,9 +125,12 @@ function personalidad() {
       '- La duración de cada carrera es la del CATÁLOGO, aunque una noticia diga otra cosa.\n' +
       '- Si los DATOS DE UNIFRANZ no hablan del tema exacto que te preguntan, NO rellenes con lo que suena lógico: ' +
       'di lo poco que sí dicen (o nada) y que el detalle se lo dan en Admisiones.\n' +
-      '- Fechas, requisitos, becas, nombres de personas y precios: solo si están en los DATOS DE UNIFRANZ. Si no están, ' +
+      '- Fechas, requisitos, becas, nombres de personas, precios, formas de pago, cuotas, horarios y turnos: solo si ' +
+      'están en los DATOS DE UNIFRANZ, y solo lo que dicen (no agregues países, cifras ni detalles). Si no están, ' +
       'di que ese dato se lo confirman en Admisiones de Unifranz. Nunca inventes precios ni fechas.\n' +
-      '- No pidas nombre completo, teléfono, correo ni carnet. Como mucho, su primer nombre si quiere darlo.\n' +
+      '- No pidas nombre completo, teléfono, correo ni carnet. Como mucho, su primer nombre si quiere darlo. Si te dan ' +
+      'un teléfono o correo, no lo repitas: di que tú no guardas datos y que para que le contacten se acerque a ' +
+      'Admisiones.\n' +
       '- Si te hablan de otra cosa, responde breve y amable y vuelve a la orientación.',
     'Mostrar en pantalla: SOLO cuando el estudiante pida ver algo, o cuando le recomiendes una carrera por primera vez, ' +
       'agrega AL FINAL de tu respuesta una sola etiqueta así: [MOSTRAR: nombre]. La mayoría de tus respuestas NO llevan ' +
@@ -176,8 +192,17 @@ async function buscar(pregunta, signal) {
 
 // ¿Esta frase necesita datos de Unifranz? «me gusta biología» (respuesta de la entrevista) no: el
 // catálogo ya está en la personalidad. «¿hay becas?» sí. Sin búsqueda, Tami responde en ~1 s.
-const PIDE_DATOS = /\?|¿|unifranz|beca|cost|precio|pag(o|ar)|mensualidad|cuota|descuento|inscri|matr[ií]cul|requisito|admisi|postula|sede|campus|direcci[oó]n|ubica|horario|turno|clases|malla|materia|semestre|t[ií]tulo|gradua|director|autoridad|rector|internacional|intercambio|convenio|pr[aá]cticas|laboratorio|cu[aá]nto|cu[aá]ndo|d[oó]nde|qui[eé]n|c[oó]mo/i;
+// (un «?» solo ya no basta: «¿eres un robot?» no necesita buscar y así responde en ~1 s en vez de ~5 s)
+const PIDE_DATOS = /unifranz|examen|ingreso|online|virtual|en la noche|beca|cost|precio|pag(o|ar)|mensualidad|cuota|descuento|inscri|matr[ií]cul|requisito|admisi|postula|sede|campus|direcci[oó]n|ubica|horario|turno|clases|malla|materia|semestre|t[ií]tulo|gradua|director|autoridad|rector|internacional|intercambio|convenio|pr[aá]cticas|laboratorio|cu[aá]nto|cu[aá]ndo|d[oó]nde|qui[eé]n es|\bhay\b|tienen/i;
 const necesitaDatos = (texto) => PIDE_DATOS.test(texto);
+
+// Temas que la web de Unifranz NO cubre (revisado en la memoria, 2026-11-21). Con datos flojos el 9B
+// «rellenaba» con lo que suena lógico («sí, puedes pagar en cuotas»): aquí se le dice explícitamente que no hay.
+const SIN_DATOS = [
+  [/cuota|plan(es)? de pago|pagar en|formas? de pago|financiamiento|cr[eé]dito/i, 'formas de pago ni cuotas'],
+  [/horario|turno|en la noche|nocturn|de noche|en la ma[nñ]ana|en la tarde/i, 'horarios ni turnos de clases'],
+  [/sueldo|salario|cu[aá]nto gana/i, 'sueldos de los profesionales'],
+];
 
 // --- Carreras «en juego» ----------------------------------------------------------------------------
 // La palabra con la que la gente nombra cada carrera: «Medicina», «Sistemas», «Comercial»…
@@ -305,7 +330,12 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
   let hits = [];
   const carreras = carrerasEnCharla(conv, texto);
   let datos = bloqueFichas(carreras);
-  if (necesitaDatos(texto)) {
+  const vacio = SIN_DATOS.find(([re]) => re.test(texto));
+  if (vacio) {
+    // tema que la web de Unifranz no cubre: ni se busca (traería noticias sueltas que la confunden)
+    datos = `DATOS DE UNIFRANZ: NO hay información sobre ${vacio[1]}. No digas «sí» ni «no» ni lo supongas: di con ` +
+      `cariño que ese detalle se lo explican en Admisiones de Unifranz, y sigue la conversación.\n\n${datos}`;
+  } else if (necesitaDatos(texto)) {
     // se dice YA, mientras busca y piensa; solo ante preguntas («veo videos de cómo funciona…» no lo es)
     if (/[?¿]|^(qu[eé]|cu[aá]nt|cu[aá]l|c[oó]mo|d[oó]nde|cu[aá]ndo|qui[eé]n|hay|tienen|puedo|se puede)\b/i.test(texto)) {
       onFrase(muletilla(), { muletilla: true });
