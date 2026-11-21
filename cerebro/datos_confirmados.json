@@ -1,0 +1,16 @@
+{
+  "_que_es": "Datos CONFIRMADOS por personas (no por la búsqueda). Mandan sobre las noticias del blog. Cada uno se agrega cuando la pregunta coincide con 'cuando' (expresión regular, sin tildes ni mayúsculas). Revisar antes de cada feria.",
+  "datos": [
+    {
+      "cuando": "director|directora|jefe de carrera|encargad",
+      "y_tambien": "sistemas",
+      "dato": "La directora de la carrera de Ingeniería de Sistemas e Innovación Digital es Nataly Miranda (di solo «Nataly Miranda», sin «Dra.» ni «Lic.», y sin decir de qué sede: no está confirmado). (En noticias de Cochabamba aparece Fabiola Cadima: cada sede puede tener su propia dirección.)",
+      "fuente": "Juan (estudiante de la carrera), 2026-11-21; blog Unifranz 2026-09-16"
+    },
+    {
+      "cuando": "telefono|numero|celular|llamar|contact|whats|wasap|correo|mail|email|escribir",
+      "dato": "Contacto de Unifranz sede El Alto: teléfono 2 2823421 (desde celular: +591 2 2823421); correo admisiones.elalto@unifranz.edu.bo; dirección Av. del Aeropuerto Internacional No. 1015. WhatsApp general de Unifranz: 71502211.",
+      "fuente": "unifranz.edu.bo/sedes/el-alto/ y página Contactos (memoria RAG), revisado 2026-11-21"
+    }
+  ]
+}

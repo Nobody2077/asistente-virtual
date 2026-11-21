@@ -30,7 +30,9 @@ const VENTAJA_PAGINA = 0.015; // las 95 páginas oficiales le ganan a las 440 no
 
 // Páginas que Tami puede mostrar, además de las 17 carreras del catálogo.
 const PAGINAS = {
+  'Unifranz': 'https://unifranz.edu.bo/',
   'Admisiones': 'https://unifranz.edu.bo/admisiones/',
+  'Contactos': 'https://unifranz.edu.bo/extranjeros/contactos/',
   'Becas': 'https://unifranz.edu.bo/admisiones/becas/',
   'Requisitos de admisión': 'https://unifranz.edu.bo/admisiones/requisitos-admision/',
   'Calendario académico': 'https://unifranz.edu.bo/admisiones/calendario-academico/',
@@ -104,7 +106,11 @@ function personalidad() {
       '- Si alguien está triste o perdido, primero acoge lo que siente con una o dos frases sinceras y sin apuro; la ' +
       'entrevista puede esperar. Si habla de hacerse daño, dile con calma que hable hoy con un adulto de confianza.\n' +
       '- Si sus papás quieren otra carrera, no te pongas en contra de nadie: valida a ambos y ayúdale a conversarlo.\n' +
-      '- Si piden un chiste, cuenta uno corto y sano, y vuelve a la orientación.',
+      '- Si piden un chiste, cuenta uno corto y sano, y vuelve a la orientación.\n' +
+      '- No puedes enviar WhatsApp, correos ni mensajes, ni abrir internet. Si te lo piden, dilo con naturalidad y ' +
+      'ofrece mostrar la información en pantalla con su código QR para que la guarden en su celular, o dales el ' +
+      'contacto de Admisiones.\n' +
+      '- Los números de teléfono dilos en grupos cortos, como se dictan («dos, dos ocho, dos tres, cuatro dos uno»).',
     'Cómo hablas (MUY importante, es voz):\n' +
       '- De 1 a 3 frases cortas, máximo 50 palabras. Nada de listas, viñetas, asteriscos, emojis ni direcciones web.\n' +
       '- Escribe los números como se dicen cuando ayuda («cuatro años y medio»).\n' +
@@ -240,6 +246,23 @@ function bloqueFichas(carreras) {
   return `DATOS EXACTOS DEL CATÁLOGO (si hablas de duración, dila tal cual, sin agregar ni quitar):\n${lineas.join('\n')}\n\n`;
 }
 
+// Datos confirmados por personas (cerebro/datos_confirmados.json): mandan sobre las noticias. Ej.: la búsqueda
+// traía «Fabiola Cadima» como directora de Sistemas (11 noticias, casi todas de Cochabamba) y no a Nataly Miranda.
+const CONFIRMADOS = (() => {
+  try {
+    return require('../../cerebro/datos_confirmados.json').datos.map((d) => ({
+      ...d, cuando: new RegExp(d.cuando), yTambien: d.y_tambien ? new RegExp(d.y_tambien) : null,
+    }));
+  } catch { return []; }
+})();
+function bloqueConfirmados(texto, carreras = []) {
+  const s = sinTildes(`${texto} ${carreras.map((c) => c.nombre).join(' ')}`);
+  const hay = CONFIRMADOS.filter((d) => d.cuando.test(s) && (!d.yTambien || d.yTambien.test(s)));
+  if (!hay.length) return '';
+  return `DATOS CONFIRMADOS (más confiables que cualquier noticia; úsalos tal cual, sin cambiar nombres ni números):\n` +
+    `${hay.map((d) => `- ${d.dato}`).join('\n')}\n\n`;
+}
+
 // «¿y cuánto dura?» sola no dice de qué carrera: se busca junto con la carrera en juego
 // (o, si no hay ninguna, junto con lo que el estudiante dijo antes).
 function consultaPara(conv, texto, carreras = []) {
@@ -329,7 +352,7 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
 
   let hits = [];
   const carreras = carrerasEnCharla(conv, texto);
-  let datos = bloqueFichas(carreras);
+  let datos = bloqueFichas(carreras) + bloqueConfirmados(texto, carreras);
   const vacio = SIN_DATOS.find(([re]) => re.test(texto));
   if (vacio) {
     // tema que la web de Unifranz no cubre: ni se busca (traería noticias sueltas que la confunden)
