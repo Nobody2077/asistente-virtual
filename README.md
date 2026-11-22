@@ -9,11 +9,35 @@ descubre con ellos si va con sus gustos y responde con **datos reales de Unifran
 contactos). Todo corre **en la propia PC, sin internet**: el modelo de lenguaje, la búsqueda en la memoria (RAG),
 la voz y el reconocimiento de voz.
 
-**Equipo:** Juan Cristian Yujra · Brayan Quispe Mamani
+**Autor:** Juan Cristian Yujra (idea, diseño y desarrollo)
+**Colaborador:** Brayan Quispe Mamani (presentación en la feria)
 **Presentación:** feria de Unifranz, miércoles 25 de noviembre de 2026, sede El Alto
 
 > 📖 Detalle técnico, decisiones, mediciones y **«DÓNDE NOS QUEDAMOS»**: [`DOCUMENTACION.md`](DOCUMENTACION.md)
-> 🤝 Cómo trabajamos en equipo con git: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+> 🤝 Cómo colaborar con git: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+<p align="center">
+  <img src="docs/galeria/01_stand_invitando.jpg" width="100%" alt="Pantalla del stand: Tami invita a conversar">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/galeria/02_stand_ficha.jpg" alt="Tami muestra la ficha de una carrera con un QR"></td>
+    <td width="50%"><img src="docs/galeria/05_explica_4.jpg" alt="Modo expositora: la memoria de Tami convertida en vectores"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Ficha de carrera con QR para llevársela en el celular</sub></td>
+    <td align="center"><sub>Modo expositora: así se arma su memoria (RAG)</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/galeria/04_explica_1.jpg" alt="Modo expositora: el recolector lee la web de Unifranz"></td>
+    <td width="50%"><img src="docs/galeria/06_explica_0.jpg" alt="Modo expositora: presentación del proyecto"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>El recolector (Crawl4AI) leyendo la web</sub></td>
+    <td align="center"><sub>Presentación del proyecto</sub></td>
+  </tr>
+</table>
 
 ---
 
