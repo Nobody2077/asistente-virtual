@@ -75,7 +75,8 @@ export class Voz {
     const buffer = await item.audio;
     if (gen !== this.generacion) return; // la callaron mientras esperaba
     this.cola.shift();
-    if (!buffer) return this.siguiente(primera);
+    // sin audio (el servidor de voz falló): igual se avisa, así el subtítulo de esa frase aparece (app.js)
+    if (!buffer) { item.alSonar?.(); return this.siguiente(primera); }
     const fuente = this.ctx.createBufferSource();
     fuente.buffer = buffer;
     fuente.connect(this.analizador);

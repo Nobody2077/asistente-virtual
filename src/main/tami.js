@@ -52,6 +52,12 @@ const RESPUESTAS_FOTO = [
   '¡Qué emoción, una foto! Mira la cuenta y… ¡sonríe!',
   '¡Me encanta salir en fotos! ¿Listos? ¡Ahí voy!',
 ];
+// «¿Qué eres?», «¿quién eres?», «¿eres un robot / una persona / real?» → respuesta FIJA (25/11): en el ensayo el
+// modelo contestó «eres una inteligencia artificial…» (se confundió de persona). «¿Qué eres por dentro?» NO entra
+// aquí: abre la presentación (PIDE_EXPLICACION va antes).
+const PIDE_IDENTIDAD = /(^|[¿\s,])(qu[eé]|qui[eé]n) eres( t[uú])?(?![\wáéíóúñ])|\beres (un|una) (robot|persona|humana?|m[aá]quina|ia|inteligencia artificial|programa|bot)\b|\beres real\b|\beres humana?\b/i;
+const RESPUESTA_IDENTIDAD = "Soy Tami, una inteligencia artificial: la orientadora virtual de Ingeniería de Sistemas de Unifranz. " +
+  "No soy una persona; soy un proyecto hecho por estudiantes, y funciono aquí mismo, sin internet. ¿Quieres que te muestre cómo funciono por dentro?";
 const DICE_QUE_SI =/^(s[ií]|sip|dale|claro|ok|okey|bueno|ya|va|por favor|me encantar[ií]a|quiero|mu[eé]stramelo)\b/i;
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
@@ -586,6 +592,10 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     conv.historial.push({ role: 'user', content: `El estudiante dice: ${texto}`, texto });
     conv.historial.push({ role: 'assistant', content: INTRO_EXPLICACION, texto: INTRO_EXPLICACION });
     return { texto: INTRO_EXPLICACION, mostrar: null, datos: [], accion: 'explicar' };
+  }
+  if (PIDE_IDENTIDAD.test(texto)) {
+    conv.ofrecioExplicar = true; // si dice «sí», arranca la presentación
+    return fija(RESPUESTA_IDENTIDAD);
   }
 
   let hits = [];

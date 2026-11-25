@@ -53,7 +53,7 @@ const demo = crearDemo($('demo-lienzo'), $('demo-titulo'), $('demo-sub'));
 const voz = new Voz({
   alVolumen: (v) => avatar.boca(v),
   alEmpezar: () => { avatar.mirar(0, 0); avatar.emocion('happy', 0.35); },
-  alTerminar: () => avatar.emocion('relaxed', 0.3),
+  alTerminar: () => { avatar.emocion('relaxed', 0.3); if (!pensando && !explicando) ocultarLuego(12_000); },
 });
 
 // --- subtítulos ----------------------------------------------------------------------------------
@@ -99,7 +99,12 @@ function caraPara(frase) {
   if (/qu[eé] (bien|lindo|genial|emoci[oó]n|bueno)|me encanta|genial|excelente|felicidades|incre[ií]ble|perfecto|¡qu[eé] gusto/i.test(frase)) return ["happy", 0.42];
   return ["happy", 0.32];
 }
-const alSonarFrase = (frase, g = null) => () => {
+// SUBTÍTULOS SINCRONIZADOS (25/11): en el ensayo el globo mostraba todo el texto apenas el cerebro lo escribía,
+// mucho antes de que la voz lo dijera. Ahora cada frase se agrega al globo cuando EMPIEZA A SONAR (como los
+// subtítulos de una película). Si la voz falla, voz.js avisa igual y el texto aparece sin audio.
+let dicho = '';                        // lo que ya dijo en esta respuesta (se vacía con cada pregunta o invitación)
+const alSonarFrase = (frase, g = null, subtitulo = true) => () => {
+  if (subtitulo) { dicho = dicho ? `${dicho} ${frase}` : frase; mostrarBurbuja(dicho); }
   avatar.emocion(...caraPara(frase));
   if (g) { avatar.gesto(g); proximoExplicar = Date.now() + 3000; }
 };
@@ -116,12 +121,12 @@ window.cerebro.alDecirFrase(({ frase, muletilla }) => {
   if (muletilla) mostrarBurbuja(`${frase} ${PENSANDO}`, { html: true });
   else if (!yaRespondio) { yaRespondio = true; avatar.soltarGesto(); avatar.mirar(0, 0); } // deja de pensar y responde
   const g = muletilla ? null : gestoPara(frase);
-  // el gesto empieza cuando ESA frase empieza a sonar (las frases llegan antes: la voz las tiene en cola)
-  voz.decir(frase, alSonarFrase(frase, g));
+  // el gesto y el subtítulo empiezan cuando ESA frase empieza a sonar (las frases llegan antes: la voz las tiene
+  // en cola). La muletilla ya se ve arriba con los puntitos: no se repite en el subtítulo.
+  voz.decir(frase, alSonarFrase(frase, g, !muletilla));
 });
-window.cerebro.alEscribir((todo) => {
-  if (todo) mostrarBurbuja(todo);
-});
+// (el texto que el cerebro va escribiendo ya NO se muestra al instante: lo muestran las frases al sonar)
+window.cerebro.alEscribir(() => {});
 // --- la ficha con QR -----------------------------------------------------------------------------
 const FICHA_DURA = 90_000; // se cierra sola después de 1,5 min (o al llegar otro estudiante)
 const ficha = $('ficha');
@@ -184,6 +189,7 @@ async function preguntar(texto) {
   avatar.emocion('relaxed', 0.2);
   avatar.mirar(0.25, 0.35); // mira hacia arriba, como quien piensa
   yaRespondio = false;
+  dicho = '';
   // si tarda (más de 0,7 s), se lleva la mano al mentón; si responde rápido, no (sería un movimiento nervioso)
   const manoAlMenton = setTimeout(() => { if (pensando && !yaRespondio) avatar.gesto('pensar'); }, 700);
   try {
@@ -202,7 +208,7 @@ async function invitar() {
   if (voz.hablando || pensando) return;
   ultimaInvitacion = Date.now();
   const frase = await window.cerebro.invitar();
-  mostrarBurbuja(frase);
+  dicho = '';
   voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.5);
   // el gesto según la frase: ofrece la presentación → abre la mano · dato curioso → explica · si no → saluda
@@ -215,7 +221,7 @@ async function despedirse() {
   enCharla = false;
   cerrarFicha(); // el siguiente estudiante empieza sin la ficha del anterior
   const frase = await window.cerebro.reiniciar();
-  mostrarBurbuja(frase);
+  dicho = '';
   voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.6);
   avatar.gesto('saludar'); // chau
@@ -237,7 +243,8 @@ const GUION = [
   [5, 'Cuando me preguntas algo, por ejemplo si hay becas, convierto tu pregunta en vector y busco los pedazos más cercanos. Por eso te respondo con datos reales de Unifranz, y no invento.'],
   [6, 'Con esos pedazos, mi cerebro, un modelo de lenguaje llamado Qwen, escribe la respuesta aquí mismo, sin internet. Whisper me permite escucharte, Kokoro me da la voz, y este cuerpo mueve la boca y las manos mientras hablo.'],
   [7, 'Este proyecto es el resultado de lo que aprendimos en clases: redes neuronales con imágenes, limpieza de datos y Google Colab. Los modelos de lenguaje y de voz ya venían entrenados; nuestro trabajo fue elegirlos, unirlos y darles el conocimiento de Unifranz.'],
-  [8, 'Y estos son mis resultados: empiezo a responder en unos tres segundos, pasé un examen con 46 estudiantes de prueba, y funciono sin internet. ¿Quieres probarme? ¡Pregúntame lo que quieras!'],
+  // (25/11: antes decía «pasé un examen con 46 estudiantes de prueba» y no se entendía: es scripts/examen-feria.js)
+  [8, 'Y estos son mis resultados: empiezo a responder en unos tres segundos. Antes de la feria, me pusieron a prueba con 46 preguntas de visitantes imaginarios, incluso preguntas trampa, para revisar que no invente nada. Y funciono sin internet. ¿Quieres probarme? ¡Pregúntame lo que quieras!'],
 ];
 let explicando = false;
 const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -266,7 +273,7 @@ async function explicarme() {
       const texto = guion.replace('{EQUIPO}', equipo);
       if (!explicando) break;
       await window.cerebro.explica({ accion: 'escena', n, pregunta: '¿hay becas?' });
-      mostrarBurbuja(texto);
+      dicho = ''; // el subtítulo de la escena aparece frase por frase, al ritmo de la voz
       ultimaActividad = Date.now();
       await decirYEsperar(texto);
       if (!explicando) break;
@@ -276,7 +283,8 @@ async function explicarme() {
     const termino = explicando;
     explicando = false;
     ultimaActividad = Date.now();
-    if (termino) setTimeout(() => !explicando && window.cerebro.explica({ accion: 'cerrar' }), 25_000); // dejarla a la vista un rato
+    // al terminar el discurso se cierra sola (25/11: antes esperaba 25 s y parecía que se había quedado colgada)
+    if (termino) setTimeout(() => !explicando && window.cerebro.explica({ accion: 'cerrar' }), 4_000);
   }
 }
 
