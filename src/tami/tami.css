@@ -172,51 +172,110 @@ body.feria #minimizar:hover, body.feria #minimizar.apretando { opacity: 1; }
 #ficha-contacto { margin: 10px 0 0; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 8px; }
 
 /* --- modo STAND (pantalla completa en la feria: npx electron src/tami/main.js --stand) -------------- */
-#cartel { display: none; }
+/* Diseño naranja (idea de Brayan, 24/11). TODO se mide con --z: 1 en una laptop 1366×768 y crece con la
+   pantalla (app.js la calcula: min(ancho/1366, alto/768)). Así en laptop, monitor o TV el texto ocupa la
+   misma proporción y se lee de lejos. Nunca baja de 0,8 (pantallas chicas). */
+#cartel, #fondo-stand { display: none; }
 body.stand {
-  /* negro de marca con un resplandor naranja detrás de Tami, como un reflector */
+  --z: 1;
+  --u: calc(var(--z) * 1px); /* «un píxel de laptop»: 20 × var(--u) = 20 px en laptop, 28 px en 1920×1080 */
   background:
-    radial-gradient(ellipse 38% 55% at 72% 62%, rgba(255, 90, 26, .30), transparent 70%),
-    linear-gradient(160deg, #181818 0%, #070707 70%);
+    radial-gradient(ellipse 45% 60% at 74% 55%, rgba(255, 214, 170, .45), transparent 70%),
+    linear-gradient(135deg, #f7a165 0%, #ef7a3d 40%, #e2561f 75%, #c9410f 100%);
 }
-body.stand::before { /* la marca gigante de fondo, casi invisible */
-  content: 'UNIFRANZ';
-  position: fixed; left: -1vw; bottom: -4vw;
-  font: 900 17vw/1 "Segoe UI", sans-serif; letter-spacing: -0.5vw;
-  color: rgba(255, 255, 255, .035);
-  pointer-events: none;
-}
-body.stand #tami { width: min(44vw, 820px); right: 5vw; }
-body.stand #avatar { inset: 120px 0 0 0; height: calc(100% - 120px); }
-body.stand #burbuja { font-size: 25px; top: 34px; }
-body.stand #barra { bottom: 26px; }
-body.stand #barra button { width: 58px; height: 58px; font-size: 24px; }
-body.stand #barra .ico { width: 28px; height: 28px; }
-body.stand #entrada { font-size: 20px; }
-body.stand #cerrar, body.stand #arrastre { display: none; } /* en la feria no se cierra con un clic */
 
+/* fondo: TAMI gigante en pixeles y adornos que flotan (solo en la mitad izquierda y arriba: lejos de Tami) */
+body.stand #fondo-stand { display: block; position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+#letras-tami {
+  position: absolute; left: 6vw; top: 6vh; width: 46vw; max-height: 26vh;
+  fill: rgba(255, 255, 255, .16);
+  filter: drop-shadow(calc(var(--u) * 6) calc(var(--u) * 6) 0 rgba(120, 30, 0, .10));
+}
+.adorno {
+  position: absolute; color: rgba(255, 255, 255, .55);
+  width: calc(var(--u) * 46); height: calc(var(--u) * 46);
+  animation: flotar 7s ease-in-out infinite;
+}
+.adorno svg { width: 100%; height: 100%; display: block; }
+.adorno.a1 { left: 24vw; bottom: 3vh; }
+.adorno.a2 { left: 44vw; bottom: 7vh;  animation-delay: -2s; width: calc(var(--u) * 34); height: calc(var(--u) * 34); }
+.adorno.a3 { left: 54vw; top: 8vh; animation-delay: -4s; }
+.adorno.a4 { left: 3vw;  bottom: 6vh; animation-delay: -1s; width: calc(var(--u) * 30); height: calc(var(--u) * 30); }
+@keyframes flotar { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(calc(var(--u) * -14)) rotate(6deg); } }
+
+/* Tami a la derecha (ocupa ~40 % del ancho) */
+body.stand #tami { width: 40vw; right: 3vw; }
+body.stand #avatar { inset: calc(var(--u) * 30) 0 0 0; height: calc(100% - var(--u) * 30); }
+body.stand #placa, body.stand #cerrar, body.stand #arrastre { display: none; } /* en la feria no se cierra con un clic */
+
+/* cartel (cuando nadie habla): a la izquierda, letras blancas sobre el naranja */
 body.stand #cartel {
   display: block;
-  position: absolute; left: 6vw; top: 12vh; width: 42vw;
+  position: fixed; left: 6vw; top: 62%; transform: translateY(-50%); width: 46vw;
   color: #fff; transition: opacity .4s;
 }
-body.stand.con-ficha #cartel { opacity: 0; } /* la ficha ocupa su lugar */
-#cartel .cartel-marca { margin: 0; font-weight: 900; letter-spacing: .6em; color: var(--naranja); font-size: 22px; }
-#cartel h1 { margin: 18px 0 22px; font-size: clamp(48px, 5.6vw, 104px); line-height: 1.02; font-weight: 900; }
-#cartel .cartel-sub { margin: 0 0 30px; font-size: clamp(22px, 2vw, 36px); color: #ddd; }
-#cartel .cartel-sub strong { color: var(--naranja); }
+#cartel .cartel-marca { margin: 0; font-weight: 900; letter-spacing: .6em; color: #111; font-size: calc(var(--u) * 22); }
+#cartel h1 {
+  margin: calc(var(--u) * 14) 0 calc(var(--u) * 18); font-size: calc(var(--u) * 76); line-height: 1.02; font-weight: 900;
+  text-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 18) rgba(110, 30, 0, .35);
+}
+#cartel .cartel-sub { margin: 0 0 calc(var(--u) * 26); font-size: calc(var(--u) * 28); line-height: 1.3; color: #fff; }
+#cartel .cartel-sub strong { color: #111; }
 #cartel .cartel-como .sep { margin: 0 .4em; opacity: .5; }
 #cartel .cartel-como {
-  display: inline-block; margin: 0; padding: 14px 26px; border-radius: 40px;
-  background: rgba(255, 255, 255, .08); border: 2px solid rgba(255, 90, 26, .7);
-  font-size: clamp(18px, 1.4vw, 26px);
+  display: inline-block; margin: 0; padding: calc(var(--u) * 12) calc(var(--u) * 24); border-radius: 999px;
+  background: #111; color: #fff; font-size: calc(var(--u) * 21);
   animation: latido 2.4s ease-in-out infinite;
 }
-@keyframes latido { 50% { box-shadow: 0 0 0 10px rgba(255, 90, 26, .12); } }
+@keyframes latido { 50% { box-shadow: 0 0 0 calc(var(--u) * 10) rgba(17, 17, 17, .15); } }
+/* cuando hay burbuja o ficha, el cartel se aparta (ocupan su lugar) */
+body.stand:has(#burbuja:not(.oculta)) #cartel, body.stand.con-ficha #cartel { opacity: 0; }
 
+/* burbuja (lo que dice Tami / lo que dijo el estudiante): GRANDE, a la izquierda, con la colita hacia Tami */
+body.stand #burbuja {
+  position: fixed; left: 6vw; right: auto; top: 60%; width: 46vw;
+  transform: translateY(-50%);
+  font-size: calc(var(--u) * 30); line-height: 1.35; font-weight: 600;
+  padding: calc(var(--u) * 22) calc(var(--u) * 28);
+  border-radius: calc(var(--u) * 24); border-left-width: calc(var(--u) * 8);
+  max-height: 58vh; overflow: hidden;
+  box-shadow: 0 calc(var(--u) * 14) calc(var(--u) * 40) rgba(90, 20, 0, .35);
+}
+body.stand #burbuja.oculta { transform: translateY(-50%) translateX(calc(var(--u) * -20)); }
+body.stand #burbuja::after { /* colita a la derecha */
+  bottom: auto; left: auto; top: 50%; right: calc(var(--u) * -18);
+  border: calc(var(--u) * 18) solid transparent; border-right: 0; border-left-color: var(--negro);
+  transform: translateY(-50%);
+}
+body.stand #burbuja.estudiante::after { border-left-color: var(--blanco); border-top-color: transparent; }
+body.stand #burbuja .pensando span { width: calc(var(--u) * 12); height: calc(var(--u) * 12); }
+/* texto largo: se ve el FINAL (lo último que dijo) y lo de arriba se desvanece en vez de cortarse */
+body.stand #burbuja.desborda {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 calc(var(--u) * 70));
+          mask-image: linear-gradient(to bottom, transparent 0, #000 calc(var(--u) * 70));
+}
+/* con la ficha abierta (a la izquierda), la burbuja vuelve arriba de Tami, más chica */
+body.stand.con-ficha #burbuja {
+  position: absolute; left: calc(var(--u) * 18); right: calc(var(--u) * 18); width: auto; top: calc(var(--u) * 20);
+  transform: none; font-size: calc(var(--u) * 21); max-height: 34vh;
+}
+body.stand.con-ficha #burbuja::after {
+  top: auto; right: auto; bottom: calc(var(--u) * -12); left: 50%;
+  border: calc(var(--u) * 12) solid transparent; border-bottom: 0; border-top-color: var(--negro); border-left-color: transparent;
+  transform: translateX(-50%);
+}
+body.stand.con-ficha #burbuja.estudiante::after { border-top-color: var(--blanco); }
+
+/* barra para escribir: abajo, bajo Tami, tamaño según la pantalla */
+body.stand #barra { bottom: calc(var(--u) * 22); padding: calc(var(--u) * 8); gap: calc(var(--u) * 8); border-radius: 999px; }
+body.stand #barra button { width: calc(var(--u) * 58); height: calc(var(--u) * 58); }
+body.stand #barra .ico { width: calc(var(--u) * 28); height: calc(var(--u) * 28); }
+body.stand #entrada { font-size: calc(var(--u) * 21); padding: calc(var(--u) * 10) calc(var(--u) * 18); border-radius: 999px; }
+body.stand #estado { bottom: calc(var(--u) * 98); font-size: calc(var(--u) * 16); color: #111; text-shadow: none; font-weight: 700; }
+
+/* la ficha con QR: a la izquierda, escalada con la pantalla */
 body.stand #ficha {
   left: 7vw; bottom: auto; top: 50%; width: 440px; max-height: none;
-  transform: translateY(-50%) scale(1.2); transform-origin: left center;
+  transform: translateY(-50%) scale(calc(var(--z) * 1.15)); transform-origin: left center;
 }
-body.stand #ficha.oculta { transform: translateY(-50%) translateX(-30px) scale(1.2); }
-body.stand #placa { display: none; } /* la credencial del pecho ya dice «TAMI» y la barra la tapaba */
+body.stand #ficha.oculta { transform: translateY(-50%) translateX(-30px) scale(calc(var(--z) * 1.15)); }

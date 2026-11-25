@@ -16,6 +16,13 @@ const $ = (id) => document.getElementById(id);
 // modo stand (pantalla completa en la feria) o escritorio (ventanita): lo dice main.js en la dirección
 const STAND = new URLSearchParams(location.search).get('modo') === 'stand';
 document.body.classList.toggle('stand', STAND);
+// escala del modo stand (tami.css usa --z): 1 en una laptop 1366×768, más en monitores y TV grandes.
+// Se toma el lado más justo (ancho o alto) para que nada se salga de la pantalla.
+function escalar() {
+  const z = Math.max(0.8, Math.min(innerWidth / 1366, innerHeight / 768));
+  document.body.style.setProperty('--z', z.toFixed(3));
+}
+if (STAND) { escalar(); addEventListener('resize', escalar); }
 // modo feria (blindado): muestra el botón de minimizar
 document.body.classList.toggle('feria', new URLSearchParams(location.search).get('feria') === '1');
 let minimizada = false; // mientras está minimizada no habla ni invita (Juan está usando otra ventana)
@@ -40,6 +47,9 @@ function mostrarBurbuja(contenido, { estudiante = false, html = false } = {}) {
   burbuja.classList.remove('oculta');
   burbuja.classList.toggle('estudiante', estudiante);
   if (html) burbujaTexto.innerHTML = contenido; else burbujaTexto.textContent = contenido;
+  // texto largo: mostrar el FINAL (lo que está diciendo ahora); lo de arriba se desvanece (tami.css .desborda)
+  burbuja.scrollTop = burbuja.scrollHeight;
+  burbuja.classList.toggle('desborda', burbuja.scrollHeight > burbuja.clientHeight + 2);
 }
 function ocultarLuego(ms = 12_000) {
   clearTimeout(ocultarBurbuja);
