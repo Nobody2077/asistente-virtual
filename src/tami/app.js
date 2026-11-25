@@ -1,14 +1,15 @@
 // app.js — junta todo en la página: avatar + voz + subtítulos + conversación + ciclo de feria.
 //
 // Ciclo de feria:
-//   - nadie le habla → cada ~45 s invita a quien pase («¿Ya sabes qué carrera…?»)
+//   - nadie le habla → cada ~90 s invita a quien pase («¿Ya sabes qué carrera…?»)
 //   - alguien conversa y luego se queda callado 90 s → se despide y empieza de cero para el siguiente
 
 import { crearAvatar } from './avatar.js';
 import { Voz } from './voz.js';
 import { Oido } from './oido.js';
 
-const INVITAR_CADA = 45_000;      // ms sin nadie → invita
+const INVITAR_CADA = 90_000;      // ms sin nadie → invita en voz alta (era 45 s: en un auditorio lleno cansaba;
+                                  // entre medio, las poses de ocio llaman la atención sin ruido)
 const DESPEDIRSE_TRAS = 90_000;   // ms sin respuesta en medio de una charla → se despide y reinicia
 const UNIFORME = { Tops: '#1b1b1b', Bottoms: '#2a2a2a' }; // polera negra (colores de Unifranz)
 
@@ -414,6 +415,13 @@ window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key.toLowerCase() === 'q') window.cerebro.cerrar();
 });
 entrada.focus();
+// En la feria casi todos ESCRIBEN. Si alguien tocó a Tami o cerró la ficha, el campo pierde el foco y lo que
+// tecleaba el siguiente no aparecía en ningún lado (parecía rota). Ahora cualquier letra, número o Enter vuelve
+// a poner el foco en el campo y la tecla cae ahí (el foco cambia ANTES de que el navegador escriba la letra).
+window.addEventListener('keydown', (e) => {
+  if (document.activeElement === entrada || e.ctrlKey || e.altKey || e.metaKey) return;
+  if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') entrada.focus();
+}, true);
 
 // para la autoprueba (main.js --autoprueba): preguntar sin teclado y saber qué está pasando
 window.tamiPrueba = {
