@@ -304,8 +304,8 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, 
     const t = reloj.elapsedTime;
 
     // pose de reposo: brazos abajo (el modelo viene en «T»), respiración y balanceo leve
-    hueso('leftUpperArm').rotation.z = -1.2 + Math.sin(t * 0.8) * 0.015;
-    hueso('rightUpperArm').rotation.z = 1.2 - Math.sin(t * 0.8) * 0.015;
+    hueso('leftUpperArm').rotation.z = -1.33 + Math.sin(t * 0.8) * 0.015;
+    hueso('rightUpperArm').rotation.z = 1.33 - Math.sin(t * 0.8) * 0.015;
     hueso('leftLowerArm').rotation.y = -0.25;
     hueso('rightLowerArm').rotation.y = 0.25;
     for (const lado of ['left', 'right']) {                           // manos relajadas (Brayan)

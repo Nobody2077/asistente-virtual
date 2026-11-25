@@ -50,6 +50,21 @@ function teclaBloqueada(t) {
   return ['f5', 'f11', 'f12'].includes(k);
 }
 
+// Pantalla completa DE VERDAD (25/11): la ventana toma el tamaño de la pantalla donde está. Se llama al girar el
+// monitor (vertical ↔ horizontal), al cambiar la resolución, al volver de minimizar y con F11. Antes la ventana
+// se quedaba con el tamaño del arranque y por un costado se veía el escritorio.
+function ajustarPantalla() {
+  if (!STAND || !ventana || ventana.isDestroyed() || ventana.isMinimized()) return;
+  if (process.argv.includes('--autoprueba') || process.argv.includes('--fuera')) return;
+  const { bounds } = screen.getDisplayMatching(ventana.getBounds());
+  if (FERIA) ventana.setKiosk(false);  // el kiosco «congela» el tamaño: se suelta, se ajusta y se vuelve a poner
+  ventana.setFullScreen(false);
+  ventana.setBounds(bounds);
+  if (FERIA) ventana.setKiosk(true); else ventana.setFullScreen(true);
+  if (FERIA) ventana.setAlwaysOnTop(true, 'screen-saver');
+  ventana.focus();
+}
+
 function salirDeVerdad() {
   salidaPermitida = true;
   app.quit();
@@ -75,6 +90,7 @@ function blindar(v) {
     if (t.type !== 'keyDown') return;
     if (t.control && t.alt && t.shift && (t.key || '').toLowerCase() === 'q') { e.preventDefault(); salirDeVerdad(); return; }
     if (t.control && t.alt && t.shift && (t.key || '').toLowerCase() === 'm') { e.preventDefault(); minimizar(); return; }
+    if ((t.key || '').toLowerCase() === 'f11') { e.preventDefault(); ajustarPantalla(); return; } // re-llenar la pantalla
     if (teclaBloqueada(t)) e.preventDefault();
   });
   v.on('close', (e) => { if (!salidaPermitida && v === ventana) e.preventDefault(); }); // Alt+F4 llega aquí
@@ -138,7 +154,17 @@ function crearVentana() {
       ventana.setAlwaysOnTop(true, 'screen-saver');
       ventana.focus();
       enviar('tami:minimizada', false);
+      setTimeout(ajustarPantalla, 300); // por si mientras estaba minimizada giraron el monitor
     });
+  }
+  if (STAND && !fotoFuera) {
+    // giraron el monitor o cambió la resolución → la ventana vuelve a tapar TODA la pantalla
+    let reloj = null;
+    const alCambiar = () => { clearTimeout(reloj); reloj = setTimeout(ajustarPantalla, 800); };
+    screen.on('display-metrics-changed', alCambiar);
+    screen.on('display-added', alCambiar);
+    screen.on('display-removed', alCambiar);
+    setTimeout(ajustarPantalla, 2500);
   }
   ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC, feria: FERIA ? '1' : '', orientacion: ORIENTACION } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
@@ -256,11 +282,18 @@ let datosExplica = null;
 
 async function abrirExplica() {
   if (ventanaExplica && !ventanaExplica.isDestroyed()) return ventanaExplica;
-  const { workArea, bounds } = screen.getPrimaryDisplay();
+  // la pantalla donde está Tami (no la «principal»: puede ser el monitor girado)
+  const { workArea, bounds } = ventana && !ventana.isDestroyed() ? screen.getDisplayMatching(ventana.getBounds()) : screen.getPrimaryDisplay();
   const fuera = process.argv.includes('--autoprueba');
+  const vertical = ORIENTACION ? ORIENTACION === 'vertical' : bounds.height > bounds.width * 1.1;
   let lugar;
   if (fuera) lugar = { x: -4000 - 1700, y: 0, width: 1600, height: 900 };
-  else if (STAND) lugar = { x: bounds.x, y: bounds.y, width: Math.round(bounds.width * 0.6), height: bounds.height };
+  else if (STAND && vertical) {
+    // monitor girado (25/11): la presentación (16:9) va ABAJO, a todo el ancho; arriba quedan la cara de Tami y
+    // los subtítulos (app.js pone body.con-explica y la burbuja sube). Antes salía al 60 % de ancho y la cortaba.
+    const alto = Math.round(bounds.width * 0.5625);
+    lugar = { x: bounds.x, y: bounds.y + bounds.height - alto - Math.round(bounds.height * 0.03), width: bounds.width, height: alto };
+  } else if (STAND) lugar = { x: bounds.x, y: bounds.y, width: Math.round(bounds.width * 0.6), height: bounds.height };
   else {
     const ancho = Math.min(1280, workArea.width - ANCHO_TAMI - 48);
     const alto = Math.min(Math.round(ancho * 0.5625), workArea.height - 40);

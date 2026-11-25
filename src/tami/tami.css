@@ -386,3 +386,20 @@ body.stand.vertical #cartel .cartel-como { background: var(--naranja); }
 body.stand.vertical #demo { z-index: 3; }
 body.stand.vertical #cartel .cartel-como .ico-txt { color: #fff; } /* íconos blancos sobre la píldora naranja */
 body.stand.vertical #demo { padding: calc(var(--u) * 18) calc(var(--u) * 22); border-radius: calc(var(--u) * 26); background: rgba(17, 17, 17, .72); backdrop-filter: blur(4px); } /* sobre el cuerpo de Tami: panel oscuro para que se lea */
+
+/* === VERTICAL, arreglos del ensayo (25/11, 4 a. m.) ======================================================
+   1) De la cintura para abajo Tami se DESVANECE detrás del panel: ya no se ven piernas ni «shorts» (parecía una
+      niña de cuerpo entero). En modo foto sí se la ve entera.
+   2) La burbuja de arriba (con ficha o con la presentación abierta) era enorme y le tapaba la cara: tenía top Y
+      bottom a la vez y se estiraba. Ahora mide lo que mide el texto y queda sobre el logo, encima de la cabeza. */
+body.stand.vertical:not(.con-foto) #avatar {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 54%, transparent 68%);
+          mask-image: linear-gradient(to bottom, #000 0, #000 54%, transparent 68%);
+}
+body.stand.vertical.con-ficha #burbuja, body.stand.vertical.con-explica #burbuja {
+  top: 2.5vh; bottom: auto; left: 4vw; right: 4vw; height: auto; max-height: 15vh;
+  font-size: calc(var(--u) * 26); padding: calc(var(--u) * 14) calc(var(--u) * 22);
+}
+body.stand.vertical.con-ficha #burbuja.oculta, body.stand.vertical.con-explica #burbuja.oculta { transform: translateY(calc(var(--u) * -20)); }
+body.stand.vertical.con-explica #burbuja::after { display: none; }
+body.stand.vertical.con-explica #cartel { opacity: 0; }

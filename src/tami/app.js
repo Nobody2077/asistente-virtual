@@ -265,6 +265,8 @@ async function explicarme() {
   explicando = true;
   enCharla = true;
   cerrarFicha();
+  demo.ocultar();
+  document.body.classList.add('con-explica'); // en vertical la presentación va abajo: los subtítulos suben (tami.css)
   avatar.gesto('presentar');
   const nombres = await window.cerebro.equipo().catch(() => null) || ['Juan Cristian Yujra', 'Brayan Quispe Mamani'];
   const equipo = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`;
@@ -327,7 +329,12 @@ async function modoFoto() {
   fotoActiva = false;
 }
 window.cerebro.alFoto?.(() => modoFoto());
-window.cerebro.alExplicaCerrada(() => { if (explicando) { explicando = false; voz.callar(); } });
+window.cerebro.alExplicaCerrada(() => {
+  document.body.classList.remove('con-explica');
+  if (explicando) { explicando = false; voz.callar(); }
+  avatar.soltarGesto(); // que no se quede con el brazo levantado
+  avatar.mirar(0, 0);
+});
 
 setInterval(() => {
   if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando || fotoActiva) return;
@@ -522,6 +529,7 @@ window.tamiPrueba = {
   explicando: () => explicando,
   demo: (nombre, ms = 60_000) => demo.mostrar(nombre, ms), // para fotos: tamiPrueba.demo('red')
   foto: () => { modoFoto(); return 0; },
+  gesto: (nombre) => { avatar.gesto(nombre); return 0; }, // para fotos de gestos en el stand
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };
