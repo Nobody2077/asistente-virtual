@@ -34,3 +34,6 @@ __pycache__/
 # configuracion personal de cada uno (modelo propio)
 config_local.bat
 config_local.sh
+
+# Tami: integrantes del equipo que no van al repo publico (ver src/main/equipo.js)
+equipo_local.json

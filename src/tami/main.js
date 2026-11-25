@@ -11,6 +11,7 @@ const path = require('node:path');
 const { app, BrowserWindow, Menu, ipcMain, powerSaveBlocker, screen, session } = require('electron');
 const QRCode = require('qrcode');
 const tami = require('../main/tami');
+const equipo = require('../main/equipo'); // quiénes la hicieron (+ equipo_local.json, que no va a GitHub)
 
 // Tami habla sola (invita a quien pasa) sin que nadie haya tocado la pantalla antes
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -249,6 +250,7 @@ async function abrirExplica() {
   ventanaExplica.on('closed', () => { ventanaExplica = null; enviar('tami:explica-cerrada'); });
   ventanaExplica.webContents.on('console-message', (e) => console.log('[explica]', e.message ?? e));
   await ventanaExplica.loadFile(path.join(__dirname, 'explica.html'));
+  ventanaExplica.webContents.send('explica:equipo', equipo.nombres); // la portada con los integrantes
   try {
     datosExplica ??= await explicaDatos.datosIniciales();
     ventanaExplica.webContents.send('explica:datos', datosExplica);
@@ -272,6 +274,7 @@ ipcMain.handle('explica:cerrar', () => ventanaExplica?.close());
 // podía llegar antes de que terminara de cargar el modelo 3D y se perdía).
 let estadoCerebro = { listo: false, error: 'Despertando a Tami…' };
 ipcMain.handle('tami:estado', () => estadoCerebro);
+ipcMain.handle('tami:equipo', () => equipo.nombres); // para el guion de «Así funciona Tami» (app.js)
 
 // --autoprueba "pregunta": la hace sola y saca fotos mientras responde (capturas/app_*.png).
 // Sirve para revisar la app sin estar frente a la pantalla.

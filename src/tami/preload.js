@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('cerebro', {
   minimizar: () => ipcRenderer.invoke('tami:minimizar'),
   alMinimizar: escuchar('tami:minimizada'), // true al minimizarse, false al volver
   estado: () => ipcRenderer.invoke('tami:estado'),
+  equipo: () => ipcRenderer.invoke('tami:equipo'), // ['Juan Cristian Yujra', …] (ver src/main/equipo.js)
   ficha: (abierta) => ipcRenderer.invoke('tami:ficha', Boolean(abierta)), // la ventana crece / se achica
   explica: (pedido) => ipcRenderer.invoke('tami:explica', pedido),         // { accion: abrir|escena|cerrar, n, pregunta }
   alExplicar: escuchar('tami:explicar'),            // le preguntaron «¿cómo funcionas?»
