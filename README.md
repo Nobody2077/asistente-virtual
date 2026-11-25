@@ -67,8 +67,14 @@ la voz y el reconocimiento de voz.
 - 📚 **Responde con datos de Unifranz** buscando en 8093 pedazos de la web oficial (RAG). No inventa cuotas,
   horarios ni sueldos: si no sabe, deriva a admisiones.
 - 📇 **Ficha con QR** de la carrera (y de páginas como Becas o Admisiones), para llevársela en el celular.
-- 👋 **Toma la iniciativa**: invita a acercarse cada 45 s y se despide si el estudiante se va.
+- 👋 **Toma la iniciativa**: cada 90 s dice una de 14 frases (invitaciones, datos curiosos, simpáticas) y se
+  despide si el estudiante se va.
+- 🧍 **Parece viva cuando nadie le habla**: respira, parpadea, hace poses (visera, estirarse, mirar a los lados…)
+  y, en el stand, muestra demos animadas de cómo funciona (red neuronal, su memoria, el camino de una respuesta).
+- ✋ **Gestos con dedos articulados** al pensar, saludar, explicar o recomendar.
 - 🧑‍🏫 **Modo expositora** (F8 o «¿cómo funcionas?»): explica en 9 escenas cómo está hecha.
+- 📸 **Modo foto** (F9 o «Tami, te voy a tomar una foto»): marco, cuenta 3-2-1 y posa 4 segundos.
+- 🖥️ **Se adapta a la pantalla**: el texto del stand crece en monitores y TV para leerse de lejos.
 - 🔒 **Modo feria**: pantalla completa que no se cierra con Alt+F4 y se levanta sola si se cae.
 
 ## 2. Cómo funciona
@@ -238,6 +244,7 @@ a Tami. En Linux, al cerrar la ventana se apagan también los servidores; los lo
 |---|---|
 | **F2** o botón 🎤 | hablarle (mantener, o tocar y volver a tocar) |
 | **F8** | presentación «Así funciona Tami» (F8 otra vez la detiene) |
+| **F9** | modo foto: cuenta 3-2-1 y Tami posa 4 segundos |
 | **Ctrl+Q** | cerrar (fuera del modo feria) |
 | **Ctrl+Alt+Shift+M** | minimizar en modo feria (o mantener 1 s el botón de arriba a la derecha) |
 | **Ctrl+Alt+Shift+Q** | 🔑 salida secreta del modo feria |
