@@ -80,6 +80,17 @@ const GESTO_POR_FRASE = [
 function gestoPara(frase) {
   return GESTO_POR_FRASE.find(([re]) => re.test(frase))?.[1] || null;
 }
+// La cara acompaña cada frase cuando EMPIEZA a sonar (25/11): si pregunta, sube las cejas (curiosa); si dice algo
+// alegre, sonríe más. Valores elegidos con fotos: surprised > 0,3 abre la boca raro; happy > 0,45 cierra los ojos.
+function caraPara(frase) {
+  if (/\?\s*[)»"]?\s*$/.test(frase)) return ["surprised", 0.2];
+  if (/qu[eé] (bien|lindo|genial|emoci[oó]n|bueno)|me encanta|genial|excelente|felicidades|incre[ií]ble|perfecto|¡qu[eé] gusto/i.test(frase)) return ["happy", 0.42];
+  return ["happy", 0.32];
+}
+const alSonarFrase = (frase, g = null) => () => {
+  avatar.emocion(...caraPara(frase));
+  if (g) { avatar.gesto(g); proximoExplicar = Date.now() + 3000; }
+};
 // entre frase y frase, si no está haciendo nada, a veces la mano acompaña («explicar»)
 let proximoExplicar = 0;
 setInterval(() => {
@@ -94,7 +105,7 @@ window.cerebro.alDecirFrase(({ frase, muletilla }) => {
   else if (!yaRespondio) { yaRespondio = true; avatar.soltarGesto(); avatar.mirar(0, 0); } // deja de pensar y responde
   const g = muletilla ? null : gestoPara(frase);
   // el gesto empieza cuando ESA frase empieza a sonar (las frases llegan antes: la voz las tiene en cola)
-  voz.decir(frase, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
+  voz.decir(frase, alSonarFrase(frase, g));
 });
 window.cerebro.alEscribir((todo) => {
   if (todo) mostrarBurbuja(todo);
@@ -180,7 +191,7 @@ async function invitar() {
   ultimaInvitacion = Date.now();
   const frase = await window.cerebro.invitar();
   mostrarBurbuja(frase);
-  voz.decir(frase);
+  voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.5);
   // el gesto según la frase: ofrece la presentación → abre la mano · dato curioso → explica · si no → saluda
   avatar.gesto(/c[oó]mo funciono|c[oó]mo funcionas/i.test(frase) ? 'presentar'
@@ -193,7 +204,7 @@ async function despedirse() {
   cerrarFicha(); // el siguiente estudiante empieza sin la ficha del anterior
   const frase = await window.cerebro.reiniciar();
   mostrarBurbuja(frase);
-  voz.decir(frase);
+  voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.6);
   avatar.gesto('saludar'); // chau
   ocultarLuego(8_000);
@@ -224,7 +235,7 @@ async function decirYEsperar(texto) {
   const frases = texto.match(/[^.!?¿¡]*[¡¿]?[^.!?]*[.!?]+/g) || [texto];
   for (const f of frases.map((x) => x.trim()).filter(Boolean)) {
     const g = gestoPara(f);
-    voz.decir(f, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
+    voz.decir(f, alSonarFrase(f, g));
   }
   await pausa(300);
   while (explicando && voz.hablando) await pausa(150);
@@ -264,10 +275,42 @@ function pararExplicacion() {
 }
 
 window.cerebro.alExplicar(() => explicarme());
+
+// --- MODO FOTO: «Tami, te voy a tomar una foto» (o F9) ---------------------------------------------------
+// El entorno cambia a «estudio de fotos» (marco, luz detrás de ella, cartelito «Soy Tami»), cuenta 3-2-1 en
+// grande para que quien saca la foto sepa cuándo, y ella mantiene una pose 4 s (al azar: ✌️ o manos juntas).
+let fotoActiva = false;
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+async function modoFoto() {
+  if (fotoActiva || explicando) return;
+  fotoActiva = true;
+  for (let i = 0; i < 40 && voz.hablando; i++) await espera(150); // que termine de decir «¡a la cuenta de tres!»
+  demo.ocultar();
+  cerrarFicha();
+  document.body.classList.add("con-foto");
+  avatar.mirar(0, 0);                 // mira a la cámara
+  avatar.emocion("happy", 0.18);      // sonrisa (más alto, en este modelo cierra los ojos)
+  avatar.gesto(Math.random() < 0.5 ? "fotoPaz" : "fotoManos");
+  const cuenta = $("foto-cuenta");
+  for (const n of ["3", "2", "1"]) {
+    cuenta.className = ""; cuenta.textContent = n;
+    void cuenta.offsetWidth; cuenta.className = "late"; // reinicia la animación
+    await espera(1000);
+  }
+  cuenta.className = "listo"; cuenta.textContent = "¡Ahora!";
+  await espera(4000);                 // 4 s quieta para la foto
+  cuenta.textContent = "";
+  document.body.classList.remove("con-foto");
+  avatar.soltarGesto();
+  avatar.emocion("relaxed", 0.3);
+  ultimaActividad = Date.now();
+  fotoActiva = false;
+}
+window.cerebro.alFoto?.(() => modoFoto());
 window.cerebro.alExplicaCerrada(() => { if (explicando) { explicando = false; voz.callar(); } });
 
 setInterval(() => {
-  if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando || fotoActiva) return;
   const ahora = Date.now();
   if (enCharla && ahora - ultimaActividad > DESPEDIRSE_TRAS) despedirse();
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
@@ -276,7 +319,7 @@ setInterval(() => {
 // --- ocio: si nadie le habla, no se queda quieta como estatua (escena D del SKILL de Brayan) --------
 // Pasados 15 s sin nadie, cada 6 a 10 s hace una pose distinta (nunca la misma dos veces seguidas).
 // Cualquier cosa de verdad (alguien escribe, habla, ella invita) la reemplaza: gesto() suelta la anterior.
-const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse'];
+const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse', 'suspirar'];
 const OCIO_TRAS = 15_000;
 let proximoOcio = 0;
 let ultimoOcio = null;
@@ -284,7 +327,7 @@ const DEMO_CADA = 40_000;
 let ultimaDemo = 0;
 let proximaDemo = 0;
 setInterval(() => {
-  if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando || fotoActiva) return;
   const ahora = Date.now();
   if (ahora - Math.max(ultimaActividad, ultimaInvitacion) < OCIO_TRAS || ahora < proximoOcio || avatar.ocupada() || demo.activa()) return;
   // en el stand, a veces (1 de cada ~3, y no más de una cada 40 s) en vez de una pose muestra una DEMO:
@@ -304,6 +347,10 @@ setInterval(() => {
     avatar.emocion('happy', 0.2);
     setTimeout(() => { if (!voz.hablando) avatar.emocion('relaxed', 0.3); }, 3000);
   }
+  if (ultimoOcio === 'suspirar') { // cara tranquila mientras suspira (sin sonido: el auditorio ya es ruidoso)
+    avatar.emocion('relaxed', 0.55);
+    setTimeout(() => { if (!voz.hablando) avatar.emocion('relaxed', 0.3); }, 3000);
+  }
   avatar.gesto(ultimoOcio);
   proximoOcio = ahora + 6000 + Math.random() * 4000;
 }, 1000);
@@ -317,6 +364,7 @@ $('barra').addEventListener('submit', (e) => {
 });
 entrada.addEventListener('input', () => {
   ultimaActividad = Date.now();
+  if (fotoActiva) return; // está posando: que escriba tranquilo, la pose termina sola en unos segundos
   if (demo.activa()) { demo.ocultar(); avatar.mirar(0, 0); } // llegó alguien: la demo se va y lo mira
   if (!pensando && !voz.hablando) avatar.soltarGesto(); // si estaba estirándose, deja la pose y atiende
 });
@@ -389,6 +437,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'F2' && !e.repeat) { e.preventDefault(); escuchando ? terminarDeEscuchar() : empezarAEscuchar(); }
   // F8: la presentación «Así funciona Tami» (para cuando se acerca el jurado); otra vez F8 la detiene
   if (e.key === 'F8' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : explicarme(); }
+  // F9: modo foto al instante (para Juan o Ximena, sin escribir nada)
+  if (e.key === 'F9' && !e.repeat) { e.preventDefault(); modoFoto(); }
 });
 // se habilita cuando el servidor de voz dice que el oído (Whisper) cargó
 (async function esperarOido() {
@@ -451,6 +501,7 @@ window.tamiPrueba = {
   explicarme,
   explicando: () => explicando,
   demo: (nombre, ms = 60_000) => demo.mostrar(nombre, ms), // para fotos: tamiPrueba.demo('red')
+  foto: () => { modoFoto(); return 0; },
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };

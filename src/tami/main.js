@@ -181,6 +181,8 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
   enCurso?.abort();
   const control = new AbortController();
   enCurso = control;
+  // ¿primera pregunta de esta charla? (anotarTami deja un «se acerca alguien» sin texto: ese no cuenta)
+  if (!conversacion.historial.some((m) => m.role === 'user' && m.texto)) contarAtendido();
   try {
     const r = await tami.responder(conversacion, texto, {
       signal: control.signal,
@@ -189,6 +191,7 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
     });
     if (r.mostrar) enviar('tami:mostrar', await armarFicha(r.mostrar));
     if (r.accion === 'explicar') enviar('tami:explicar'); // «¿cómo funcionas?» → la presentación guiada
+    if (r.accion === 'foto') enviar('tami:foto');         // «te voy a tomar una foto» → posa (app.js)
     return { ok: true, texto: r.texto };
   } catch (err) {
     if (control.signal.aborted) return { ok: false, cancelado: true };
@@ -202,8 +205,30 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
 });
 
 // Nadie le habla hace rato: invita a quien pase (frase fija, sale al instante)
+// --- cuántas personas atendió HOY (25/11) ------------------------------------------------------------
+// Se cuenta una persona cuando hace su PRIMERA pregunta de una charla nueva. Se guarda en capturas\ (ignorada por
+// git) con la fecha: si Tami se reinicia a media feria, no pierde la cuenta; al día siguiente vuelve a 0.
+const fsAtendidos = require('node:fs');
+const ARCHIVO_ATENDIDOS = path.join(__dirname, '..', '..', 'capturas', 'atendidos.json');
+const hoy = () => new Date().toLocaleDateString('en-CA'); // AAAA-MM-DD (hora local)
+let atendidos = 0;
+try {
+  const g = JSON.parse(fsAtendidos.readFileSync(ARCHIVO_ATENDIDOS, 'utf8'));
+  if (g.fecha === hoy()) atendidos = Number(g.n) || 0;
+} catch { /* primera vez: empieza en 0 */ }
+function contarAtendido() {
+  atendidos += 1;
+  try {
+    fsAtendidos.mkdirSync(path.dirname(ARCHIVO_ATENDIDOS), { recursive: true });
+    fsAtendidos.writeFileSync(ARCHIVO_ATENDIDOS, JSON.stringify({ fecha: hoy(), n: atendidos }));
+  } catch (err) { console.error('[atendidos]', err.message); }
+}
+let invitacionesHechas = 0;
+
 ipcMain.handle('tami:invitar', () => {
-  const frase = tami.invitacion();
+  // 1 de cada 3 invitaciones usa el contador (desde la 3.ª persona: «1 personas» sonaría raro)
+  invitacionesHechas += 1;
+  const frase = atendidos >= 3 && invitacionesHechas % 3 === 0 ? tami.invitacionConContador(atendidos) : tami.invitacion();
   conversacion = tami.nuevaConversacion();
   tami.anotarTami(conversacion, frase);
   return frase;
@@ -275,6 +300,7 @@ ipcMain.handle('explica:cerrar', () => ventanaExplica?.close());
 let estadoCerebro = { listo: false, error: 'Despertando a Tami…' };
 ipcMain.handle('tami:estado', () => estadoCerebro);
 ipcMain.handle('tami:equipo', () => equipo.nombres); // para el guion de «Así funciona Tami» (app.js)
+ipcMain.handle('tami:atendidos', () => atendidos);   // para pruebas y para mirarlo en la feria
 
 // --autoprueba "pregunta": la hace sola y saca fotos mientras responde (capturas/app_*.png).
 // Sirve para revisar la app sin estar frente a la pantalla.

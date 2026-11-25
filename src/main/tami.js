@@ -44,6 +44,14 @@ const RESPUESTA_CREADOR = `Me crearon ${equipo.enFrase}, estudiantes de Unifranz
 const DA_SUS_DATOS = /(?<!\d)[67](?:[\s-]?\d){7}(?!\d)|[\w.+-]+@[\w-]+\.\w+/;
 const RESPUESTA_DATOS = 'Gracias por la confianza, pero yo no guardo datos ni puedo llamar ni escribir a nadie. ' +
   'Si quieres que te contacten, acércate a Admisiones de Unifranz. ¿Te cuento algo de Ingeniería de Sistemas mientras tanto?';
+// «Tami, te voy a tomar una foto», «sácate una selfie», «¿me tomo una foto contigo?» → MODO FOTO (respuesta
+// fija, sin el modelo: así posa al instante). app.js cambia el entorno, cuenta 3-2-1 y ella posa 4 s.
+const PIDE_FOTO = /(tom|s[aá]c)[\wáéíóúñ]*\s+([\wáéíóúñ]+\s+){0,3}(foto|fotito|selfie|selfi)\b|\b(selfie|selfi)\b|\bfoto (contigo|con tami|con vos|juntos?|juntas?)\b|\bposa (para|en) (la|una) foto\b|\bmodo foto\b/i;
+const RESPUESTAS_FOTO = [
+  '¡Claro! Me pongo lista para la foto. ¡A la cuenta de tres!',
+  '¡Qué emoción, una foto! Mira la cuenta y… ¡sonríe!',
+  '¡Me encanta salir en fotos! ¿Listos? ¡Ahí voy!',
+];
 const DICE_QUE_SI =/^(s[ií]|sip|dale|claro|ok|okey|bueno|ya|va|por favor|me encantar[ií]a|quiero|mu[eé]stramelo)\b/i;
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
@@ -501,6 +509,18 @@ function nuevaConversacion() {
   return { historial: [], empezo: Date.now() };
 }
 
+// Invitaciones con el contador del día (25/11): un dato REAL que muestra que recuerda a quién atendió.
+// La meta es la siguiente decena (23 → «¿me ayudas a llegar a 30?»).
+function invitacionConContador(n) {
+  const meta = Math.ceil((n + 1) / 10) * 10;
+  const frases = [
+    `¡Hoy ya conversé con ${n} personas! ¿Me ayudas a llegar a ${meta}?`,
+    `Ya van ${n} personas que me hicieron preguntas hoy. ¿Serás la número ${n + 1}?`,
+    `¡${n} conversaciones hoy y no me canso! ¿Qué quieres saber de Ingeniería de Sistemas?`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}
+
 function invitacion(ahora = new Date()) {
   const saludo = saludoDeLaHora(ahora);
   return sinRepetir(INVITACIONES, ultimasInvitaciones, 7) // con 14 frases: ninguna se repite antes de 8 turnos
@@ -559,6 +579,7 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     return fija(RESPUESTA_CREADOR);
   }
   if (ofrecio && DICE_QUE_SI.test(texto)) return fija(INTRO_EXPLICACION, { accion: 'explicar' });
+  if (PIDE_FOTO.test(texto)) return fija(RESPUESTAS_FOTO[Math.floor(Math.random() * RESPUESTAS_FOTO.length)], { accion: 'foto' });
 
   if (PIDE_EXPLICACION.test(texto)) {
     onFrase(INTRO_EXPLICACION);
@@ -642,4 +663,4 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
   return { texto: dicho, mostrar, datos: hits };
 }
 
-module.exports = { nuevaConversacion, responder, invitacion, despedida, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };
+module.exports = { nuevaConversacion, responder, invitacion, invitacionConContador, despedida, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };
