@@ -194,6 +194,24 @@ const GESTOS = {
     },
     ida: 1.0, dura: 1.2, vuelta: 1.0,
   },
+  // --- MODO FOTO (25/11): «Tami, te voy a tomar una foto» → posa ~7 s (3 s de cuenta + 4 s quieta) ---
+  fotoPaz: {  // ✌️ la V junto a la cara: índice y medio estirados y separados, los demás recogidos
+    pose: {
+      rightUpperArm: [1.57, 0, 1.3], rightLowerArm: [0, -2.6, 0], rightHand: [0, 0, 0.15], head: [0, 0, -0.14],
+      ...dedos('right', { anular: [1.3, 1.4, 1.2], menique: [1.3, 1.4, 1.2], pulgar: [0.9, 0.9] }),
+      rightIndexProximal: [0, 0.3, 0], rightIndexIntermediate: [0, 0, 0.02], rightIndexDistal: [0, 0, 0.02],
+      rightMiddleProximal: [0, -0.3, 0], rightMiddleIntermediate: [0, 0, 0.02], rightMiddleDistal: [0, 0, 0.02],
+    },
+    orden: { rightUpperArm: 'ZYX' },
+    ida: 0.5, dura: 6.6, vuelta: 0.6,
+  },
+  fotoManos: { // manos juntas bajo el mentón y la cabeza ladeada, con ternura
+    pose: {
+      rightUpperArm: [-0.6, 0.5, 1.3], rightLowerArm: [0, 1.9, 0], leftUpperArm: [-0.6, -0.5, -1.3], leftLowerArm: [0, -1.9, 0],
+      head: [0, 0, 0.2], neck: [0, 0, 0.08],
+    },
+    ida: 0.5, dura: 6.6, vuelta: 0.6,
+  },
   presentar: { // brazo abierto hacia la izquierda de la pantalla, donde aparece la ficha
     pose: { rightUpperArm: [1.2, -0.5, 1.05], rightLowerArm: [0, -0.9, 0], spine: [0, -0.08, 0], ...dedos('right', MANO_ABIERTA) },
     orden: { rightUpperArm: 'ZYX' },

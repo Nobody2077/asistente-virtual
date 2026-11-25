@@ -189,6 +189,7 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
     });
     if (r.mostrar) enviar('tami:mostrar', await armarFicha(r.mostrar));
     if (r.accion === 'explicar') enviar('tami:explicar'); // «¿cómo funcionas?» → la presentación guiada
+    if (r.accion === 'foto') enviar('tami:foto');         // «te voy a tomar una foto» → posa (app.js)
     return { ok: true, texto: r.texto };
   } catch (err) {
     if (control.signal.aborted) return { ok: false, cancelado: true };

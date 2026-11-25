@@ -44,6 +44,14 @@ const RESPUESTA_CREADOR = `Me crearon ${equipo.enFrase}, estudiantes de Unifranz
 const DA_SUS_DATOS = /(?<!\d)[67](?:[\s-]?\d){7}(?!\d)|[\w.+-]+@[\w-]+\.\w+/;
 const RESPUESTA_DATOS = 'Gracias por la confianza, pero yo no guardo datos ni puedo llamar ni escribir a nadie. ' +
   'Si quieres que te contacten, acércate a Admisiones de Unifranz. ¿Te cuento algo de Ingeniería de Sistemas mientras tanto?';
+// «Tami, te voy a tomar una foto», «sácate una selfie», «¿me tomo una foto contigo?» → MODO FOTO (respuesta
+// fija, sin el modelo: así posa al instante). app.js cambia el entorno, cuenta 3-2-1 y ella posa 4 s.
+const PIDE_FOTO = /(tom|s[aá]c)[\wáéíóúñ]*\s+([\wáéíóúñ]+\s+){0,3}(foto|fotito|selfie|selfi)\b|\b(selfie|selfi)\b|\bfoto (contigo|con tami|con vos|juntos?|juntas?)\b|\bposa (para|en) (la|una) foto\b|\bmodo foto\b/i;
+const RESPUESTAS_FOTO = [
+  '¡Claro! Me pongo lista para la foto. ¡A la cuenta de tres!',
+  '¡Qué emoción, una foto! Mira la cuenta y… ¡sonríe!',
+  '¡Me encanta salir en fotos! ¿Listos? ¡Ahí voy!',
+];
 const DICE_QUE_SI =/^(s[ií]|sip|dale|claro|ok|okey|bueno|ya|va|por favor|me encantar[ií]a|quiero|mu[eé]stramelo)\b/i;
 const RECUERDA = 12;          // mensajes que ve el modelo (6 idas y vueltas): con los datos del RAG cabe en 8192 tokens
 
@@ -559,6 +567,7 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     return fija(RESPUESTA_CREADOR);
   }
   if (ofrecio && DICE_QUE_SI.test(texto)) return fija(INTRO_EXPLICACION, { accion: 'explicar' });
+  if (PIDE_FOTO.test(texto)) return fija(RESPUESTAS_FOTO[Math.floor(Math.random() * RESPUESTAS_FOTO.length)], { accion: 'foto' });
 
   if (PIDE_EXPLICACION.test(texto)) {
     onFrase(INTRO_EXPLICACION);

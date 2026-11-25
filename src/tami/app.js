@@ -264,10 +264,42 @@ function pararExplicacion() {
 }
 
 window.cerebro.alExplicar(() => explicarme());
+
+// --- MODO FOTO: «Tami, te voy a tomar una foto» (o F9) ---------------------------------------------------
+// El entorno cambia a «estudio de fotos» (marco, luz detrás de ella, cartelito «Soy Tami»), cuenta 3-2-1 en
+// grande para que quien saca la foto sepa cuándo, y ella mantiene una pose 4 s (al azar: ✌️ o manos juntas).
+let fotoActiva = false;
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+async function modoFoto() {
+  if (fotoActiva || explicando) return;
+  fotoActiva = true;
+  for (let i = 0; i < 40 && voz.hablando; i++) await espera(150); // que termine de decir «¡a la cuenta de tres!»
+  demo.ocultar();
+  cerrarFicha();
+  document.body.classList.add("con-foto");
+  avatar.mirar(0, 0);                 // mira a la cámara
+  avatar.emocion("happy", 0.18);      // sonrisa (más alto, en este modelo cierra los ojos)
+  avatar.gesto(Math.random() < 0.5 ? "fotoPaz" : "fotoManos");
+  const cuenta = $("foto-cuenta");
+  for (const n of ["3", "2", "1"]) {
+    cuenta.className = ""; cuenta.textContent = n;
+    void cuenta.offsetWidth; cuenta.className = "late"; // reinicia la animación
+    await espera(1000);
+  }
+  cuenta.className = "listo"; cuenta.textContent = "¡Ahora!";
+  await espera(4000);                 // 4 s quieta para la foto
+  cuenta.textContent = "";
+  document.body.classList.remove("con-foto");
+  avatar.soltarGesto();
+  avatar.emocion("relaxed", 0.3);
+  ultimaActividad = Date.now();
+  fotoActiva = false;
+}
+window.cerebro.alFoto?.(() => modoFoto());
 window.cerebro.alExplicaCerrada(() => { if (explicando) { explicando = false; voz.callar(); } });
 
 setInterval(() => {
-  if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  if (minimizada || voz.hablando || pensando || entrada.value || escuchando || explicando || fotoActiva) return;
   const ahora = Date.now();
   if (enCharla && ahora - ultimaActividad > DESPEDIRSE_TRAS) despedirse();
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
@@ -284,7 +316,7 @@ const DEMO_CADA = 40_000;
 let ultimaDemo = 0;
 let proximaDemo = 0;
 setInterval(() => {
-  if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando || fotoActiva) return;
   const ahora = Date.now();
   if (ahora - Math.max(ultimaActividad, ultimaInvitacion) < OCIO_TRAS || ahora < proximoOcio || avatar.ocupada() || demo.activa()) return;
   // en el stand, a veces (1 de cada ~3, y no más de una cada 40 s) en vez de una pose muestra una DEMO:
@@ -317,6 +349,7 @@ $('barra').addEventListener('submit', (e) => {
 });
 entrada.addEventListener('input', () => {
   ultimaActividad = Date.now();
+  if (fotoActiva) return; // está posando: que escriba tranquilo, la pose termina sola en unos segundos
   if (demo.activa()) { demo.ocultar(); avatar.mirar(0, 0); } // llegó alguien: la demo se va y lo mira
   if (!pensando && !voz.hablando) avatar.soltarGesto(); // si estaba estirándose, deja la pose y atiende
 });
@@ -389,6 +422,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'F2' && !e.repeat) { e.preventDefault(); escuchando ? terminarDeEscuchar() : empezarAEscuchar(); }
   // F8: la presentación «Así funciona Tami» (para cuando se acerca el jurado); otra vez F8 la detiene
   if (e.key === 'F8' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : explicarme(); }
+  // F9: modo foto al instante (para Juan o Ximena, sin escribir nada)
+  if (e.key === 'F9' && !e.repeat) { e.preventDefault(); modoFoto(); }
 });
 // se habilita cuando el servidor de voz dice que el oído (Whisper) cargó
 (async function esperarOido() {
@@ -451,6 +486,7 @@ window.tamiPrueba = {
   explicarme,
   explicando: () => explicando,
   demo: (nombre, ms = 60_000) => demo.mostrar(nombre, ms), // para fotos: tamiPrueba.demo('red')
+  foto: () => { modoFoto(); return 0; },
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };
