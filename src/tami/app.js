@@ -461,11 +461,21 @@ microfono.addEventListener('pointerup', () => {
   if (escuchando && Date.now() - apretadoEn > 500) terminarDeEscuchar();
 });
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'F2' && !e.repeat) { e.preventDefault(); escuchando ? terminarDeEscuchar() : empezarAEscuchar(); }
+  // F2 = el botón del micrófono sin ratón: MANTENER y soltar al terminar de hablar, o tocar / tocar otra vez
+  if (e.key === 'F2' && !e.repeat) {
+    e.preventDefault();
+    f2ApretadoEn = Date.now();
+    escuchando ? terminarDeEscuchar() : empezarAEscuchar();
+  }
   // F8: la presentación «Así funciona Tami» (para cuando se acerca el jurado); otra vez F8 la detiene
   if (e.key === 'F8' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : explicarme(); }
   // F9: modo foto al instante (para Juan o Ximena, sin escribir nada)
   if (e.key === 'F9' && !e.repeat) { e.preventDefault(); modoFoto(); }
+});
+// soltar F2 después de mantenerla más de medio segundo = «ya terminé de hablar» → contesta (25/11)
+let f2ApretadoEn = 0;
+window.addEventListener('keyup', (e) => {
+  if (e.key === 'F2' && escuchando && Date.now() - f2ApretadoEn > 500) { e.preventDefault(); terminarDeEscuchar(); }
 });
 // se habilita cuando el servidor de voz dice que el oído (Whisper) cargó
 (async function esperarOido() {
