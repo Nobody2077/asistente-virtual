@@ -109,6 +109,9 @@ function dedos(lado, flex) {
 }
 // mano relajada: nunca dedos rígidos en 0; cada dedo un poco más cerrado que el anterior
 const MANO_RELAJADA = { indice: 0.18, medio: 0.26, anular: 0.34, menique: 0.42, pulgar: [0.15, 0.1] };
+// manos juntas (alegría, foto): dedos curvados como entrelazados (estirados se veían rígidos, «en abanico»)
+const DEDOS_JUNTOS = { indice: [0.9, 1.0, 0.7], medio: [0.95, 1.05, 0.75], anular: [1.0, 1.1, 0.8], menique: [1.05, 1.15, 0.85], pulgar: [0.4, 0.3] };
+const MANOS_ENTRELAZADAS = { ...dedos('right', DEDOS_JUNTOS), ...dedos('left', DEDOS_JUNTOS) };
 // mano abierta para saludar o mostrar: casi estirada, pero no de palo
 const MANO_ABIERTA = { indice: 0.06, medio: 0.08, anular: 0.1, menique: 0.12, pulgar: [0.05, 0.05] };
 
@@ -162,7 +165,7 @@ const GESTOS = {
   },
   alegria: {  // manos juntas frente al pecho: «¡qué lindo!», al recomendar una carrera
     // (con el codo en 1,8 las manos se cruzaban como «tiempo fuera»; 1,9 las junta bajo el mentón)
-    pose: { rightUpperArm: [-0.6, 0.5, 1.3], rightLowerArm: [0, 1.9, 0], leftUpperArm: [-0.6, -0.5, -1.3], leftLowerArm: [0, -1.9, 0] },
+    pose: { rightUpperArm: [-0.6, 0.5, 1.3], rightLowerArm: [0, 1.9, 0], leftUpperArm: [-0.6, -0.5, -1.3], leftLowerArm: [0, -1.9, 0], ...MANOS_ENTRELAZADAS },
     ida: 0.35, dura: 1.3, vuelta: 0.5,
   },
   // --- OCIO: cuando nadie le habla (escena D del SKILL de Brayan). app.js elige una al azar cada pocos segundos.
@@ -198,7 +201,8 @@ const GESTOS = {
   fotoPaz: {  // ✌️ la V junto a la cara: índice y medio estirados y separados, los demás recogidos
     pose: {
       rightUpperArm: [1.57, 0, 1.3], rightLowerArm: [0, -2.6, 0], rightHand: [0, 0, 0.15], head: [0, 0, -0.14],
-      ...dedos('right', { anular: [1.3, 1.4, 1.2], menique: [1.3, 1.4, 1.2], pulgar: [0.9, 0.9] }),
+      // (25/11: con pulgar [0.9, 0.9] el pulgar salía como gancho; ajustado mirando la mano ampliada)
+      ...dedos('right', { anular: [1.2, 1.5, 1.2], menique: [1.2, 1.5, 1.2], pulgar: [-0.9, 0.4] }),
       rightIndexProximal: [0, 0.3, 0], rightIndexIntermediate: [0, 0, 0.02], rightIndexDistal: [0, 0, 0.02],
       rightMiddleProximal: [0, -0.3, 0], rightMiddleIntermediate: [0, 0, 0.02], rightMiddleDistal: [0, 0, 0.02],
     },
@@ -208,7 +212,7 @@ const GESTOS = {
   fotoManos: { // manos juntas bajo el mentón y la cabeza ladeada, con ternura
     pose: {
       rightUpperArm: [-0.6, 0.5, 1.3], rightLowerArm: [0, 1.9, 0], leftUpperArm: [-0.6, -0.5, -1.3], leftLowerArm: [0, -1.9, 0],
-      head: [0, 0, 0.2], neck: [0, 0, 0.08],
+      head: [0, 0, 0.2], neck: [0, 0, 0.08], ...MANOS_ENTRELAZADAS,
     },
     ida: 0.5, dura: 6.6, vuelta: 0.6,
   },
