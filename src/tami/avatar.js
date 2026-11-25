@@ -160,7 +160,11 @@ const GESTOS = {
     ida: 0.4, dura: 1.3, vuelta: 0.5,
   },
   yo: {       // mano al pecho: «soy Tami»
-    pose: { leftUpperArm: [-0.75, -0.7, -1.35], leftLowerArm: [0, -1.75, 0], leftHand: [0, 0.9, -0.2], head: [0.05, 0, -0.06] },
+    // (25/11: antes la mano cruzaba todo el pecho, con los dedos como señalando afuera y tapando la credencial)
+    pose: {
+      leftUpperArm: [-0.6, -0.3, -1.25], leftLowerArm: [0, -1.65, 0], leftHand: [0, 0.8, 0], head: [0.05, 0, -0.06],
+      ...dedos('left', { indice: 0.25, medio: 0.3, anular: 0.35, menique: 0.4, pulgar: [0.2, 0.1] }),
+    },
     ida: 0.45, dura: 1.4, vuelta: 0.5,
   },
   alegria: {  // manos juntas frente al pecho: «¡qué lindo!», al recomendar una carrera
