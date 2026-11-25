@@ -18,10 +18,13 @@ app.whenReady().then(async () => {
     webPreferences: { preload: path.join(__dirname, '..', 'src', 'tami', 'explica-preload.js'), backgroundThrottling: false } });
   win.webContents.on('console-message', (e) => console.log('[pagina]', e.message ?? e));
   await win.loadFile(path.join(__dirname, '..', 'src', 'tami', 'explica.html'));
+  win.webContents.send('explica:equipo', require('../src/main/equipo').nombres); // igual que main.js
 
   const datos = require('../src/tami/explica-datos');
-  const ubicacion = await datos.ubicar('¿hay becas?');
-  win.webContents.send('explica:datos', await datos.datosIniciales());
+  // sin el servidor de memoria (8766) igual saca fotos: las escenas que no usan la galaxia salen bien
+  const ubicacion = await datos.ubicar('¿hay becas?').catch(() => null);
+  const iniciales = await datos.datosIniciales().catch((e) => { console.log('sin memoria (8766):', e.message); return null; });
+  if (iniciales) win.webContents.send('explica:datos', iniciales);
   await espera(500);
 
   const pedidas = process.argv.slice(2).map(Number).filter((n) => !Number.isNaN(n));

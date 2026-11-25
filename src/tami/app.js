@@ -16,6 +16,13 @@ const $ = (id) => document.getElementById(id);
 // modo stand (pantalla completa en la feria) o escritorio (ventanita): lo dice main.js en la dirección
 const STAND = new URLSearchParams(location.search).get('modo') === 'stand';
 document.body.classList.toggle('stand', STAND);
+// escala del modo stand (tami.css usa --z): 1 en una laptop 1366×768, más en monitores y TV grandes.
+// Se toma el lado más justo (ancho o alto) para que nada se salga de la pantalla.
+function escalar() {
+  const z = Math.max(0.8, Math.min(innerWidth / 1366, innerHeight / 768));
+  document.body.style.setProperty('--z', z.toFixed(3));
+}
+if (STAND) { escalar(); addEventListener('resize', escalar); }
 // modo feria (blindado): muestra el botón de minimizar
 document.body.classList.toggle('feria', new URLSearchParams(location.search).get('feria') === '1');
 let minimizada = false; // mientras está minimizada no habla ni invita (Juan está usando otra ventana)
@@ -40,6 +47,9 @@ function mostrarBurbuja(contenido, { estudiante = false, html = false } = {}) {
   burbuja.classList.remove('oculta');
   burbuja.classList.toggle('estudiante', estudiante);
   if (html) burbujaTexto.innerHTML = contenido; else burbujaTexto.textContent = contenido;
+  // texto largo: mostrar el FINAL (lo que está diciendo ahora); lo de arriba se desvanece (tami.css .desborda)
+  burbuja.scrollTop = burbuja.scrollHeight;
+  burbuja.classList.toggle('desborda', burbuja.scrollHeight > burbuja.clientHeight + 2);
 }
 function ocultarLuego(ms = 12_000) {
   clearTimeout(ocultarBurbuja);
@@ -187,7 +197,8 @@ async function despedirse() {
 // lo que dice del proyecto siempre es exacto). Se activa si le preguntan «¿cómo funcionas?» o con F8 (para
 // cuando llega el jurado). Si un estudiante le habla en medio, se detiene y lo atiende.
 const GUION = [
-  [0, 'Soy Tami, la orientadora virtual de Ingeniería de Sistemas e Innovación Digital. Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, para contarte todo sobre la carrera y resolver tus dudas, con voz y sin internet.'],
+  // {EQUIPO} se cambia por los nombres de src/main/equipo.js (+ equipo_local.json, que no va a GitHub)
+  [0, 'Soy Tami, la orientadora virtual de Ingeniería de Sistemas e Innovación Digital. Me crearon {EQUIPO}, estudiantes de Unifranz, para contarte todo sobre la carrera y resolver tus dudas, con voz y sin internet.'],
   [1, 'Primero tuve que aprender sobre Unifranz. Un programa recolector recorrió la página web de la universidad, página por página, y fue guardando todo su texto: 95 páginas y 440 noticias.'],
   [2, 'Pero una página web trae mucha basura: menús, avisos de cookies y código. Así que limpiamos el texto y nos quedamos solo con lo que sirve.'],
   [3, 'Después partimos todo en pedacitos, como fichas de estudio. En total, 8093 pedazos.'],
@@ -217,8 +228,11 @@ async function explicarme() {
   enCharla = true;
   cerrarFicha();
   avatar.gesto('presentar');
+  const nombres = await window.cerebro.equipo().catch(() => null) || ['Juan Cristian Yujra', 'Brayan Quispe Mamani'];
+  const equipo = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`;
   try {
-    for (const [n, texto] of GUION) {
+    for (const [n, guion] of GUION) {
+      const texto = guion.replace('{EQUIPO}', equipo);
       if (!explicando) break;
       await window.cerebro.explica({ accion: 'escena', n, pregunta: '¿hay becas?' });
       mostrarBurbuja(texto);

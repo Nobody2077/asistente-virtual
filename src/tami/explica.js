@@ -358,7 +358,28 @@ function cargar(datos) {
   if (datos.documentos) documentos = datos.documentos;
 }
 
+// La portada con los integrantes: el HTML trae los de siempre; si main.js manda la lista (equipo_local.json),
+// se rearma. Cada nombre en dos líneas (mitad y mitad) con su inicial en el círculo.
+function ponerEquipo(nombres) {
+  if (!Array.isArray(nombres) || !nombres.length) return;
+  const caja = document.querySelector('#portada .equipo');
+  caja.replaceChildren(...nombres.map((nombre) => {
+    const palabras = nombre.split(/\s+/);
+    const corte = Math.ceil(palabras.length / 2);
+    const persona = document.createElement('div');
+    persona.className = 'persona';
+    const ini = document.createElement('span');
+    ini.className = 'ini';
+    ini.textContent = nombre[0].toUpperCase();
+    const texto = document.createElement('span');
+    texto.append(palabras.slice(0, corte).join(' '), document.createElement('br'), palabras.slice(corte).join(' '));
+    persona.append(ini, texto);
+    return persona;
+  }));
+}
+
+window.explica?.alEquipo?.(ponerEquipo);
 window.explica?.alDatos(cargar);
 window.explica?.alEscena(({ n, datos }) => irA(n, datos));
 $('cerrar').addEventListener('click', () => window.explica?.cerrar());
-window.explicaPrueba = { irA, cargar }; // para las fotos de prueba
+window.explicaPrueba = { irA, cargar, ponerEquipo }; // para las fotos de prueba

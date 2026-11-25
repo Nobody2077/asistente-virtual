@@ -22,11 +22,13 @@ const CFG_MOTOR = LLM_URL ? { customUrl: LLM_URL } : {};
 const URL_MOTOR = (LLM_URL || llm.PROVIDERS[MOTOR].url).replace(/\/+$/, '');
 const MODELO = process.env.TAMI_MODELO || (MOTOR === 'lmstudio' ? 'qwen/qwen3.5-9b' : 'qwen3.5-9b');
 const SEDE_FERIA = process.env.TAMI_SEDE || 'El Alto'; // dónde está el stand: «aquí» para Tami
+// quiénes la hicieron: src/main/equipo.js (+ equipo_local.json, que no va a GitHub)
+const equipo = require('./equipo');
 // lo que responde a «¿quién te hizo?» (se puede cambiar con la variable TAMI_CREADOR)
 const CREADOR = process.env.TAMI_CREADOR
-  || 'te crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, como proyecto para ' +
+  || `te crearon ${equipo.enFrase}, estudiantes de Unifranz, como proyecto para ` +
      'esta feria, con inteligencia artificial que funciona aquí mismo, sin internet. Si quieren saber más, ofrece ' +
-     'mostrar cómo funcionas por dentro. Di siempre los dos nombres completos, sin acortarlos';
+     'mostrar cómo funcionas por dentro. Di siempre TODOS los nombres completos, sin acortarlos ni olvidar a nadie';
 
 // «¿Cómo funcionas?», «¿cómo aprendiste?», «explícame el proyecto»… → la presentación guiada (escenas + narración
 // fija, ver app.js). No pasa por el modelo: así la explicación es siempre exacta y no inventa nada.
@@ -34,7 +36,7 @@ const PIDE_EXPLICACION = /c[oó]mo (funcionas|trabajas|piensas|aprendiste|te (hi
 const INTRO_EXPLICACION = '¡Con mucho gusto! Mira la pantalla: te muestro cómo funciono por dentro.';
 // «¿Quién te hizo?» también va FIJO: el modelo acortaba o cambiaba los apellidos («Brayan Quispe Quispe»)
 const PIDE_CREADOR = /qui[eé]n(es)? te (hizo|hicieron|cre[oó]|crearon|program[oó]|programaron|desarroll)|qui[eé]n(es)? (es|son) tus? (creador|creadores|autor|autores|papás?)/i;
-const RESPUESTA_CREADOR = 'Me crearon Juan Cristian Yujra y Brayan Quispe Mamani, estudiantes de Unifranz, ' +
+const RESPUESTA_CREADOR = `Me crearon ${equipo.enFrase}, estudiantes de Unifranz, ` +
   'como proyecto para esta feria. Funciono con inteligencia artificial aquí mismo, sin internet. ' +
   '¿Quieres que te muestre cómo funciono por dentro?';
 // Si el estudiante dicta su celular o correo, respuesta FIJA: el 9B a veces lo repetía («mi número es 7123…»).
