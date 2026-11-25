@@ -319,12 +319,18 @@ async function terminarDeEscuchar() {
   if (!escuchando) return;
   escuchando = false;
   microfono.classList.remove('escuchando');
-  avatar.emocion('relaxed', 0.3);
+  avatar.emocion('relaxed', 0.2);
+  // Whisper tarda ~2,5 s en pasar la voz a texto: que se note YA que la escuchó y está pensando
+  // (antes se quedaba quieta esos segundos y parecía que no había oído nada)
+  mostrarBurbuja(`Te escuché… ${PENSANDO}`, { html: true, estudiante: true });
+  avatar.mirar(0.25, 0.35); // mira hacia arriba, como quien piensa
+  avatar.gesto('pensar');   // índice al mentón (preguntar() lo mantiene: gesto() no repite uno en curso)
   try {
     const texto = await oido.terminar();
     if (texto) preguntar(texto);
-    else mostrarBurbuja('No te escuché bien. ¿Me lo repites o me lo escribes?');
+    else { avatar.soltarGesto(); avatar.mirar(0, 0); mostrarBurbuja('No te escuché bien. ¿Me lo repites o me lo escribes?'); }
   } catch (err) {
+    avatar.soltarGesto(); avatar.mirar(0, 0);
     console.log('[oido]', err.message);
     // micrófono mudo: casi siempre es que Windows eligió uno virtual o el micrófono está apagado
     mostrarBurbuja(err.mudo ? 'Mi micrófono no recibe sonido. ¿Me lo escribes mientras lo revisan?' : 'Uy, mi oído falló. ¿Me lo escribes?');
