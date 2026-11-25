@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('cerebro', {
   explica: (pedido) => ipcRenderer.invoke('tami:explica', pedido),         // { accion: abrir|escena|cerrar, n, pregunta }
   alExplicar: escuchar('tami:explicar'),            // le preguntaron «¿cómo funcionas?»
   alFoto: escuchar('tami:foto'),                    // «te voy a tomar una foto» → modo foto
+  alJurado: escuchar('tami:jurado'),                // «explica el proyecto al jurado» → láminas al lado de Tami
+  juradoDatos: () => ipcRenderer.invoke('tami:jurado-datos'), // { equipo: [{ nombre, aporte }], atendidos }
   alExplicaCerrada: escuchar('tami:explica-cerrada'),
   alDecirFrase: escuchar('tami:frase'),   // { frase, muletilla }
   alEscribir: escuchar('tami:texto'),     // el texto acumulado (subtítulos)

@@ -298,6 +298,73 @@ function pararExplicacion() {
 
 window.cerebro.alExplicar(() => explicarme());
 
+// --- PRESENTACIÓN PARA EL JURADO (F7 · «explica el proyecto al jurado», 25/11) --------------------------
+// Unos 2-3 minutos: problema → objetivo → cómo aprendió → cómo responde → equipo → resultados → próximos pasos.
+// Todo en SU pantalla: láminas en el panel de al lado (#jurado) y, en las técnicas, las demos animadas.
+// Los números son los mismos del guion de «Así funciona Tami»: nada inventado. Comparte el estado «explicando»
+// con la otra presentación: si alguien le habla en medio, se detiene y lo atiende (pararExplicacion).
+const lamina = (paso, titulo, puntos) => {
+  $('jurado-paso').textContent = paso;
+  $('jurado-titulo').textContent = titulo;
+  $('jurado-puntos').replaceChildren(...puntos.map((p) => Object.assign(document.createElement('li'), { textContent: p })));
+  document.body.classList.add('con-lamina');
+};
+async function presentarJurado() {
+  if (explicando || fotoActiva) return;
+  explicando = true;
+  enCharla = true;
+  voz.callar();
+  cerrarFicha();
+  demo.ocultar();
+  document.body.classList.add('con-jurado', 'con-explica'); // con-explica: en vertical la burbuja sube (tami.css)
+  const { equipo = [], atendidos = 0 } = await window.cerebro.juradoDatos().catch(() => ({}));
+  const h = new Date().getHours();
+  const saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const LAMINAS = [
+    { titulo: 'Tami, orientadora virtual', puntos: ['Conversa con voz y un avatar en 3D', 'Ingeniería de Sistemas e Innovación Digital', 'Unifranz · Feria El Alto 2026'],
+      voz: `${saludo}, estimado jurado. Soy Tami, una orientadora virtual que conversa con voz y tiene un avatar en tres dimensiones. Me crearon estudiantes de Ingeniería de Sistemas e Innovación Digital de Unifranz. Les presento el proyecto en un par de minutos.` },
+    { titulo: 'El problema', puntos: ['El postulante llega con muchas dudas', 'Un folleto no responde preguntas', 'En una feria, el personal no alcanza para todos'],
+      voz: 'Primero, el problema. Un postulante llega a la feria con muchas dudas sobre la carrera. Un folleto no responde preguntas, y el personal no alcanza para atender a todos al mismo tiempo.' },
+    { titulo: 'El objetivo', puntos: ['Orientar a cada postulante sobre la carrera', 'Con voz, en tiempo real y sin internet', 'Solo con información oficial de Unifranz'],
+      voz: 'Nuestro objetivo fue crear una orientadora que atienda a cada postulante con voz, en tiempo real y sin internet, respondiendo solo con información oficial de Unifranz.' },
+    { demo: 'memoria',
+      voz: 'Para aprender, recolectamos la página web de Unifranz: 95 páginas y 440 noticias. Limpiamos el texto, lo partimos en 8093 pedacitos, y cada uno se convirtió en un vector de 384 números que representa su significado.' },
+    { demo: 'camino',
+      voz: 'Cuando alguien me habla, Whisper convierte su voz en texto. Busco los pedazos más cercanos a su pregunta, y mi cerebro, el modelo Qwen, escribe la respuesta con esos datos. Kokoro me da la voz. Todo corre en esta computadora, sin internet y sin pagar servicios externos.' },
+    { titulo: 'El equipo', puntos: equipo.map(({ nombre, aporte }) => (aporte ? `${nombre}: ${aporte}` : nombre)),
+      voz: 'Este es el equipo. ' + equipo.map(({ nombre, aporte }) => (aporte ? `${nombre} ${aporte}.` : `${nombre}.`)).join(' ') },
+    { titulo: 'Resultados', puntos: ['Empieza a responder en unos 3 segundos', 'Probada con 46 preguntas de visitantes imaginarios, con trampas incluidas',
+        ...(atendidos > 0 ? [`Hoy ya conversó con ${atendidos} ${atendidos === 1 ? 'visitante' : 'visitantes'}`] : [])],
+      voz: 'Los resultados: empiezo a responder en unos tres segundos. Antes de la feria me probaron con 46 preguntas de visitantes imaginarios, incluso preguntas trampa, para revisar que no invente nada.' +
+        (atendidos > 0 ? ` Y hoy ya conversé con ${atendidos} ${atendidos === 1 ? 'visitante' : 'visitantes'}.` : '') },
+    { titulo: 'Próximos pasos', puntos: ['Una versión en memoria USB para laptops sencillas', 'Cargar la malla curricular completa'],
+      voz: 'Como próximos pasos, queremos una versión que funcione desde una memoria USB en laptops sencillas, y cargar la malla curricular completa. Muchas gracias por su atención. Ahora pueden hacerme cualquier pregunta.' },
+  ];
+  try {
+    for (const [i, l] of LAMINAS.entries()) {
+      if (!explicando) break;
+      if (l.demo) { document.body.classList.remove('con-lamina'); demo.mostrar(l.demo, 120_000); }
+      else { demo.ocultar(); lamina(`Para el jurado · ${i + 1}/${LAMINAS.length}`, l.titulo, l.puntos); }
+      avatar.mirar(-0.35, -0.1); // mira la lámina, como quien la presenta…
+      avatar.gesto('presentar');
+      setTimeout(() => avatar.mirar(0, 0), 1600); // …y vuelve al jurado
+      dicho = ''; // subtítulos frase por frase, al ritmo de la voz
+      ultimaActividad = Date.now();
+      await decirYEsperar(l.voz);
+      if (!explicando) break;
+      await pausa(900);
+    }
+  } finally {
+    explicando = false;
+    ultimaActividad = Date.now();
+    demo.ocultar();
+    document.body.classList.remove('con-lamina', 'con-jurado', 'con-explica');
+    avatar.soltarGesto();
+    avatar.mirar(0, 0);
+  }
+}
+window.cerebro.alJurado?.(() => presentarJurado());
+
 // --- MODO FOTO: «Tami, te voy a tomar una foto» (o F9) ---------------------------------------------------
 // El entorno cambia a «estudio de fotos» (marco, luz detrás de ella, cartelito «Soy Tami»), cuenta 3-2-1 en
 // grande para que quien saca la foto sepa cuándo, y ella mantiene una pose 4 s (al azar: ✌️ o manos juntas).
@@ -346,7 +413,7 @@ setInterval(() => {
 // --- ocio: si nadie le habla, no se queda quieta como estatua (escena D del SKILL de Brayan) --------
 // Pasados 15 s sin nadie, cada 6 a 10 s hace una pose distinta (nunca la misma dos veces seguidas).
 // Cualquier cosa de verdad (alguien escribe, habla, ella invita) la reemplaza: gesto() suelta la anterior.
-const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse', 'suspirar'];
+const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse', 'suspirar', 'atenta']; // (nunca la misma dos veces seguidas)
 const OCIO_TRAS = 15_000;
 let proximoOcio = 0;
 let ultimoOcio = null;
@@ -469,6 +536,8 @@ window.addEventListener('keydown', (e) => {
   }
   // F8: la presentación «Así funciona Tami» (para cuando se acerca el jurado); otra vez F8 la detiene
   if (e.key === 'F8' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : explicarme(); }
+  // F7: la presentación para el JURADO (láminas al lado de Tami); otra vez F7 la detiene
+  if (e.key === 'F7' && !e.repeat) { e.preventDefault(); explicando ? pararExplicacion() : presentarJurado(); }
   // F9: modo foto al instante (para Juan o Ximena, sin escribir nada)
   if (e.key === 'F9' && !e.repeat) { e.preventDefault(); modoFoto(); }
 });
@@ -540,6 +609,7 @@ window.tamiPrueba = {
   demo: (nombre, ms = 60_000) => demo.mostrar(nombre, ms), // para fotos: tamiPrueba.demo('red')
   foto: () => { modoFoto(); return 0; },
   gesto: (nombre) => { avatar.gesto(nombre); return 0; }, // para fotos de gestos en el stand
+  jurado: () => { presentarJurado(); return 0; },
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };

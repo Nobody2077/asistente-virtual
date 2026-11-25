@@ -1,3 +1,8 @@
 {
-  "integrantes": ["Juan Cristian Yujra", "Brayan Quispe Mamani", "Nombre Apellido"]
+  "integrantes": ["Juan Cristian Yujra", "Brayan Quispe Mamani", "Nombre Apellido"],
+  "aportes": {
+    "Juan Cristian Yujra": "alimentó al modelo con la información de Unifranz",
+    "Brayan Quispe Mamani": "hizo las animaciones del avatar",
+    "Nombre Apellido": "qué hizo, en tercera persona y sin punto final"
+  }
 }

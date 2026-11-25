@@ -220,6 +220,7 @@ ipcMain.handle('tami:preguntar', async (_e, texto) => {
     if (r.mostrar) enviar('tami:mostrar', await armarFicha(r.mostrar));
     if (r.accion === 'explicar') enviar('tami:explicar'); // «¿cómo funcionas?» → la presentación guiada
     if (r.accion === 'foto') enviar('tami:foto');         // «te voy a tomar una foto» → posa (app.js)
+    if (r.accion === 'jurado') enviar('tami:jurado');     // «explica el proyecto al jurado» → láminas (app.js)
     return { ok: true, texto: r.texto };
   } catch (err) {
     if (control.signal.aborted) return { ok: false, cancelado: true };
@@ -336,6 +337,8 @@ let estadoCerebro = { listo: false, error: 'Despertando a Tami…' };
 ipcMain.handle('tami:estado', () => estadoCerebro);
 ipcMain.handle('tami:equipo', () => equipo.nombres); // para el guion de «Así funciona Tami» (app.js)
 ipcMain.handle('tami:atendidos', () => atendidos);   // para pruebas y para mirarlo en la feria
+// para la presentación del jurado: quién hizo qué (equipo_local.json) y cuántos visitantes atendió hoy
+ipcMain.handle('tami:jurado-datos', () => ({ equipo: equipo.conAportes, atendidos }));
 
 // --autoprueba "pregunta": la hace sola y saca fotos mientras responde (capturas/app_*.png).
 // Sirve para revisar la app sin estar frente a la pantalla.

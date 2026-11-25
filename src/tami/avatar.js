@@ -198,6 +198,14 @@ const GESTOS = {
     pose: { chest: [-0.07, 0, 0], spine: [-0.03, 0, 0], head: [-0.09, 0, 0.04] },
     ida: 1.0, dura: 0.5, vuelta: 1.6,
   },
+  atenta: { // (25/11) «te escucho»: se inclina un poquito hacia adelante, ladea la cabeza y junta las manos delante
+    pose: {
+      spine: [0.07, 0, 0], neck: [0.03, 0, -0.06], head: [0.05, 0, -0.12],
+      rightUpperArm: [-0.5, 0.5, 1.3], rightLowerArm: [0, 1.6, 0], leftUpperArm: [-0.5, -0.5, -1.3], leftLowerArm: [0, -1.6, 0],
+      ...MANOS_ENTRELAZADAS,
+    },
+    ida: 0.8, dura: 2.2, vuelta: 0.9,
+  },
   estirarse: { // estira los brazos hacia arriba y la espalda
     pose: {
       rightUpperArm: [0, 0, -1.25], leftUpperArm: [0, 0, 1.25], rightLowerArm: [0, 0.4, 0], leftLowerArm: [0, -0.4, 0],
