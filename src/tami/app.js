@@ -7,6 +7,7 @@
 import { crearAvatar } from './avatar.js';
 import { Voz } from './voz.js';
 import { Oido } from './oido.js';
+import { crearDemo } from './demo.js';
 
 const INVITAR_CADA = 90_000;      // ms sin nadie → invita en voz alta (era 45 s: en un auditorio lleno cansaba;
                                   // entre medio, las poses de ocio llaman la atención sin ruido)
@@ -34,6 +35,8 @@ const estado = $('estado');
 
 const avatar = await crearAvatar($('avatar'), '../../avatar/tami.vrm', { uniforme: UNIFORME });
 avatar.emocion('relaxed', 0.3);
+// las demos de cuando está sola (solo en el stand: en la ventanita de escritorio no hay lugar)
+const demo = crearDemo($('demo-lienzo'), $('demo-titulo'), $('demo-sub'));
 
 const voz = new Voz({
   alVolumen: (v) => avatar.boca(v),
@@ -44,6 +47,7 @@ const voz = new Voz({
 // --- subtítulos ----------------------------------------------------------------------------------
 let ocultarBurbuja = null;
 function mostrarBurbuja(contenido, { estudiante = false, html = false } = {}) {
+  demo.ocultar(); // habla alguien (o ella): la demo se va para dejar lugar a la burbuja
   clearTimeout(ocultarBurbuja);
   burbuja.classList.remove('oculta');
   burbuja.classList.toggle('estudiante', estudiante);
@@ -102,6 +106,7 @@ let cerrarFichaLuego = null;
 let fichaAbierta = false;
 
 async function mostrarFicha(f) {
+  demo.ocultar(); // la ficha ocupa el mismo lugar
   $('ficha-titulo').textContent = f.titulo;
   $('ficha-detalle').textContent = f.detalle;
   const chips = (id, lista) => $(id).replaceChildren(...lista.map((t) => Object.assign(document.createElement('span'), { textContent: t })));
@@ -177,7 +182,9 @@ async function invitar() {
   mostrarBurbuja(frase);
   voz.decir(frase);
   avatar.emocion('happy', 0.5);
-  avatar.gesto('saludar'); // ¡hola, tú!
+  // el gesto según la frase: ofrece la presentación → abre la mano · dato curioso → explica · si no → saluda
+  avatar.gesto(/c[oó]mo funciono|c[oó]mo funcionas/i.test(frase) ? 'presentar'
+    : /^dato curioso|^funciono sin internet/i.test(frase) ? 'explicar' : 'saludar');
   ocultarLuego(10_000);
 }
 
@@ -273,10 +280,24 @@ const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse']
 const OCIO_TRAS = 15_000;
 let proximoOcio = 0;
 let ultimoOcio = null;
+const DEMO_CADA = 40_000;
+let ultimaDemo = 0;
+let proximaDemo = 0;
 setInterval(() => {
   if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
   const ahora = Date.now();
-  if (ahora - Math.max(ultimaActividad, ultimaInvitacion) < OCIO_TRAS || ahora < proximoOcio || avatar.ocupada()) return;
+  if (ahora - Math.max(ultimaActividad, ultimaInvitacion) < OCIO_TRAS || ahora < proximoOcio || avatar.ocupada() || demo.activa()) return;
+  // en el stand, a veces (1 de cada ~3, y no más de una cada 40 s) en vez de una pose muestra una DEMO:
+  // abre la mano hacia la izquierda y aparece la animación (red neuronal, memoria o el camino)
+  if (STAND && !document.body.classList.contains('con-ficha') && ahora - ultimaDemo > DEMO_CADA && Math.random() < 0.35) {
+    ultimaDemo = ahora;
+    const nombre = demo.nombres[proximaDemo++ % demo.nombres.length]; // de a una, en orden
+    avatar.mirar(-0.35, -0.1); // la mira de reojo, como quien la presenta
+    avatar.gesto('presentar');
+    demo.mostrar(nombre, 8000).then(() => avatar.mirar(0, 0));
+    proximoOcio = ahora + 10_000;
+    return;
+  }
   const opciones = OCIO.filter((g) => g !== ultimoOcio);
   ultimoOcio = opciones[Math.floor(Math.random() * opciones.length)];
   if (ultimoOcio === 'ladear') { // sonrisita tierna (poca: en este modelo 'happy' alto cierra los ojos)
@@ -296,6 +317,7 @@ $('barra').addEventListener('submit', (e) => {
 });
 entrada.addEventListener('input', () => {
   ultimaActividad = Date.now();
+  if (demo.activa()) { demo.ocultar(); avatar.mirar(0, 0); } // llegó alguien: la demo se va y lo mira
   if (!pensando && !voz.hablando) avatar.soltarGesto(); // si estaba estirándose, deja la pose y atiende
 });
 
@@ -428,6 +450,7 @@ window.tamiPrueba = {
   preguntar,
   explicarme,
   explicando: () => explicando,
+  demo: (nombre, ms = 60_000) => demo.mostrar(nombre, ms), // para fotos: tamiPrueba.demo('red')
   escuchar: async (ms) => { await empezarAEscuchar(); await new Promise((r) => setTimeout(r, ms)); await terminarDeEscuchar(); },
   estado: () => ({ hablando: voz.hablando, pensando, burbuja: burbujaTexto.textContent.slice(0, 60), gesto: avatar.haciendo().join(",") }),
 };

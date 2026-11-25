@@ -205,7 +205,12 @@ body.stand #fondo-stand { display: block; position: fixed; inset: 0; pointer-eve
 
 /* Tami a la derecha (ocupa ~40 % del ancho) */
 body.stand #tami { width: 40vw; right: 3vw; }
-body.stand #avatar { inset: calc(var(--u) * 30) 0 0 0; height: calc(100% - var(--u) * 30); }
+/* el lienzo es más ancho que su caja, IGUAL a los dos lados (Tami queda en el mismo centro): así la mano
+   que presenta la ficha o una demo no se corta en el borde. pointer-events: none → no tapa nada al hacer clic */
+body.stand #avatar {
+  inset: calc(var(--u) * 30) -12vw 0 -12vw; width: calc(100% + 24vw); height: calc(100% - var(--u) * 30);
+  pointer-events: none;
+}
 body.stand #placa, body.stand #cerrar, body.stand #arrastre { display: none; } /* en la feria no se cierra con un clic */
 
 /* cartel (cuando nadie habla): a la izquierda, letras blancas sobre el naranja */
@@ -279,3 +284,20 @@ body.stand #ficha {
   transform: translateY(-50%) scale(calc(var(--z) * 1.15)); transform-origin: left center;
 }
 body.stand #ficha.oculta { transform: translateY(-50%) translateX(-30px) scale(calc(var(--z) * 1.15)); }
+
+/* --- demos cuando está sola (demo.js): ocupan el lugar del cartel, a la izquierda -------------------- */
+#demo { display: none; }
+body.stand #demo {
+  display: flex; flex-direction: column; gap: calc(var(--u) * 12);
+  position: fixed; left: 6vw; top: 30vh; width: 46vw; height: 60vh;
+  color: #fff; opacity: 0; pointer-events: none;
+  transform: translateX(calc(var(--u) * -20)); transition: opacity .5s, transform .5s;
+}
+body.stand.con-demo #demo { opacity: 1; transform: none; }
+body.stand.con-demo #cartel { opacity: 0; }
+#demo-titulo {
+  margin: 0; font-size: calc(var(--u) * 44); line-height: 1.05; font-weight: 900;
+  text-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 14) rgba(110, 30, 0, .35);
+}
+#demo-lienzo { flex: 1; min-height: 0; width: 100%; }
+#demo-sub { margin: 0; font-size: calc(var(--u) * 24); font-weight: 600; line-height: 1.3; }

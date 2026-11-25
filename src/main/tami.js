@@ -86,6 +86,17 @@ const INVITACIONES = [
   '¡{saludo}! Te doy la bienvenida al stand de Ingeniería de Sistemas de Unifranz. Puedes hablarme por el micrófono o escribirme, como te sea más cómodo.',
   '¡{saludo}! Si vienen en familia, también respondo las dudas de papás y mamás sobre Ingeniería de Sistemas, becas y admisión.',
   '¡Hola, qué bueno que te acercas! ¿Sabías que en Ingeniería de Sistemas puedes especializarte en inteligencia artificial o en ciberseguridad? Pregúntame lo que quieras.',
+  // (25/11) frases para que suene viva y no siempre igual: comparten el MISMO turno de 90 s (no habla más
+  // seguido). Solo datos que ya están en el guion de «Así funciona Tami» (app.js): nada inventado.
+  // datos curiosos
+  'Dato curioso: para responderte, leí 95 páginas y 440 noticias de Unifranz, partidas en 8093 pedacitos. ¡Pregúntame lo que quieras de Sistemas!',
+  'Funciono sin internet, aquí mismo en esta computadora. ¿Me pones a prueba con una pregunta sobre Ingeniería de Sistemas?',
+  // invitan a la presentación («¿cómo funcionas?» la abre: PIDE_EXPLICACION)
+  '¿Quieres ver cómo funciono por dentro? Escríbeme: ¿cómo funcionas?',
+  'Tengo un cerebro, una memoria y una voz, y te muestro cómo trabajan juntos. Solo pregúntame: ¿cómo funcionas?',
+  // simpáticas
+  '¡Cuánta gente hoy, qué emoción! ¿Alguien quiere conversar conmigo?',
+  'Yo soy un proyecto hecho por estudiantes. ¡Imagínate lo que vas a poder crear tú en Ingeniería de Sistemas!',
 ];
 const DESPEDIDAS = [
   '¡Fue un gusto conversar contigo! Ojalá nos veamos en Ingeniería de Sistemas. ¡Mucho éxito!',
@@ -492,7 +503,7 @@ function nuevaConversacion() {
 
 function invitacion(ahora = new Date()) {
   const saludo = saludoDeLaHora(ahora);
-  return sinRepetir(INVITACIONES, ultimasInvitaciones, 4)
+  return sinRepetir(INVITACIONES, ultimasInvitaciones, 7) // con 14 frases: ninguna se repite antes de 8 turnos
     .replace('{saludo}', saludo)
     .replace('{saludo_min}', saludo.toLowerCase());
 }
