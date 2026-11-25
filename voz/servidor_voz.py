@@ -17,6 +17,7 @@ Uso (lo hace INICIAR_TAMI.bat):  .venv\\Scripts\\python.exe servidor_voz.py
 
 import io
 import json
+import os
 import sys
 import threading
 import time
@@ -47,13 +48,20 @@ bloqueo_oido = threading.Lock()
 
 def cargar_oido():
     global oido
-    try:
-        from faster_whisper import WhisperModel
-        oido = WhisperModel("small", device="cpu", compute_type="int8", cpu_threads=6,
-                            download_root=str(AQUI / "whisper"))
-        print("[oido] Whisper listo", flush=True)
-    except Exception as e:  # sin oído Tami sigue funcionando con teclado
-        print(f"[oido] NO se pudo cargar Whisper: {e}", flush=True)
+    # Ya descargado → que NO intente ir a internet (en la feria no hay; si lo intenta puede fallar y dejarla sorda)
+    if (AQUI / "whisper" / "models--Systran--faster-whisper-small").exists():
+        os.environ["HF_HUB_OFFLINE"] = "1"
+    # Se reintenta (25/11): al encender, el cerebro y la memoria se comen la RAM a la vez y la 1.ª carga puede fallar
+    for intento in range(1, 9):
+        try:
+            from faster_whisper import WhisperModel
+            oido = WhisperModel("small", device="cpu", compute_type="int8", cpu_threads=6,
+                                download_root=str(AQUI / "whisper"))
+            print("[oido] Whisper listo", flush=True)
+            return
+        except Exception as e:  # sin oído Tami sigue funcionando con teclado
+            print(f"[oido] intento {intento}: NO se pudo cargar Whisper: {e}", flush=True)
+            time.sleep(15)
 
 
 def transcribir(wav_bytes):

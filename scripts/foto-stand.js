@@ -58,6 +58,20 @@ app.whenReady().then(async () => {
     })()`);
     await espera(700);
     await foto('ficha');
+    // con la ficha abierta Tami sigue hablando: la burbuja sube (en vertical, arriba de la cabeza)
+    await win.webContents.executeJavaScript(`(() => {
+      const b = document.getElementById('burbuja'); b.classList.remove('oculta', 'estudiante');
+      document.getElementById('burbuja-texto').textContent = ${JSON.stringify(RESPUESTA.slice(0, 160))};
+    })()`);
+    await espera(600);
+    await foto('ficha_burbuja');
+    // la presentación «Así funciona Tami» abierta (en vertical esa ventana va abajo y la burbuja arriba)
+    await win.webContents.executeJavaScript(`(() => {
+      document.getElementById('ficha').classList.add('oculta'); document.body.classList.remove('con-ficha');
+      document.body.classList.add('con-explica');
+    })()`);
+    await espera(700);
+    await foto('explica');
     win.destroy();
   }
   app.quit();

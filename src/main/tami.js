@@ -34,6 +34,11 @@ const CREADOR = process.env.TAMI_CREADOR
 // fija, ver app.js). No pasa por el modelo: así la explicación es siempre exacta y no inventa nada.
 const PIDE_EXPLICACION = /c[oó]mo (funcionas|trabajas|piensas|aprendiste|te (hicieron|crearon|entrenaron|programaron)|sabes (todo|tanto|eso))|c[oó]mo est[aá]s hecha|qu[eé] (eres|hay) por dentro|tu memoria|expl[ií]ca(me)? (c[oó]mo funcionas|el proyecto|tu proyecto)|de qu[eé] (trata|se trata) (el|este|tu) proyecto|mu[eé]strame c[oó]mo funcionas|modo exposici[oó]n/i;
 const INTRO_EXPLICACION = '¡Con mucho gusto! Mira la pantalla: te muestro cómo funciono por dentro.';
+// (25/11) «Explica el proyecto al jurado», «modo jurado» (o F7) → presentación para el jurado: problema, objetivo,
+// cómo funciona, equipo, resultados y próximos pasos, en láminas AL LADO de Tami (sin otra ventana). Va antes que
+// PIDE_EXPLICACION porque «explica el proyecto al jurado» también calzaría ahí.
+const PIDE_JURADO = /jurado|\bjueces\b|evaluador(es|as)?\b|modo presentaci[oó]n larga/i;
+const INTRO_JURADO = '¡Con mucho gusto! Les presento el proyecto. Miren aquí, a mi lado.';
 // «¿Quién te hizo?» también va FIJO: el modelo acortaba o cambiaba los apellidos («Brayan Quispe Quispe»)
 const PIDE_CREADOR = /qui[eé]n(es)? te (hizo|hicieron|cre[oó]|crearon|program[oó]|programaron|desarroll)|qui[eé]n(es)? (es|son) tus? (creador|creadores|autor|autores|papás?)/i;
 const RESPUESTA_CREADOR = `Me crearon ${equipo.enFrase}, estudiantes de Unifranz, ` +
@@ -580,6 +585,9 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
     texto = texto.replace(new RegExp(DA_SUS_DATOS.source, 'g'), '[dato personal]');
     return fija(RESPUESTA_DATOS);
   }
+  if (PIDE_JURADO.test(texto)) return fija(INTRO_JURADO, { accion: 'jurado' });
+  const aporte = equipo.respuestaAporte(texto); // «¿qué hizo Brayan?» → fija, sin inventar
+  if (aporte) return fija(aporte);
   if (PIDE_CREADOR.test(texto)) {
     conv.ofrecioExplicar = true; // si dice «sí», arranca la presentación
     return fija(RESPUESTA_CREADOR);
