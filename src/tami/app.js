@@ -251,6 +251,27 @@ setInterval(() => {
   else if (!enCharla && ahora - Math.max(ultimaActividad, ultimaInvitacion) > INVITAR_CADA) invitar();
 }, 2000);
 
+// --- ocio: si nadie le habla, no se queda quieta como estatua (escena D del SKILL de Brayan) --------
+// Pasados 15 s sin nadie, cada 6 a 10 s hace una pose distinta (nunca la misma dos veces seguidas).
+// Cualquier cosa de verdad (alguien escribe, habla, ella invita) la reemplaza: gesto() suelta la anterior.
+const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse'];
+const OCIO_TRAS = 15_000;
+let proximoOcio = 0;
+let ultimoOcio = null;
+setInterval(() => {
+  if (minimizada || enCharla || voz.hablando || pensando || entrada.value || escuchando || explicando) return;
+  const ahora = Date.now();
+  if (ahora - Math.max(ultimaActividad, ultimaInvitacion) < OCIO_TRAS || ahora < proximoOcio || avatar.ocupada()) return;
+  const opciones = OCIO.filter((g) => g !== ultimoOcio);
+  ultimoOcio = opciones[Math.floor(Math.random() * opciones.length)];
+  if (ultimoOcio === 'ladear') { // sonrisita tierna (poca: en este modelo 'happy' alto cierra los ojos)
+    avatar.emocion('happy', 0.2);
+    setTimeout(() => { if (!voz.hablando) avatar.emocion('relaxed', 0.3); }, 3000);
+  }
+  avatar.gesto(ultimoOcio);
+  proximoOcio = ahora + 6000 + Math.random() * 4000;
+}, 1000);
+
 // --- teclado -------------------------------------------------------------------------------------
 $('barra').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -258,7 +279,10 @@ $('barra').addEventListener('submit', (e) => {
   entrada.value = '';
   preguntar(texto);
 });
-entrada.addEventListener('input', () => { ultimaActividad = Date.now(); });
+entrada.addEventListener('input', () => {
+  ultimaActividad = Date.now();
+  if (!pensando && !voz.hablando) avatar.soltarGesto(); // si estaba estirándose, deja la pose y atiende
+});
 
 // --- micrófono -----------------------------------------------------------------------------------
 // Dos formas de usarlo: MANTENER presionado y soltar al terminar, o TOCAR una vez y tocar otra vez para terminar

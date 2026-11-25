@@ -19,9 +19,12 @@ app.whenReady().then(async () => {
   for (let i = 0; i < 60 && !(await win.webContents.executeJavaScript('!!window.tamiLista')); i++) await espera(250);
   await win.webContents.executeJavaScript("tami.vestir({ Tops: '#1b1b1b', Bottoms: '#2a2a2a' }); " + (process.env.CRED ? `tami.credencial(${process.env.CRED})` : ''));
 
-  const args = process.argv.slice(2).filter((a) => !a.startsWith('--') || a === '--pose');
+  const args = process.argv.slice(2).filter((a) => !a.startsWith('--') || a === '--pose' || a === '--js');
   const iPose = args.indexOf('--pose');
-  const casos = iPose >= 0
+  const iJs = args.indexOf('--js'); // --js nombre "código"  (p. ej. con tami.dedos(...) para las manos)
+  const casos = iJs >= 0
+    ? [[args[iJs + 1], args[iJs + 2], Number(process.env.MS || 900)]]
+    : iPose >= 0
     ? [['pose', `tami.gesto('prueba', { pose: ${args[iPose + 1]}, orden: ${process.env.ORDEN || '{}'} })`, 800]]
     : (args.length ? args : await win.webContents.executeJavaScript('tami.gestos'))
       .map((g) => [g, `tami.gesto(${JSON.stringify(g)})`, g === 'asentir' ? 350 : 900]);
