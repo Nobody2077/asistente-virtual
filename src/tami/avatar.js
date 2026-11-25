@@ -194,6 +194,10 @@ const GESTOS = {
     pose: { head: [0, 0, 0.24], neck: [0, 0, 0.1], spine: [0.06, 0, 0] },
     ida: 0.6, dura: 1.8, vuelta: 0.7,
   },
+  suspirar: { // (25/11) suspiro silencioso: el pecho sube, la cabeza mira un poco arriba, y baja despacio
+    pose: { chest: [-0.07, 0, 0], spine: [-0.03, 0, 0], head: [-0.09, 0, 0.04] },
+    ida: 1.0, dura: 0.5, vuelta: 1.6,
+  },
   estirarse: { // estira los brazos hacia arriba y la espalda
     pose: {
       rightUpperArm: [0, 0, -1.25], leftUpperArm: [0, 0, 1.25], rightLowerArm: [0, 0.4, 0], leftLowerArm: [0, -0.4, 0],
@@ -267,6 +271,8 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, 
   const estado = { boca: 0, bocaSuave: 0, emocion: null, emocionValor: 0, mirarX: 0, mirarY: 0 };
   let activos = []; // gestos en curso: { def, t, soltando, tSoltar, pesoAlSoltar, terminado }
   const soltarTodos = () => activos.forEach((g) => { if (!g.soltando) { g.soltando = true; g.tSoltar = g.t; } });
+  let proximaMirada = 2;
+  const desvio = { x: 0, y: 0, metaX: 0, metaY: 0, hasta: 0 };
   let proximoParpadeo = 1.5;
   let parpadeo = 0;
   const reloj = new THREE.Clock();
@@ -331,8 +337,23 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, 
     }
     activos = activos.filter((g) => !g.terminado);
 
+    // Mirada viva (25/11): una persona nunca mira EXACTAMENTE al mismo punto.
+    //  · microsacadas: cada 1,5–4 s los ojos saltan un poquito (también mientras habla)
+    //  · distraída: 1 de cada 6 veces, si no está hablando, mira más lejos ~1 s y vuelve
+    proximaMirada -= dt;
+    if (proximaMirada <= 0) {
+      const distraida = estado.bocaSuave < 0.05 && Math.random() < 1 / 6;
+      const r = distraida ? 0.35 : 0.06;
+      desvio.metaX = (Math.random() * 2 - 1) * r;
+      desvio.metaY = (Math.random() * 2 - 1) * r * 0.5;
+      desvio.hasta = t + (distraida ? 0.9 + Math.random() * 0.6 : 0.3 + Math.random() * 0.9);
+      proximaMirada = 1.5 + Math.random() * 2.5;
+    }
+    if (t > desvio.hasta) { desvio.metaX = 0; desvio.metaY = 0; }
+    desvio.x += (desvio.metaX - desvio.x) * Math.min(1, dt * 14); // los ojos saltan rápido (sacada)
+    desvio.y += (desvio.metaY - desvio.y) * Math.min(1, dt * 14);
     // el punto está pegado a la cámara: en (0,0,0) mira a quien está frente a la pantalla
-    objetivo.position.set(estado.mirarX * 0.6, estado.mirarY * 0.4, 0);
+    objetivo.position.set((estado.mirarX + desvio.x) * 0.6, (estado.mirarY + desvio.y) * 0.4, 0);
 
     // boca: suavizada para que no tiemble; mezcla «a» y «o» para que no sea siempre la misma forma
     estado.bocaSuave += (estado.boca - estado.bocaSuave) * Math.min(1, dt * 18);

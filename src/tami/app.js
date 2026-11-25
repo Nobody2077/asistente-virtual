@@ -80,6 +80,17 @@ const GESTO_POR_FRASE = [
 function gestoPara(frase) {
   return GESTO_POR_FRASE.find(([re]) => re.test(frase))?.[1] || null;
 }
+// La cara acompaña cada frase cuando EMPIEZA a sonar (25/11): si pregunta, sube las cejas (curiosa); si dice algo
+// alegre, sonríe más. Valores elegidos con fotos: surprised > 0,3 abre la boca raro; happy > 0,45 cierra los ojos.
+function caraPara(frase) {
+  if (/\?\s*[)»"]?\s*$/.test(frase)) return ["surprised", 0.2];
+  if (/qu[eé] (bien|lindo|genial|emoci[oó]n|bueno)|me encanta|genial|excelente|felicidades|incre[ií]ble|perfecto|¡qu[eé] gusto/i.test(frase)) return ["happy", 0.42];
+  return ["happy", 0.32];
+}
+const alSonarFrase = (frase, g = null) => () => {
+  avatar.emocion(...caraPara(frase));
+  if (g) { avatar.gesto(g); proximoExplicar = Date.now() + 3000; }
+};
 // entre frase y frase, si no está haciendo nada, a veces la mano acompaña («explicar»)
 let proximoExplicar = 0;
 setInterval(() => {
@@ -94,7 +105,7 @@ window.cerebro.alDecirFrase(({ frase, muletilla }) => {
   else if (!yaRespondio) { yaRespondio = true; avatar.soltarGesto(); avatar.mirar(0, 0); } // deja de pensar y responde
   const g = muletilla ? null : gestoPara(frase);
   // el gesto empieza cuando ESA frase empieza a sonar (las frases llegan antes: la voz las tiene en cola)
-  voz.decir(frase, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
+  voz.decir(frase, alSonarFrase(frase, g));
 });
 window.cerebro.alEscribir((todo) => {
   if (todo) mostrarBurbuja(todo);
@@ -180,7 +191,7 @@ async function invitar() {
   ultimaInvitacion = Date.now();
   const frase = await window.cerebro.invitar();
   mostrarBurbuja(frase);
-  voz.decir(frase);
+  voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.5);
   // el gesto según la frase: ofrece la presentación → abre la mano · dato curioso → explica · si no → saluda
   avatar.gesto(/c[oó]mo funciono|c[oó]mo funcionas/i.test(frase) ? 'presentar'
@@ -193,7 +204,7 @@ async function despedirse() {
   cerrarFicha(); // el siguiente estudiante empieza sin la ficha del anterior
   const frase = await window.cerebro.reiniciar();
   mostrarBurbuja(frase);
-  voz.decir(frase);
+  voz.decir(frase, alSonarFrase(frase));
   avatar.emocion('happy', 0.6);
   avatar.gesto('saludar'); // chau
   ocultarLuego(8_000);
@@ -224,7 +235,7 @@ async function decirYEsperar(texto) {
   const frases = texto.match(/[^.!?¿¡]*[¡¿]?[^.!?]*[.!?]+/g) || [texto];
   for (const f of frases.map((x) => x.trim()).filter(Boolean)) {
     const g = gestoPara(f);
-    voz.decir(f, g ? () => { avatar.gesto(g); proximoExplicar = Date.now() + 3000; } : null);
+    voz.decir(f, alSonarFrase(f, g));
   }
   await pausa(300);
   while (explicando && voz.hablando) await pausa(150);
@@ -308,7 +319,7 @@ setInterval(() => {
 // --- ocio: si nadie le habla, no se queda quieta como estatua (escena D del SKILL de Brayan) --------
 // Pasados 15 s sin nadie, cada 6 a 10 s hace una pose distinta (nunca la misma dos veces seguidas).
 // Cualquier cosa de verdad (alguien escribe, habla, ella invita) la reemplaza: gesto() suelta la anterior.
-const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse'];
+const OCIO = ['visera', 'mirarIzquierda', 'mirarDerecha', 'ladear', 'estirarse', 'suspirar'];
 const OCIO_TRAS = 15_000;
 let proximoOcio = 0;
 let ultimoOcio = null;
@@ -334,6 +345,10 @@ setInterval(() => {
   ultimoOcio = opciones[Math.floor(Math.random() * opciones.length)];
   if (ultimoOcio === 'ladear') { // sonrisita tierna (poca: en este modelo 'happy' alto cierra los ojos)
     avatar.emocion('happy', 0.2);
+    setTimeout(() => { if (!voz.hablando) avatar.emocion('relaxed', 0.3); }, 3000);
+  }
+  if (ultimoOcio === 'suspirar') { // cara tranquila mientras suspira (sin sonido: el auditorio ya es ruidoso)
+    avatar.emocion('relaxed', 0.55);
     setTimeout(() => { if (!voz.hablando) avatar.emocion('relaxed', 0.3); }, 3000);
   }
   avatar.gesto(ultimoOcio);

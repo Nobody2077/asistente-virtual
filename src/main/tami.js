@@ -509,6 +509,18 @@ function nuevaConversacion() {
   return { historial: [], empezo: Date.now() };
 }
 
+// Invitaciones con el contador del día (25/11): un dato REAL que muestra que recuerda a quién atendió.
+// La meta es la siguiente decena (23 → «¿me ayudas a llegar a 30?»).
+function invitacionConContador(n) {
+  const meta = Math.ceil((n + 1) / 10) * 10;
+  const frases = [
+    `¡Hoy ya conversé con ${n} personas! ¿Me ayudas a llegar a ${meta}?`,
+    `Ya van ${n} personas que me hicieron preguntas hoy. ¿Serás la número ${n + 1}?`,
+    `¡${n} conversaciones hoy y no me canso! ¿Qué quieres saber de Ingeniería de Sistemas?`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}
+
 function invitacion(ahora = new Date()) {
   const saludo = saludoDeLaHora(ahora);
   return sinRepetir(INVITACIONES, ultimasInvitaciones, 7) // con 14 frases: ninguna se repite antes de 8 turnos
@@ -651,4 +663,4 @@ async function responder(conv, texto, { onFrase = () => {}, onTexto = () => {}, 
   return { texto: dicho, mostrar, datos: hits };
 }
 
-module.exports = { nuevaConversacion, responder, invitacion, despedida, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };
+module.exports = { nuevaConversacion, responder, invitacion, invitacionConContador, despedida, anotarTami, calentar, DESPEDIDA, cargarCatalogo, resolverMostrar, PAGINAS };
