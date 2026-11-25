@@ -332,3 +332,57 @@ body.stand.con-foto {
 #foto-pie strong { color: var(--naranja); }
 #foto-pie span { font-weight: 900; letter-spacing: .15em; }
 body.con-foto #barra, body.con-foto #estado { opacity: 0; transition: opacity .3s; }
+
+/* === STAND VERTICAL (monitor girado, 25/11): diseño de «tótem» ===========================================
+   Arriba: TAMI en pixeles como logo · al medio: Tami casi de cuerpo entero (encuadre 'vertical' en avatar.js) ·
+   abajo: el panel de texto (cartel cuando nadie habla, burbuja, demo o ficha; uno a la vez) · al fondo: la barra.
+   app.js pone body.vertical cuando la pantalla es más alta que ancha, y --z se mide contra 768×1366. */
+body.stand.vertical #letras-tami { left: 50%; top: 2.5vh; width: 70vw; max-height: none; transform: translateX(-50%); }
+body.stand.vertical .adorno.a1 { left: 5vw; top: 22vh; bottom: auto; }
+body.stand.vertical .adorno.a2 { left: auto; right: 6vw; top: 24vh; bottom: auto; }
+body.stand.vertical .adorno.a3 { left: auto; right: 9vw; top: 44vh; }
+body.stand.vertical .adorno.a4 { left: 7vw; top: 46vh; bottom: auto; }
+
+body.stand.vertical #tami { left: 0; right: 0; width: 100%; }
+body.stand.vertical #avatar { inset: 9vh 0 0 0; width: 100%; height: 91vh; }
+
+/* el panel de abajo: todos comparten el mismo lugar */
+body.stand.vertical #cartel {
+  left: 5vw; right: 5vw; width: auto; top: auto; bottom: 13vh; transform: none; text-align: center;
+}
+body.stand.vertical #cartel h1 { font-size: calc(var(--u) * 64); margin: calc(var(--u) * 8) 0 calc(var(--u) * 12); }
+body.stand.vertical #cartel .cartel-sub { font-size: calc(var(--u) * 26); margin-bottom: calc(var(--u) * 18); }
+
+body.stand.vertical #burbuja {
+  left: 5vw; right: 5vw; width: auto; top: auto; bottom: 13vh; transform: none; max-height: 32vh;
+}
+body.stand.vertical #burbuja.oculta { transform: translateY(calc(var(--u) * 20)); }
+body.stand.vertical #burbuja::after { /* colita hacia ARRIBA, a Tami */
+  top: calc(var(--u) * -18); bottom: auto; right: auto; left: 50%; transform: translateX(-50%);
+  border: calc(var(--u) * 18) solid transparent; border-top: 0; border-bottom-color: var(--negro);
+}
+body.stand.vertical #burbuja.estudiante::after { border-bottom-color: var(--blanco); border-left-color: transparent; }
+body.stand.vertical.con-ficha #burbuja { left: 5vw; right: 5vw; top: 10vh; max-height: 20vh; }
+body.stand.vertical.con-ficha #burbuja::after { display: none; }
+
+body.stand.vertical #demo { left: 5vw; width: 90vw; top: auto; bottom: 13vh; height: 34vh; text-align: center; }
+body.stand.vertical #ficha {
+  left: 50%; top: auto; bottom: 13vh;
+  transform: translateX(-50%) scale(calc(var(--z) * 1.15)); transform-origin: bottom center;
+}
+body.stand.vertical #ficha.oculta { transform: translateX(-50%) translateY(30px) scale(calc(var(--z) * 1.15)); }
+
+body.stand.vertical #barra { left: 6vw; right: 6vw; bottom: 3vh; }
+body.stand.vertical #estado { bottom: 11vh; }
+body.stand.vertical #foto-cuenta { left: 50%; top: 72%; }
+/* en vertical el panel de texto cae sobre el cuerpo de Tami: va POR DELANTE del lienzo y con fondo oscuro */
+body.stand.vertical #cartel {
+  z-index: 3; padding: calc(var(--u) * 18) calc(var(--u) * 22); border-radius: calc(var(--u) * 26);
+  background: rgba(17, 17, 17, .62); backdrop-filter: blur(4px);
+}
+body.stand.vertical #cartel .cartel-marca { color: var(--naranja); }
+body.stand.vertical #cartel .cartel-sub strong { color: var(--naranja); }
+body.stand.vertical #cartel .cartel-como { background: var(--naranja); }
+body.stand.vertical #demo { z-index: 3; }
+body.stand.vertical #cartel .cartel-como .ico-txt { color: #fff; } /* íconos blancos sobre la píldora naranja */
+body.stand.vertical #demo { padding: calc(var(--u) * 18) calc(var(--u) * 22); border-radius: calc(var(--u) * 26); background: rgba(17, 17, 17, .72); backdrop-filter: blur(4px); } /* sobre el cuerpo de Tami: panel oscuro para que se lea */

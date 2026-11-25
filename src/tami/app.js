@@ -20,9 +20,17 @@ const STAND = new URLSearchParams(location.search).get('modo') === 'stand';
 document.body.classList.toggle('stand', STAND);
 // escala del modo stand (tami.css usa --z): 1 en una laptop 1366×768, más en monitores y TV grandes.
 // Se toma el lado más justo (ancho o alto) para que nada se salga de la pantalla.
+// VERTICAL (25/11): si la pantalla es más alta que ancha (monitor girado), el stand cambia solo a un diseño de
+// «tótem»: Tami grande arriba, casi de cuerpo entero, y el texto abajo. Sin menú (en la feria un visitante podría
+// desconfigurarlo). Se puede forzar con INICIAR_TAMI.bat --vertical / --horizontal (main.js → ?orientacion=).
+const ORIENTACION = new URLSearchParams(location.search).get('orientacion'); // 'vertical' | 'horizontal' | null
+const esVertical = () => (ORIENTACION ? ORIENTACION === 'vertical' : innerHeight > innerWidth * 1.1);
 function escalar() {
-  const z = Math.max(0.8, Math.min(innerWidth / 1366, innerHeight / 768));
-  document.body.style.setProperty('--z', z.toFixed(3));
+  const vertical = esVertical();
+  document.body.classList.toggle('vertical', vertical);
+  // en vertical se mide contra un 768×1366 (la misma pantalla, girada): el texto queda del mismo tamaño
+  const z = vertical ? Math.min(innerWidth / 768, innerHeight / 1366) : Math.min(innerWidth / 1366, innerHeight / 768);
+  document.body.style.setProperty('--z', Math.max(0.8, z).toFixed(3));
 }
 if (STAND) { escalar(); addEventListener('resize', escalar); }
 // modo feria (blindado): muestra el botón de minimizar
@@ -35,6 +43,10 @@ const estado = $('estado');
 
 const avatar = await crearAvatar($('avatar'), '../../avatar/tami.vrm', { uniforme: UNIFORME });
 avatar.emocion('relaxed', 0.3);
+// encuadre de la cámara según la orientación (y otra vez si giran el monitor con Tami abierta)
+const encuadrar = () => avatar.encuadrar(STAND && esVertical() ? 'vertical' : 'normal');
+encuadrar();
+if (STAND) addEventListener('resize', encuadrar);
 // las demos de cuando está sola (solo en el stand: en la ventanita de escritorio no hay lugar)
 const demo = crearDemo($('demo-lienzo'), $('demo-titulo'), $('demo-sub'));
 

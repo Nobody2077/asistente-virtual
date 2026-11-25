@@ -21,11 +21,17 @@ app.on('window-all-closed', () => {}); // al cerrar la ventana de un tamaño, NO
 app.whenReady().then(async () => {
   fs.mkdirSync(SALIDA, { recursive: true });
   for (const [ancho, alto] of TAMANOS) {
-    const win = new BrowserWindow({ width: ancho, height: alto, x: -6000, y: 0, show: true, frame: false, skipTaskbar: true,
-      useContentSize: true, backgroundColor: '#0b0b0b',
-      webPreferences: { preload: path.join(__dirname, '..', 'src', 'tami', 'preload.js'), backgroundThrottling: false } });
-    win.setContentSize(ancho, alto); // por si Windows achica la ventana a su pantalla
+    // Pantallas más altas que la del PC (p. ej. 1080×1920 vertical): Windows achicaría la ventana. Truco: ventana
+    // a la mitad y zoom 0,5 → la página «ve» el tamaño completo (las fotos salen a la mitad de resolución).
+    const f = alto > 1000 ? 0.5 : 1;
+    const win = new BrowserWindow({ width: Math.round(ancho * f), height: Math.round(alto * f), x: -6000, y: 0, show: true,
+      frame: false, skipTaskbar: true, useContentSize: true, backgroundColor: '#0b0b0b',
+      webPreferences: { preload: path.join(__dirname, '..', 'src', 'tami', 'preload.js'), backgroundThrottling: false, zoomFactor: f } });
+    win.setContentSize(Math.round(ancho * f), Math.round(alto * f)); // por si Windows achica la ventana a su pantalla
     await win.loadFile(path.join(__dirname, '..', 'src', 'tami', 'index.html'), { query: { modo: 'stand' } });
+    win.webContents.setZoomFactor(f); // Chromium recuerda el zoom por sitio: sin esto, la 2.ª ventana hereda el de la 1.ª
+    await espera(300);
+    console.log('la página ve:', await win.webContents.executeJavaScript('innerWidth + "x" + innerHeight + (document.body.classList.contains("vertical") ? " (vertical)" : "")'));
     for (let i = 0; i < 60 && !(await win.webContents.executeJavaScript('!!document.querySelector("#avatar")?.width')); i++) await espera(250);
     await espera(2500); // que cargue el modelo 3D
     const foto = async (caso) => {

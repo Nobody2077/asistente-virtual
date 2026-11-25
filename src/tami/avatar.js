@@ -241,8 +241,21 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, 
   if (fondo) escena.background = new THREE.Color(fondo);
   // plano medio: de la cintura para arriba, como una orientadora detrás de su escritorio
   const camara = new THREE.PerspectiveCamera(24, 1, 0.1, 20);
-  camara.position.set(0, 1.3, 1.9);
-  camara.lookAt(0, 1.22, 0);
+  // ENCUADRES (25/11): «normal» = de la cintura para arriba (pantalla horizontal); «vertical» = monitor girado:
+  // la cámara se aleja y baja para mostrar casi todo el cuerpo (los gestos y las poses de foto lucen más).
+  // Ajustados con fotos: npx electron scripts/foto-stand.js 1080x1920
+  const ENCUADRES = {
+    normal: { fov: 24, pos: [0, 1.3, 1.9], mira: [0, 1.22, 0] },
+    vertical: { fov: 30, pos: [0, 1.15, 2.45], mira: [0, 1.06, 0] },
+  };
+  function encuadrar(nombre) {
+    const e = ENCUADRES[nombre] || ENCUADRES.normal;
+    camara.fov = e.fov;
+    camara.position.set(...e.pos);
+    camara.lookAt(...e.mira);
+    camara.updateProjectionMatrix();
+  }
+  encuadrar('normal');
 
   const luz = new THREE.DirectionalLight(0xffffff, 2.2);
   luz.position.set(0.6, 1.8, 1.6);
@@ -399,6 +412,7 @@ export async function crearAvatar(canvas, url, { fondo = null, uniforme = null, 
     ocupada: () => activos.some((g) => !g.soltando), // ¿está haciendo un gesto ahora?
     haciendo: () => activos.filter((g) => !g.soltando).map((g) => Object.keys(GESTOS).find((k) => GESTOS[k] === g.def) || 'prueba'),
     gestos: Object.keys(GESTOS),
+    encuadrar, // 'normal' | 'vertical' (lo elige app.js según la pantalla)
     dedos, // para probar poses de manos desde scripts: tami.gesto('prueba', { pose: tami.dedos('right', {...}) })
   };
 }

@@ -18,6 +18,8 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 // --oido-falso archivo.wav: el micrófono «escucha» ese archivo (para probar Whisper sin hablarle de verdad)
 // --mic "parte del nombre": obliga a usar ese micrófono (si no, Tami elige el primero que no sea virtual)
+// --vertical / --horizontal: fuerza la orientación del stand (si no, se elige sola por el tamaño de la pantalla)
+const ORIENTACION = process.argv.includes('--vertical') ? 'vertical' : process.argv.includes('--horizontal') ? 'horizontal' : '';
 const MIC = (() => { const i = process.argv.indexOf('--mic'); return i > 0 ? String(process.argv[i + 1] || '') : ''; })();
 const OIDO_FALSO = (() => { const i = process.argv.indexOf('--oido-falso'); return i > 0 ? path.resolve(process.argv[i + 1]) : null; })();
 if (OIDO_FALSO) {
@@ -138,7 +140,7 @@ function crearVentana() {
       enviar('tami:minimizada', false);
     });
   }
-  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC, feria: FERIA ? '1' : '' } });
+  ventana.loadFile(path.join(__dirname, 'index.html'), { query: { modo: STAND ? 'stand' : 'escritorio', mic: MIC, feria: FERIA ? '1' : '', orientacion: ORIENTACION } });
   if (process.argv.includes('--dev')) ventana.webContents.openDevTools({ mode: 'detach' });
 }
 
